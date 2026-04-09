@@ -1,1 +1,8 @@
-
+.next
+node_modules
+.env.local
+.env*
+!.env.local.example
+*.log
+tsconfig.tsbuildinfo
+supabase/.temp
