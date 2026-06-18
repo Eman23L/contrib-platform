@@ -31,7 +31,7 @@ async function sendMagicLink(request: Request, email: string, nextPath: string) 
     email,
     options: {
       emailRedirectTo: redirectTo.toString(),
-      shouldCreateUser: false,
+      shouldCreateUser: true,
     },
   });
 }
