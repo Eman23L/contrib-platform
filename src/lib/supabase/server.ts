@@ -98,7 +98,7 @@ export function createServerSupabaseAuthClient(cookieStore: CookieWriter): Supab
       autoRefreshToken: false,
       detectSessionInUrl: false,
       flowType: "pkce",
-      persistSession: false,
+      persistSession: true,
       storage: createCookieStorage(cookieStore),
       storageKey: AUTH_FLOW_STORAGE_KEY,
     },
@@ -178,9 +178,11 @@ export function setAdminSessionCookies(cookieStore: CookieWriter, session: Sessi
 export function clearAdminSessionCookies(cookieStore: CookieWriter) {
   cookieStore.delete(ADMIN_ACCESS_TOKEN_COOKIE);
   cookieStore.delete(ADMIN_REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(AUTH_FLOW_STORAGE_KEY);
   cookieStore.delete(AUTH_FLOW_CODE_VERIFIER_COOKIE);
 }
 
 export function clearAuthFlowCookies(cookieStore: CookieWriter) {
+  cookieStore.delete(AUTH_FLOW_STORAGE_KEY);
   cookieStore.delete(AUTH_FLOW_CODE_VERIFIER_COOKIE);
 }
