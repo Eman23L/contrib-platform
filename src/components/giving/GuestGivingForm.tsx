@@ -43,6 +43,23 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
     return selectedAmount ?? 0;
   }, [customAmount, selectedAmount]);
 
+  const selectedFund = useMemo(
+    () => organisation.funds.find((fund) => fund.id === selectedFundId) ?? null,
+    [organisation.funds, selectedFundId],
+  );
+
+  const formattedAmount = useMemo(() => {
+    if (amount <= 0 || Number.isNaN(amount)) {
+      return null;
+    }
+
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: organisation.currencyCode,
+      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    }).format(amount);
+  }, [amount, organisation.currencyCode]);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -82,7 +99,7 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
       }
 
       setIntentId(data.intentId);
-      setSuccessMessage("Redirecting to Stripe Checkout...");
+      setSuccessMessage("Taking you to secure checkout...");
       window.location.assign(data.checkoutUrl);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
@@ -92,14 +109,15 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
   }
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <section className="space-y-3">
+    <form className="space-y-7" onSubmit={handleSubmit}>
+      <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-            1. Choose a fund
+          <p className="text-sm font-medium text-[#5f7f66]">Step 1</p>
+          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+            Choose where your gift should go
           </h2>
-          <p className="mt-1 text-sm text-black/60">
-            Select where you would like your contribution to go.
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Pick the fund that best matches what you would like to support.
           </p>
         </div>
         <FundGrid
@@ -109,13 +127,14 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         />
       </section>
 
-      <section className="space-y-3">
+      <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-            2. Enter an amount
+          <p className="text-sm font-medium text-[#5f7f66]">Step 2</p>
+          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+            Select an amount
           </h2>
-          <p className="mt-1 text-sm text-black/60">
-            Pick a quick amount or type your own.
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Choose a quick amount or enter another amount that feels right.
           </p>
         </div>
         <AmountPicker
@@ -134,22 +153,23 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         />
       </section>
 
-      <section className="space-y-3">
+      <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-            3. Receipt email
+          <p className="text-sm font-medium text-[#5f7f66]">Step 3</p>
+          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+            Send me a receipt
           </h2>
-          <p className="mt-1 text-sm text-black/60">
-            Optional. Add an email if you want a receipt later.
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Add your email address if you would like a receipt for this gift.
           </p>
         </div>
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-black/70">
+          <span className="mb-2 block text-sm font-medium text-slate-700">
             Email address
           </span>
           <input
             autoComplete="email"
-            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-base text-ink shadow-sm outline-none transition placeholder:text-black/35 focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="w-full rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 text-base text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#7ca982] focus:ring-4 focus:ring-[#7ca982]/15"
             onChange={(event) => setGuestEmail(event.target.value)}
             placeholder="name@example.com"
             type="email"
@@ -158,14 +178,39 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         </label>
       </section>
 
+      <section className="rounded-[1.5rem] border border-[#d8e9dc] bg-[#f7fbf6] px-5 py-4 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">
+              Your gift
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {selectedFund
+                ? `Supporting ${selectedFund.name}`
+                : "Choose a fund to continue"}
+            </p>
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-sm text-slate-500">Amount</p>
+            <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+              {formattedAmount ?? "Not set"}
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 rounded-2xl bg-white/78 px-4 py-3 text-sm leading-6 text-slate-600">
+          Your gift is processed securely. You will review the payment before it
+          is completed.
+        </p>
+      </section>
+
       {errorMessage ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
           {errorMessage}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">
           <div>{successMessage}</div>
           {intentId ? <div className="mt-1 font-mono text-xs">{intentId}</div> : null}
         </div>

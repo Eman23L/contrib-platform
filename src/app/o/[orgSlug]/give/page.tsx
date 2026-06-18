@@ -19,40 +19,63 @@ export default async function GivePage({ params }: GivePageProps) {
   const funds = await listPublicFunds(organisation.id);
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,_#f5efe2_0%,_#f8f6f1_100%)] px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-xl">
-        <section className="rounded-[2rem] border border-black/10 bg-white/85 p-5 shadow-[0_24px_70px_rgba(20,83,45,0.12)] backdrop-blur sm:p-8">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-accent text-2xl font-semibold text-white">
-              {organisation.name.charAt(0)}
+    <main className="min-h-screen overflow-x-hidden bg-[#f8faf7] px-4 py-5 text-slate-800 sm:px-6 sm:py-8">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_12%,_rgba(187,247,208,0.34),_transparent_30%),radial-gradient(circle_at_84%_4%,_rgba(219,234,254,0.58),_transparent_26%),linear-gradient(180deg,_#fbfaf5_0%,_#f5f7fb_55%,_#f8faf7_100%)]" />
+
+      <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-2xl items-center">
+        <section className="w-full min-w-0 overflow-hidden rounded-[2rem] border border-white/80 bg-white/80 shadow-[0_28px_80px_rgba(45,64,55,0.12)] backdrop-blur-xl sm:rounded-[2.25rem]">
+          <div className="border-b border-slate-200/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.94)_0%,_rgba(240,253,244,0.82)_48%,_rgba(239,246,255,0.82)_100%)] px-5 py-6 sm:px-8 sm:py-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.35rem] bg-[#7ca982] text-2xl font-semibold text-white shadow-[0_14px_34px_rgba(124,169,130,0.32)] sm:h-[4.5rem] sm:w-[4.5rem]">
+                {organisation.name.charAt(0)}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#5f7f66]">
+                  Thank you for supporting this community
+                </p>
+                <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                  Support {organisation.name}
+                </h1>
+                <p className="mt-3 max-w-xl text-base leading-7 text-slate-600">
+                  Choose where your gift should go, add an amount, and continue
+                  to a secure checkout.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-                Give securely
-              </p>
-              <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink">
-                {organisation.name}
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-black/60">
-                Simple QR-first giving for offerings, tithe, and special campaigns.
-              </p>
+
+            <div className="mt-6 grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-sm">
+                <span className="block font-medium text-slate-900">Secure payment</span>
+                <span className="mt-1 block">Processed by Stripe</span>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-sm">
+                <span className="block font-medium text-slate-900">Receipt optional</span>
+                <span className="mt-1 block">Add your email below</span>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-sm">
+                <span className="block font-medium text-slate-900">Simple giving</span>
+                <span className="mt-1 block">A few calm steps</span>
+              </div>
             </div>
           </div>
 
-          {funds.length === 0 ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              No active funds are available for this organisation yet.
-            </div>
-          ) : (
-            <GuestGivingForm
-              organisation={{
-                organisationName: organisation.name,
-                organisationSlug: organisation.slug,
-                currencyCode: organisation.currencyCode,
-                funds,
-              }}
-            />
-          )}
+          <div className="px-5 py-6 sm:px-8 sm:py-8">
+            {funds.length === 0 ? (
+              <div className="rounded-3xl border border-amber-200/80 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
+                Giving is not available for this organisation yet. Please check
+                back soon.
+              </div>
+            ) : (
+              <GuestGivingForm
+                organisation={{
+                  organisationName: organisation.name,
+                  organisationSlug: organisation.slug,
+                  currencyCode: organisation.currencyCode,
+                  funds,
+                }}
+              />
+            )}
+          </div>
         </section>
       </div>
     </main>

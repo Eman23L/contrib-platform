@@ -27,11 +27,11 @@ export function QuickAmounts({
         return (
           <button
             className={[
-              "rounded-2xl border px-4 py-4 text-base font-semibold transition",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
+              "min-h-14 rounded-[1.15rem] border px-4 py-4 text-base font-semibold transition duration-200",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7ca982] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
               isSelected
-                ? "border-accent bg-accent text-white"
-                : "border-black/10 bg-white text-ink hover:border-accent/40 hover:bg-accentSoft/30",
+                ? "border-[#7ca982] bg-[#7ca982] text-white shadow-[0_12px_28px_rgba(124,169,130,0.28)]"
+                : "border-slate-200/80 bg-white text-slate-900 shadow-sm hover:-translate-y-0.5 hover:border-[#b7d9bd] hover:bg-[#fbfefb]",
             ].join(" ")}
             key={amount}
             onClick={() => onSelectAmount(amount)}

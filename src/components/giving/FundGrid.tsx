@@ -13,7 +13,7 @@ export function FundGrid({
   onSelectFund,
 }: FundGridProps) {
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3 sm:gap-4">
       {funds.map((fund) => (
         <FundCard
           fund={fund}

@@ -9,6 +9,10 @@ type AmountPickerProps = {
   onCustomAmountChange: (value: string) => void;
 };
 
+function getCurrencyPrefix(currencyCode: string) {
+  return currencyCode === "GBP" ? "GBP" : currencyCode;
+}
+
 export function AmountPicker({
   currencyCode,
   quickAmounts,
@@ -18,7 +22,7 @@ export function AmountPicker({
   onCustomAmountChange,
 }: AmountPickerProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <QuickAmounts
         amounts={quickAmounts}
         currencyCode={currencyCode}
@@ -26,19 +30,19 @@ export function AmountPicker({
         selectedAmount={selectedAmount}
       />
       <label className="block">
-        <span className="mb-2 block text-sm font-medium text-black/70">
-          Custom amount
+        <span className="mb-2 block text-sm font-medium text-slate-700">
+          Or enter another amount
         </span>
-        <div className="flex items-center overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
-          <span className="px-4 text-lg font-semibold text-black/55">
-            {currencyCode === "GBP" ? "£" : currencyCode}
+        <div className="flex min-h-16 items-center overflow-hidden rounded-[1.25rem] border border-slate-200/80 bg-white shadow-sm transition focus-within:border-[#7ca982] focus-within:ring-4 focus-within:ring-[#7ca982]/15">
+          <span className="px-4 text-sm font-semibold text-slate-500 sm:text-base">
+            {getCurrencyPrefix(currencyCode)}
           </span>
           <input
-            className="w-full border-0 bg-transparent px-0 py-4 pr-4 text-lg text-ink outline-none placeholder:text-black/35"
+            className="w-full border-0 bg-transparent px-0 py-4 pr-4 text-lg text-slate-950 outline-none placeholder:text-slate-400"
             inputMode="decimal"
             min="1"
             onChange={(event) => onCustomAmountChange(event.target.value)}
-            placeholder="Enter amount"
+            placeholder="Amount"
             type="number"
             value={customAmount}
           />
