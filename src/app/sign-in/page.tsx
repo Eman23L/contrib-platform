@@ -1,10 +1,6 @@
 import { redirect } from "next/navigation";
 
-import {
-  AuthBrandPanel,
-  AuthCard,
-} from "@/components/auth/AuthExperiencePanels";
-import { AdminPasswordSignInForm } from "@/components/auth/AdminPasswordSignInForm";
+import { UnifiedSignInCard } from "@/components/auth/UnifiedSignInCard";
 import { buildAdminPath } from "@/lib/auth/requireAdminRole";
 import { getAuthenticatedServerUser } from "@/lib/supabase/server";
 
@@ -51,28 +47,12 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
   return (
     <main className="gf-page">
-      <div className="gf-shell max-w-6xl">
-        <section className="gf-frame grid gap-4 p-3 sm:p-4 lg:grid-cols-[1.08fr_0.92fr]">
-          <AuthBrandPanel compact />
-
-          <div className="flex items-center">
-            <AuthCard
-              helperText="Sign in to manage giving with clarity"
-              signedInBanner={
-                errorMessage ? (
-                  <div
-                    aria-live="polite"
-                    className="gf-notice mt-5 border-red-200 bg-red-50 text-red-700"
-                  >
-                    {errorMessage}
-                  </div>
-                ) : null
-              }
-            >
-              <AdminPasswordSignInForm nextPath={nextPath} />
-            </AuthCard>
-          </div>
-        </section>
+      <div className="gf-shell max-w-lg">
+        <UnifiedSignInCard
+          guestHref="/o/grace-community"
+          initialError={errorMessage}
+          nextPath={nextPath}
+        />
       </div>
     </main>
   );
