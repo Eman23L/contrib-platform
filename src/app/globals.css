@@ -24,3 +24,73 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+@layer components {
+  .gf-page {
+    @apply min-h-screen overflow-x-hidden bg-surface px-4 py-5 text-ink sm:px-6 sm:py-8;
+    background-image:
+      radial-gradient(circle at 18% 10%, rgba(187, 247, 208, 0.28), transparent 30%),
+      radial-gradient(circle at 86% 4%, rgba(219, 234, 254, 0.52), transparent 28%),
+      linear-gradient(180deg, #fbfaf5 0%, #f6f8fb 52%, #f8faf7 100%);
+  }
+
+  .gf-shell {
+    @apply mx-auto flex min-h-[calc(100vh-2.5rem)] w-full items-center justify-center;
+  }
+
+  .gf-frame {
+    @apply w-full min-w-0 overflow-hidden rounded-[2rem] border border-white/80 bg-white/80 shadow-[0_28px_80px_rgba(45,64,55,0.12)] backdrop-blur-xl sm:rounded-[2.25rem];
+  }
+
+  .gf-card {
+    @apply rounded-[1.5rem] border border-slate-200/80 bg-white/90 shadow-[0_20px_55px_rgba(15,23,42,0.07)] backdrop-blur;
+  }
+
+  .gf-card-soft {
+    @apply rounded-[1.5rem] border border-white/80 bg-white/70 shadow-sm backdrop-blur;
+  }
+
+  .gf-kicker {
+    @apply text-sm font-medium text-[#5f7f66];
+  }
+
+  .gf-title {
+    @apply text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl;
+  }
+
+  .gf-section-title {
+    @apply text-xl font-semibold tracking-tight text-slate-950;
+  }
+
+  .gf-copy {
+    @apply text-sm leading-6 text-slate-600 sm:text-base;
+  }
+
+  .gf-helper {
+    @apply text-sm leading-6 text-slate-600;
+  }
+
+  .gf-label {
+    @apply mb-2 block text-sm font-medium text-slate-700;
+  }
+
+  .gf-input {
+    @apply w-full rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 text-base text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-[#b7d9bd] focus:border-accent focus:ring-4 focus:ring-accent/15;
+  }
+
+  .gf-button-primary {
+    @apply inline-flex min-h-14 items-center justify-center rounded-[1.25rem] bg-accent px-5 py-4 text-base font-semibold text-white shadow-[0_18px_36px_rgba(111,159,119,0.26)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#5f8f67] hover:shadow-[0_22px_42px_rgba(111,159,119,0.32)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/25 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none disabled:hover:translate-y-0;
+  }
+
+  .gf-button-secondary {
+    @apply inline-flex min-h-12 items-center justify-center rounded-[1.1rem] border border-slate-200/80 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-[#b7d9bd] hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/15;
+  }
+
+  .gf-link {
+    @apply text-sm font-medium text-[#5f7f66] underline decoration-[#b7d9bd] underline-offset-4 transition hover:text-[#446b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/15;
+  }
+
+  .gf-notice {
+    @apply rounded-[1.25rem] border px-4 py-3 text-sm leading-6;
+  }
+}

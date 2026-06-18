@@ -30,10 +30,10 @@ export function AmountPicker({
         selectedAmount={selectedAmount}
       />
       <label className="block">
-        <span className="mb-2 block text-sm font-medium text-slate-700">
+        <span className="gf-label">
           Or enter another amount
         </span>
-        <div className="flex min-h-16 items-center overflow-hidden rounded-[1.25rem] border border-slate-200/80 bg-white shadow-sm transition focus-within:border-[#7ca982] focus-within:ring-4 focus-within:ring-[#7ca982]/15">
+        <div className="flex min-h-16 items-center overflow-hidden rounded-[1.25rem] border border-slate-200/80 bg-white shadow-sm transition focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/15">
           <span className="px-4 text-sm font-semibold text-slate-500 sm:text-base">
             {getCurrencyPrefix(currencyCode)}
           </span>

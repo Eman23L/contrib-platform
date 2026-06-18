@@ -18,14 +18,14 @@ export function AdminContributionFilters({
   filters,
 }: AdminContributionFiltersProps) {
   return (
-    <section className="rounded-[1.75rem] border border-black/10 bg-white/90 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
+    <section className="gf-card p-5 sm:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
+          <p className="gf-kicker">
             Filters
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
-            Narrow the contribution list
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Find the gifts you need
           </h2>
         </div>
       </div>
@@ -34,9 +34,9 @@ export function AdminContributionFilters({
         <input name="org" type="hidden" value={filters.organisationSlug} />
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-black/70">Organisation</span>
+          <span className="gf-label">Organisation</span>
           <input
-            className="w-full rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-4 text-base text-ink outline-none"
+            className="gf-input bg-slate-50"
             disabled
             type="text"
             value={filters.organisationName}
@@ -44,9 +44,9 @@ export function AdminContributionFilters({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-black/70">Fund</span>
+          <span className="gf-label">Fund</span>
           <select
-            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-base text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="gf-input"
             defaultValue={filters.selectedFundId}
             name="fund"
           >
@@ -60,9 +60,9 @@ export function AdminContributionFilters({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-black/70">Status</span>
+          <span className="gf-label">Status</span>
           <select
-            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-base text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="gf-input"
             defaultValue={filters.selectedStatus}
             name="status"
           >
@@ -75,9 +75,9 @@ export function AdminContributionFilters({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-black/70">Start date</span>
+          <span className="gf-label">Start date</span>
           <input
-            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-base text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="gf-input"
             defaultValue={filters.startDate}
             name="start"
             type="date"
@@ -85,9 +85,9 @@ export function AdminContributionFilters({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-black/70">End date</span>
+          <span className="gf-label">End date</span>
           <input
-            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-base text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="gf-input"
             defaultValue={filters.endDate}
             name="end"
             type="date"
@@ -96,13 +96,13 @@ export function AdminContributionFilters({
 
         <div className="md:col-span-2 xl:col-span-5 flex flex-col gap-3 sm:flex-row">
           <button
-            className="inline-flex items-center justify-center rounded-2xl bg-accent px-5 py-4 text-base font-semibold text-white shadow-lg shadow-accent/20 transition hover:bg-accent/90"
+            className="gf-button-primary"
             type="submit"
           >
             Apply filters
           </button>
           <a
-            className="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-5 py-4 text-base font-semibold text-ink transition hover:border-accent/30 hover:bg-accentSoft/20"
+            className="gf-button-secondary"
             href={`/admin/contributions?org=${filters.organisationSlug}`}
           >
             Clear filters

@@ -57,12 +57,12 @@ export function AdminPasswordSignInForm({
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <label className="block">
-        <span className="mb-2 block text-sm font-medium text-slate-700">
+        <span className="gf-label">
           Email address
         </span>
         <input
           autoComplete="email"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-base text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+          className="gf-input"
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.org"
           required
@@ -72,13 +72,13 @@ export function AdminPasswordSignInForm({
       </label>
 
       <label className="block">
-        <span className="mb-2 block text-sm font-medium text-slate-700">
+        <span className="gf-label">
           Password
         </span>
         <span className="relative block">
           <input
             autoComplete="current-password"
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 pr-20 text-base text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="gf-input pr-20"
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Enter your password"
             required
@@ -87,7 +87,7 @@ export function AdminPasswordSignInForm({
           />
           <button
             aria-label={isPasswordVisible ? "Hide password" : "Show password"}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-2 text-sm font-semibold text-[#5f7f66] transition hover:bg-accentSoft hover:text-[#446b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/15"
             onClick={() => setIsPasswordVisible((visible) => !visible)}
             type="button"
           >
@@ -99,23 +99,22 @@ export function AdminPasswordSignInForm({
       {errorMessage ? (
         <div
           aria-live="polite"
-          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="gf-notice border-red-200 bg-red-50 text-red-700"
         >
           {errorMessage}
         </div>
       ) : null}
 
       <button
-        className="w-full rounded-2xl bg-gradient-to-r from-blue-700 to-sky-500 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:from-slate-300 disabled:to-slate-300 disabled:text-white disabled:shadow-none disabled:hover:translate-y-0"
+        className="gf-button-primary w-full"
         disabled={isSubmitting}
         type="submit"
       >
-        {isSubmitting ? "Signing in..." : "Open workspace"}
+        {isSubmitting ? "Signing in..." : "Continue securely"}
       </button>
 
       <p className="text-center text-sm leading-6 text-slate-500">
-        Your session is protected and only authorised workspace members can
-        continue.
+        Use the email and password connected to your GetFlow account.
       </p>
     </form>
   );

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Contrib Platform",
-  description: "QR-first contributions PWA placeholder app",
+  title: "GetFlow",
+  description: "Simple, secure giving for modern communities.",
 };
 
 type RootLayoutProps = Readonly<{

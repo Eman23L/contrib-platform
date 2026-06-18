@@ -27,7 +27,7 @@ function getStatusClasses(status: string) {
     case "created":
       return "bg-slate-100 text-slate-700";
     default:
-      return "bg-black/8 text-black/65";
+      return "bg-slate-100 text-slate-700";
   }
 }
 
@@ -36,37 +36,37 @@ export function AdminContributionsTable({
   formatAmount,
 }: AdminContributionsTableProps) {
   return (
-    <section className="rounded-[1.75rem] border border-black/10 bg-white/90 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
+    <section className="gf-card p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-            Contributions
+          <p className="gf-kicker">
+            Gift records
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
-            Detailed payment activity
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Detailed activity
           </h2>
         </div>
-        <p className="text-sm text-black/55">{contributions.length} records</p>
+        <p className="text-sm text-slate-500">{contributions.length} records</p>
       </div>
 
       {contributions.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-black/10 bg-black/[0.02] px-4 py-6 text-sm text-black/60">
-          No contributions matched the current filters.
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+          No gifts matched the current filters.
         </div>
       ) : (
         <>
           <div className="mt-6 space-y-4 lg:hidden">
             {contributions.map((contribution) => (
               <article
-                className="rounded-2xl border border-black/8 bg-white px-4 py-4"
+                className="rounded-2xl border border-slate-200/80 bg-white px-4 py-4"
                 key={contribution.id}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-base font-semibold text-ink">
+                    <p className="text-base font-semibold text-slate-950">
                       {formatAmount(contribution.amountMinor, contribution.currencyCode)}
                     </p>
-                    <p className="mt-1 font-mono text-xs text-black/55">
+                    <p className="mt-1 font-mono text-xs text-slate-500">
                       {contribution.shortId}
                     </p>
                   </div>
@@ -77,14 +77,14 @@ export function AdminContributionsTable({
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-3 text-sm text-black/65">
+                <div className="mt-4 grid gap-3 text-sm text-slate-600">
                   <p>{formatDateTime(contribution.createdAt)}</p>
                   <p>{contribution.organisationName}</p>
                   <p>{contribution.fundName ?? "Unassigned fund"}</p>
                   <p>{contribution.guestEmail ?? "No email recorded"}</p>
                   <p>Provider: {contribution.paymentProvider}</p>
                   <p>
-                    Stripe session: {contribution.stripeCheckoutSessionId ?? "Not recorded"}
+                    Checkout session: {contribution.stripeCheckoutSessionId ?? "Not recorded"}
                   </p>
                   <p>Paid at: {formatDateTime(contribution.paidAt)}</p>
                 </div>
@@ -95,16 +95,16 @@ export function AdminContributionsTable({
           <div className="mt-6 hidden overflow-x-auto lg:block">
             <table className="min-w-full border-separate border-spacing-y-3">
               <thead>
-                <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
+                <tr className="text-left text-xs font-semibold text-slate-500">
                   <th className="pb-1 pr-4">Created</th>
-                  <th className="pb-1 pr-4">Contribution</th>
+                  <th className="pb-1 pr-4">Gift</th>
                   <th className="pb-1 pr-4">Organisation</th>
                   <th className="pb-1 pr-4">Fund</th>
                   <th className="pb-1 pr-4">Amount</th>
                   <th className="pb-1 pr-4">Status</th>
                   <th className="pb-1 pr-4">Email</th>
                   <th className="pb-1 pr-4">Provider</th>
-                  <th className="pb-1 pr-4">Stripe Session</th>
+                  <th className="pb-1 pr-4">Checkout Session</th>
                   <th className="pb-1">Paid At</th>
                 </tr>
               </thead>

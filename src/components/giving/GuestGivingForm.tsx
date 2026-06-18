@@ -131,11 +131,11 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
     <form className="space-y-7" onSubmit={handleSubmit}>
       <section className="space-y-4">
         <div>
-          <p className="text-sm font-medium text-[#5f7f66]">Step 1</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+          <p className="gf-kicker">Step 1</p>
+          <h2 className="gf-section-title mt-1">
             Choose where your gift should go
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="gf-helper mt-2">
             Pick the fund that best matches what you would like to support.
           </p>
         </div>
@@ -148,11 +148,11 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
 
       <section className="space-y-4">
         <div>
-          <p className="text-sm font-medium text-[#5f7f66]">Step 2</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+          <p className="gf-kicker">Step 2</p>
+          <h2 className="gf-section-title mt-1">
             Select an amount
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="gf-helper mt-2">
             Choose a quick amount or enter another amount that feels right.
           </p>
         </div>
@@ -174,21 +174,21 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
 
       <section className="space-y-4">
         <div>
-          <p className="text-sm font-medium text-[#5f7f66]">Step 3</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+          <p className="gf-kicker">Step 3</p>
+          <h2 className="gf-section-title mt-1">
             Send me a receipt
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="gf-helper mt-2">
             Add your email address if you would like a receipt for this gift.
           </p>
         </div>
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">
+          <span className="gf-label">
             Email address
           </span>
           <input
             autoComplete="email"
-            className="w-full rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 text-base text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#7ca982] focus:ring-4 focus:ring-[#7ca982]/15"
+            className="gf-input"
             onChange={(event) => setGuestEmail(event.target.value)}
             placeholder="name@example.com"
             type="email"
@@ -223,13 +223,13 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
       </section>
 
       {errorMessage ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+        <div className="gf-notice border-red-200 bg-red-50 text-red-700">
           {errorMessage}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-700">
+        <div className="gf-notice border-emerald-200 bg-emerald-50 text-emerald-700">
           <div>{successMessage}</div>
           {intentId ? <div className="mt-1 font-mono text-xs">{intentId}</div> : null}
         </div>

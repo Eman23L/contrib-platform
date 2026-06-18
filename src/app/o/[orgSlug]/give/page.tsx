@@ -19,24 +19,22 @@ export default async function GivePage({ params }: GivePageProps) {
   const funds = await listPublicFunds(organisation.id);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f8faf7] px-4 py-5 text-slate-800 sm:px-6 sm:py-8">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_18%_12%,_rgba(187,247,208,0.34),_transparent_30%),radial-gradient(circle_at_84%_4%,_rgba(219,234,254,0.58),_transparent_26%),linear-gradient(180deg,_#fbfaf5_0%,_#f5f7fb_55%,_#f8faf7_100%)]" />
-
-      <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-2xl items-center">
-        <section className="w-full min-w-0 overflow-hidden rounded-[2rem] border border-white/80 bg-white/80 shadow-[0_28px_80px_rgba(45,64,55,0.12)] backdrop-blur-xl sm:rounded-[2.25rem]">
+    <main className="gf-page">
+      <div className="gf-shell max-w-2xl">
+        <section className="gf-frame">
           <div className="border-b border-slate-200/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.94)_0%,_rgba(240,253,244,0.82)_48%,_rgba(239,246,255,0.82)_100%)] px-5 py-6 sm:px-8 sm:py-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.35rem] bg-[#7ca982] text-2xl font-semibold text-white shadow-[0_14px_34px_rgba(124,169,130,0.32)] sm:h-[4.5rem] sm:w-[4.5rem]">
                 {organisation.name.charAt(0)}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-[#5f7f66]">
+                <p className="gf-kicker">
                   Thank you for supporting this community
                 </p>
                 <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
                   Support {organisation.name}
                 </h1>
-                <p className="mt-3 max-w-xl text-base leading-7 text-slate-600">
+                <p className="gf-copy mt-3 max-w-xl">
                   Choose where your gift should go, add an amount, and continue
                   to a secure checkout.
                 </p>
@@ -46,7 +44,7 @@ export default async function GivePage({ params }: GivePageProps) {
             <div className="mt-6 grid gap-3 text-sm text-slate-600 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-sm">
                 <span className="block font-medium text-slate-900">Secure payment</span>
-                <span className="mt-1 block">Processed by Stripe</span>
+                <span className="mt-1 block">Processed securely</span>
               </div>
               <div className="rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-sm">
                 <span className="block font-medium text-slate-900">Receipt optional</span>

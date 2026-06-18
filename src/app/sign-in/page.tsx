@@ -26,13 +26,13 @@ function getSafeNextPath(next?: string) {
 function getErrorMessage(error?: string) {
   switch (error) {
     case "auth_callback_failed":
-      return "The sign-in request could not be completed. Try again.";
+      return "We could not complete sign-in. Please try again.";
     case "invalid_credentials":
       return "Invalid email or password.";
     case "missing_code":
       return "The sign-in link was incomplete.";
     case "unauthorized_role":
-      return "This account does not have an active admin role.";
+      return "This account does not have access to manage this organisation.";
     default:
       return null;
   }
@@ -50,19 +50,19 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const errorMessage = getErrorMessage(params.error);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(191,219,254,0.72),_transparent_34%),radial-gradient(circle_at_85%_18%,_rgba(219,234,254,0.9),_transparent_28%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_100%)] px-4 py-5 sm:px-6 sm:py-8">
-      <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] max-w-6xl items-center justify-center">
-        <section className="grid w-full gap-5 rounded-[2rem] border border-white/70 bg-white/45 p-3 shadow-[0_32px_100px_rgba(37,99,235,0.13)] backdrop-blur-2xl sm:p-4 lg:grid-cols-[1.08fr_0.92fr] lg:gap-4">
+    <main className="gf-page">
+      <div className="gf-shell max-w-6xl">
+        <section className="gf-frame grid gap-4 p-3 sm:p-4 lg:grid-cols-[1.08fr_0.92fr]">
           <AuthBrandPanel compact />
 
           <div className="flex items-center">
             <AuthCard
-              helperText="Access your workspace securely"
+              helperText="Sign in to manage giving with clarity"
               signedInBanner={
                 errorMessage ? (
                   <div
                     aria-live="polite"
-                    className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                    className="gf-notice mt-5 border-red-200 bg-red-50 text-red-700"
                   >
                     {errorMessage}
                   </div>

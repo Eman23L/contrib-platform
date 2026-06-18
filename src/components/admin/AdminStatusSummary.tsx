@@ -23,17 +23,17 @@ export function AdminStatusSummary({
   formatAmount,
 }: AdminStatusSummaryProps) {
   return (
-    <section className="rounded-[1.75rem] border border-black/10 bg-white/90 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
-      <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-        Status Summary
+    <section className="gf-card p-5 sm:p-6">
+      <p className="gf-kicker">
+        Status summary
       </p>
-      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
-        Contribution lifecycle snapshot
+      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+        Payment snapshot
       </h2>
 
       {statuses.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-black/10 bg-black/[0.02] px-4 py-6 text-sm text-black/60">
-          No contribution statuses are available yet.
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+          No payment statuses are available yet.
         </div>
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -42,7 +42,7 @@ export function AdminStatusSummary({
               className={`rounded-2xl border px-4 py-4 ${getStatusAccent(statusItem.status)}`}
               key={statusItem.status}
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.22em]">
+              <p className="text-sm font-semibold">
                 {statusItem.status}
               </p>
               <p className="mt-3 text-2xl font-semibold">{statusItem.contributionsCount}</p>
