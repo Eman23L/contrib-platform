@@ -16,6 +16,23 @@ type GuestGivingFormProps = {
 
 const QUICK_AMOUNTS = [10, 20, 50, 100];
 
+function getCheckoutErrorMessage(error?: string) {
+  if (!error) {
+    return "We could not start secure checkout. Please try again in a moment.";
+  }
+
+  if (
+    error.includes("Missing required environment variable") ||
+    error.includes("STRIPE_") ||
+    error.includes("SUPABASE_") ||
+    error.includes("NEXT_PUBLIC_")
+  ) {
+    return "Secure checkout is not available right now. Please try again later.";
+  }
+
+  return error;
+}
+
 export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
   const defaultFundId =
     organisation.funds.find((fund) => fund.isDefault)?.id ??
@@ -93,7 +110,9 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
 
       if (!response.ok || !data.ok) {
         setErrorMessage(
-          data.ok ? "Could not create contribution intent." : data.error,
+          data.ok
+            ? "We could not start secure checkout. Please try again in a moment."
+            : getCheckoutErrorMessage(data.error),
         );
         return;
       }
