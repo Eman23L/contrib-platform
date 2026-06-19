@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
 import { createServerSupabaseAuthClient } from "@/lib/supabase/server";
 
 type MagicLinkRequest = {
@@ -8,12 +9,12 @@ type MagicLinkRequest = {
   next?: string;
 };
 
-function getSafeNextPath(next?: string) {
-  if (!next || !next.startsWith("/")) {
-    return "/admin";
-  }
+const DEFAULT_PUBLIC_PATH = "/o/grace-community/give";
 
-  return next;
+function getSafeNextPath(next?: string) {
+  const safePath = getSafeInternalPath(next);
+
+  return safePath === "/" ? DEFAULT_PUBLIC_PATH : safePath;
 }
 
 export async function POST(request: Request) {
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
   const nextPath = getSafeNextPath(payload.next);
   const cookieStore = await cookies();
   const supabase = createServerSupabaseAuthClient(cookieStore);
-  const redirectTo = new URL("/auth/callback", request.url);
+  const redirectTo = buildRequestUrl(request, "/auth/callback");
 
   redirectTo.searchParams.set("next", nextPath);
 

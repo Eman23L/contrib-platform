@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+import { getSafeInternalPath } from "@/lib/auth/urls";
 import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
 import {
   clearAdminSessionCookies,
@@ -16,11 +17,7 @@ type AdminPasswordSignInRequest = {
 };
 
 function getSafeNextPath(next?: string) {
-  if (!next || !next.startsWith("/")) {
-    return "/admin";
-  }
-
-  return next;
+  return getSafeInternalPath(next) === "/" ? "/admin" : getSafeInternalPath(next);
 }
 
 export async function POST(request: Request) {

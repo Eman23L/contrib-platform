@@ -59,6 +59,8 @@ function UnauthorizedState({
   requestedOrgSlug: string | null;
   userEmail: string | null;
 }) {
+  const givingPath = `/o/${requestedOrgSlug ?? "grace-community"}/give`;
+
   return (
     <main className="gf-page">
       <div className="gf-shell max-w-3xl">
@@ -67,19 +69,27 @@ function UnauthorizedState({
             Access needed
           </p>
           <h1 className="gf-title mt-3">
-            You do not have access to this contribution view
+            This dashboard is only available to organisation admins.
           </h1>
           <p className="gf-copy mt-4">
-            Signed in as
-            <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs">
-              {userEmail ?? "unknown user"}
-            </code>
-            . Access to
-            <code className="mx-1 rounded bg-black/5 px-1.5 py-0.5 text-xs">
-              {requestedOrgSlug ?? "this organisation"}
-            </code>
-            requires an active admin, owner, or finance membership.
+            You are signed in, but this account does not have admin access.
           </p>
+          {userEmail ? (
+            <p className="mt-3 text-sm text-slate-500">
+              Signed in as {userEmail}.
+            </p>
+          ) : null}
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Link className="gf-button-primary" href={givingPath}>
+              Go to giving page
+            </Link>
+            <form action="/auth/sign-out" method="post">
+              <button className="gf-button-secondary w-full sm:w-auto" type="submit">
+                Sign in with a different account
+              </button>
+            </form>
+          </div>
 
           {availableOrgs.length > 0 ? (
             <div className="mt-6 space-y-3">
@@ -88,17 +98,14 @@ function UnauthorizedState({
                   className="gf-card-soft flex items-center justify-between gap-4 px-4 py-4 transition hover:border-[#b7d9bd] hover:bg-accentSoft"
                   href={`/admin/contributions?org=${organisation.slug}`}
                   key={organisation.slug}
-                >
-                  <span>
-                    <span className="block text-base font-semibold text-slate-950">
-                      {organisation.name}
+                  >
+                    <span>
+                      <span className="block text-base font-semibold text-slate-950">
+                        {organisation.name}
+                      </span>
                     </span>
-                    <span className="mt-1 block text-sm text-slate-600">
-                      Role: {organisation.role}
-                    </span>
-                  </span>
-                  <span className="text-sm font-medium text-[#5f7f66]">Open contributions</span>
-                </Link>
+                    <span className="text-sm font-medium text-[#5f7f66]">Open contributions</span>
+                  </Link>
               ))}
             </div>
           ) : null}

@@ -21,8 +21,9 @@ export default async function OrganisationLandingPage({
     <main className="gf-page">
       <div className="gf-shell max-w-lg">
         <UnifiedSignInCard
+          adminNextPath={`/admin?org=${organisation.slug}`}
           guestHref={`/o/${organisation.slug}/give`}
-          nextPath={`/o/${organisation.slug}`}
+          publicNextPath={`/o/${organisation.slug}/give`}
         />
       </div>
     </main>

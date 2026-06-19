@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 type UnifiedSignInCardProps = {
+  adminNextPath: string;
   guestHref: string;
   initialError?: string | null;
-  nextPath: string;
+  publicNextPath: string;
 };
 
 type StartSignInResponse =
@@ -43,9 +44,10 @@ function getFriendlyError(error?: string) {
 }
 
 export function UnifiedSignInCard({
+  adminNextPath,
   guestHref,
   initialError = null,
-  nextPath,
+  publicNextPath,
 }: UnifiedSignInCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,7 +60,7 @@ export function UnifiedSignInCard({
     const response = await fetch("/auth/start", {
       body: JSON.stringify({
         email,
-        next: nextPath,
+        next: publicNextPath,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -85,7 +87,7 @@ export function UnifiedSignInCard({
     const response = await fetch("/auth/sign-in", {
       body: JSON.stringify({
         email,
-        next: nextPath,
+        next: adminNextPath,
         password,
       }),
       headers: {
@@ -101,7 +103,7 @@ export function UnifiedSignInCard({
       return;
     }
 
-    window.location.assign(payload.next ?? nextPath);
+    window.location.assign(payload.next ?? adminNextPath);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

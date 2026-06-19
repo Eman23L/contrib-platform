@@ -3,6 +3,7 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 
 import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
+import { getSafeInternalPath } from "@/lib/auth/urls";
 import {
   createServerSupabaseUserClient,
   getAuthenticatedServerUser,
@@ -36,10 +37,6 @@ type RequireAdminRoleResult =
       requestedOrgSlug: string | null;
       user: User;
     };
-
-function getSafeInternalPath(path: string) {
-  return path.startsWith("/") ? path : "/";
-}
 
 export function buildAdminPath(orgSlug?: string) {
   if (!orgSlug) {
