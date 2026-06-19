@@ -1,12 +1,5 @@
-import { redirect } from "next/navigation";
-
 import { UnifiedSignInCard } from "@/components/auth/UnifiedSignInCard";
 import { buildAdminPath } from "@/lib/auth/requireAdminRole";
-import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
-import {
-  createServerSupabaseUserClient,
-  getAuthenticatedServerUser,
-} from "@/lib/supabase/server";
 
 type SignInPageProps = {
   searchParams: Promise<{
@@ -52,17 +45,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
   const publicNextPath = getPublicNextPath(nextPath);
-  const authenticatedUser = await getAuthenticatedServerUser();
-
-  if (authenticatedUser) {
-    const supabase = createServerSupabaseUserClient(authenticatedUser.accessToken);
-    const memberships = await listAdminMembershipsForUser(
-      supabase,
-      authenticatedUser.user.id,
-    );
-
-    redirect(memberships.length > 0 ? nextPath : publicNextPath);
-  }
 
   const errorMessage = getErrorMessage(params.error);
 
