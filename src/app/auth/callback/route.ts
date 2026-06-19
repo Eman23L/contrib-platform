@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import type { EmailOtpType, Session } from "@supabase/supabase-js";
 
 import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
 import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
@@ -12,6 +13,14 @@ import {
 } from "@/lib/supabase/server";
 
 const DEFAULT_PUBLIC_PATH = "/o/grace-community/give";
+const EMAIL_OTP_TYPES = new Set([
+  "email",
+  "email_change",
+  "invite",
+  "magiclink",
+  "recovery",
+  "signup",
+]);
 
 function getSafeNextPath(next?: string | null) {
   const safePath = getSafeInternalPath(next);
@@ -40,20 +49,68 @@ function getPublicFallbackPath(path: string) {
   return DEFAULT_PUBLIC_PATH;
 }
 
+function getEmailOtpType(type?: string | null): EmailOtpType {
+  if (type && EMAIL_OTP_TYPES.has(type)) {
+    return type as EmailOtpType;
+  }
+
+  return "magiclink";
+}
+
+async function exchangeCallbackForSession(
+  supabase: ReturnType<typeof createServerSupabaseAuthClient>,
+  url: URL,
+): Promise<{ error: unknown; session: Session | null }> {
+  const code = url.searchParams.get("code");
+
+  if (code) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    return {
+      error,
+      session: data.session ?? null,
+    };
+  }
+
+  const tokenHash = url.searchParams.get("token_hash");
+
+  if (tokenHash) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: getEmailOtpType(url.searchParams.get("type")),
+    });
+
+    return {
+      error,
+      session: data.session ?? null,
+    };
+  }
+
+  return {
+    error: new Error("Missing auth callback credentials."),
+    session: null,
+  };
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const code = url.searchParams.get("code");
   const nextPath = getSafeNextPath(url.searchParams.get("next"));
   const cookieStore = await cookies();
+  const callbackError = url.searchParams.get("error");
 
-  if (!code) {
-    return NextResponse.redirect(buildRequestUrl(request, "/sign-in?error=missing_code"));
+  if (callbackError) {
+    return NextResponse.redirect(
+      buildRequestUrl(
+        request,
+        `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
+      ),
+    );
   }
 
   const supabase = createServerSupabaseAuthClient(cookieStore);
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error, session } = await exchangeCallbackForSession(supabase, url);
 
-  if (error || !data.session) {
+  if (error || !session) {
     clearAdminSessionCookies(cookieStore);
 
     return NextResponse.redirect(
@@ -64,17 +121,17 @@ export async function GET(request: Request) {
     );
   }
 
-  setAdminSessionCookies(cookieStore, data.session);
+  setAdminSessionCookies(cookieStore, session);
   clearAuthFlowCookies(cookieStore);
 
   if (isAdminPath(nextPath)) {
-    const userSupabase = createServerSupabaseUserClient(data.session.access_token);
+    const userSupabase = createServerSupabaseUserClient(session.access_token);
     let memberships: Awaited<ReturnType<typeof listAdminMembershipsForUser>> = [];
 
     try {
       memberships = await listAdminMembershipsForUser(
         userSupabase,
-        data.session.user.id,
+        session.user.id,
       );
     } catch {
       return NextResponse.redirect(
