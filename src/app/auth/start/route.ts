@@ -55,11 +55,15 @@ export async function POST(request: Request) {
       );
     }
 
-    if (await hasAdminSignInAccess(email)) {
-      return NextResponse.json({
-        mode: "password",
-        ok: true,
-      });
+    try {
+      if (await hasAdminSignInAccess(email)) {
+        return NextResponse.json({
+          mode: "password",
+          ok: true,
+        });
+      }
+    } catch {
+      // Fall through to magic-link sign-in if the admin lookup cannot be completed.
     }
 
     const { error } = await sendMagicLink(request, email, nextPath);
