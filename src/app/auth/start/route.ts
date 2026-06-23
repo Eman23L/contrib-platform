@@ -11,7 +11,7 @@ type StartSignInRequest = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const DEFAULT_PUBLIC_PATH = "/o/grace-community/give";
+const DEFAULT_PUBLIC_PATH = "/account";
 
 function getSafeNextPath(next?: string) {
   const safePath = getSafeInternalPath(next);

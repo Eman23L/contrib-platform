@@ -17,7 +17,13 @@ type AdminPasswordSignInRequest = {
 };
 
 function getSafeNextPath(next?: string) {
-  return getSafeInternalPath(next) === "/" ? "/admin" : getSafeInternalPath(next);
+  const safePath = getSafeInternalPath(next);
+
+  if (safePath === "/admin" || safePath.startsWith("/admin?")) {
+    return safePath;
+  }
+
+  return "/admin";
 }
 
 export async function POST(request: Request) {

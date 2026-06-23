@@ -13,18 +13,14 @@ function getSafeNextPath(next?: string) {
     return buildAdminPath();
   }
 
-  return next;
-}
-
-const DEFAULT_PUBLIC_PATH = "/o/grace-community/give";
-
-function getPublicNextPath(nextPath: string) {
-  if (nextPath.startsWith("/o/")) {
-    return nextPath;
+  if (next === "/admin" || next.startsWith("/admin?")) {
+    return next;
   }
 
-  return DEFAULT_PUBLIC_PATH;
+  return buildAdminPath();
 }
+
+const DEFAULT_PUBLIC_PATH = "/account";
 
 function getErrorMessage(error?: string) {
   switch (error) {
@@ -44,7 +40,7 @@ function getErrorMessage(error?: string) {
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
-  const publicNextPath = getPublicNextPath(nextPath);
+  const publicNextPath = DEFAULT_PUBLIC_PATH;
 
   const errorMessage = getErrorMessage(params.error);
 
@@ -53,7 +49,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       <div className="gf-shell max-w-lg">
         <UnifiedSignInCard
           adminNextPath={nextPath}
-          guestHref={publicNextPath}
+          guestHref="/o/grace-community/give"
           initialError={errorMessage}
           publicNextPath={publicNextPath}
         />

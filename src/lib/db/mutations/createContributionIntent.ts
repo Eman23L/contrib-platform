@@ -8,6 +8,7 @@ type CreateContributionIntentInput = {
   amountMinor: number;
   currencyCode: string;
   guestEmail?: string;
+  userId?: string;
 };
 
 type UpdateContributionIntentCheckoutInput = {
@@ -97,6 +98,7 @@ export async function createContributionIntent(
     .insert({
       organisation_id: input.organisationId,
       fund_id: input.fundId,
+      user_id: input.userId ?? null,
       amount_minor: input.amountMinor,
       currency_code: input.currencyCode,
       guest_email: input.guestEmail ?? null,

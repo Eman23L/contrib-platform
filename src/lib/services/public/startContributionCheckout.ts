@@ -5,7 +5,10 @@ import {
 import { getActiveFundForOrganisation } from "@/lib/db/queries/funds";
 import { getOrganisationBySlug } from "@/lib/db/queries/organisations";
 import { getStripeServerClient } from "@/lib/stripe/server";
-import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseServiceClient,
+  getAuthenticatedServerUser,
+} from "@/lib/supabase/server";
 import { validateContributionIntentPayload } from "@/lib/validators/contributionIntent";
 import type { CreateContributionIntentRequest } from "@/types/api";
 
@@ -40,12 +43,15 @@ export async function startContributionCheckout(
     throw new Error("Stripe Checkout is currently configured only for GBP.");
   }
 
+  const authenticatedUser = await getAuthenticatedServerUser();
+
   const intent = await createContributionIntent(supabase, {
     organisationId: organisation.id,
     fundId: fund.id,
     amountMinor: validated.amountMinor,
     currencyCode: organisation.currencyCode,
     guestEmail: validated.guestEmail,
+    userId: authenticatedUser?.user.id,
   });
 
   const session = await stripe.checkout.sessions.create({

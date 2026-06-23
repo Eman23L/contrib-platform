@@ -9,7 +9,7 @@ type MagicLinkRequest = {
   next?: string;
 };
 
-const DEFAULT_PUBLIC_PATH = "/o/grace-community/give";
+const DEFAULT_PUBLIC_PATH = "/account";
 
 function getSafeNextPath(next?: string) {
   const safePath = getSafeInternalPath(next);

@@ -23,7 +23,7 @@ export default async function OrganisationLandingPage({
         <UnifiedSignInCard
           adminNextPath={`/admin?org=${organisation.slug}`}
           guestHref={`/o/${organisation.slug}/give`}
-          publicNextPath={`/o/${organisation.slug}/give`}
+          publicNextPath="/account"
         />
       </div>
     </main>

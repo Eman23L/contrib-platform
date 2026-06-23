@@ -12,7 +12,7 @@ import {
   setAdminSessionCookies,
 } from "@/lib/supabase/server";
 
-const DEFAULT_PUBLIC_PATH = "/o/grace-community/give";
+const DEFAULT_PUBLIC_PATH = "/account";
 const EMAIL_OTP_TYPES = new Set([
   "email",
   "email_change",
@@ -100,10 +100,10 @@ export async function GET(request: Request) {
 
   if (callbackError) {
     return NextResponse.redirect(
-      buildRequestUrl(
-        request,
-        `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
-      ),
+        buildRequestUrl(
+          request,
+          `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
+        ),
     );
   }
 
@@ -114,10 +114,10 @@ export async function GET(request: Request) {
     clearAdminSessionCookies(cookieStore);
 
     return NextResponse.redirect(
-      buildRequestUrl(
-        request,
-        `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
-      ),
+        buildRequestUrl(
+          request,
+          `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
+        ),
     );
   }
 

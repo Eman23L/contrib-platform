@@ -60,6 +60,7 @@ function UnauthorizedState({
   userEmail: string | null;
 }) {
   const givingPath = `/o/${requestedOrgSlug ?? "grace-community"}/give`;
+  const accountPath = "/account";
 
   return (
     <main className="gf-page">
@@ -80,8 +81,11 @@ function UnauthorizedState({
             </p>
           ) : null}
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link className="gf-button-primary" href={givingPath}>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link className="gf-button-primary" href={accountPath}>
+              Go to my account
+            </Link>
+            <Link className="gf-button-secondary" href={givingPath}>
               Go to giving page
             </Link>
             <form action="/auth/sign-out" method="post">
