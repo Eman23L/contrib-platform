@@ -16,7 +16,8 @@ type StartSignInResponse =
       ok: false;
     }
   | {
-      mode: "magic_link_sent" | "password";
+      mode: "magic_link_sent" | "password" | "redirect";
+      next?: string;
       ok: true;
     };
 
@@ -77,6 +78,11 @@ export function UnifiedSignInCard({
 
     if (payload.mode === "password") {
       setShowPasswordField(true);
+      return;
+    }
+
+    if (payload.mode === "redirect") {
+      window.location.assign(payload.next ?? publicNextPath);
       return;
     }
 

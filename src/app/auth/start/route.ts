@@ -3,7 +3,12 @@ import { cookies } from "next/headers";
 
 import { hasAdminSignInAccess } from "@/lib/auth/adminAccess";
 import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
+import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
 import { createServerSupabaseAuthClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseUserClient,
+  getAuthenticatedServerUser,
+} from "@/lib/supabase/server";
 
 type StartSignInRequest = {
   email?: string;
@@ -53,6 +58,25 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
+    }
+
+    const authenticatedUser = await getAuthenticatedServerUser();
+
+    if (
+      authenticatedUser?.user.email &&
+      normalizeEmail(authenticatedUser.user.email) === email
+    ) {
+      const userSupabase = createServerSupabaseUserClient(authenticatedUser.accessToken);
+      const memberships = await listAdminMembershipsForUser(
+        userSupabase,
+        authenticatedUser.user.id,
+      );
+
+      return NextResponse.json({
+        mode: "redirect",
+        next: memberships.length > 0 ? nextPath : DEFAULT_PUBLIC_PATH,
+        ok: true,
+      });
     }
 
     try {
