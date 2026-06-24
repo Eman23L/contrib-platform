@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AdminDashboardChrome } from "@/components/admin/AdminDashboardChrome";
 import { AdminContributionFilters } from "@/components/admin/AdminContributionFilters";
 import { AdminContributionsTable } from "@/components/admin/AdminContributionsTable";
 import { AdminContributionSummary } from "@/components/admin/AdminContributionSummary";
@@ -179,41 +180,21 @@ export default async function AdminContributionsPage({
   }
 
   return (
-    <main className="gf-page">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="gf-card p-6 sm:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="gf-kicker">
-                Giving records
-              </p>
-              <h1 className="gf-title mt-3">
-                {data.organisationName}
-              </h1>
-              <p className="gf-copy mt-3 max-w-3xl">
-                Review gifts, payment status, and receipt details for this
-                organisation.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                className="gf-button-secondary"
-                href={`/admin?org=${data.organisationSlug}`}
-              >
-                Back to dashboard
-              </Link>
-              <form action="/auth/sign-out" method="post">
-                <button
-                  className="gf-button-secondary w-full sm:w-auto"
-                  type="submit"
-                >
-                  Sign out
-                </button>
-              </form>
-            </div>
-          </div>
-        </section>
-
+    <AdminDashboardChrome
+      activeSection="giving"
+      organisationName={data.organisationName}
+      organisationSlug={data.organisationSlug}
+      userEmail={access.value.user.email ?? null}
+    >
+      <div className="space-y-5 p-5 xl:p-7">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+            Giving
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Review gifts, payment status, and receipt details for this organisation.
+          </p>
+        </div>
         <AdminContributionFilters filters={data.filters} />
         <AdminContributionSummary
           formatAmount={(amountMinor) => formatAmount(amountMinor, "GBP")}
@@ -224,6 +205,6 @@ export default async function AdminContributionsPage({
           formatAmount={formatAmount}
         />
       </div>
-    </main>
+    </AdminDashboardChrome>
   );
 }

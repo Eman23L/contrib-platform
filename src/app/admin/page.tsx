@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
 
+import { AdminDashboardChrome } from "@/components/admin/AdminDashboardChrome";
 import { requireAdminRole } from "@/lib/auth/requireAdminRole";
 import { createServerSupabaseUserClient } from "@/lib/supabase/server";
 import { getAdminDashboard } from "@/lib/services/admin/getAdminDashboard";
@@ -12,8 +13,17 @@ import type {
 } from "@/types/api";
 
 type AdminPageProps = {
-  searchParams: Promise<{ org?: string }>;
+  searchParams: Promise<{ org?: string; section?: string }>;
 };
+
+type AdminSection =
+  | "campaigns"
+  | "funds"
+  | "overview"
+  | "reports"
+  | "settings"
+  | "supporters"
+  | "team";
 
 function formatGbp(amountMinor: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -64,6 +74,40 @@ function percentOf(value: number, total: number) {
   }
 
   return Math.round((value / total) * 100);
+}
+
+function getAdminSection(section?: string): AdminSection {
+  if (
+    section === "campaigns" ||
+    section === "funds" ||
+    section === "reports" ||
+    section === "settings" ||
+    section === "supporters" ||
+    section === "team"
+  ) {
+    return section;
+  }
+
+  return "overview";
+}
+
+function getSectionTitle(section: AdminSection) {
+  switch (section) {
+    case "campaigns":
+      return "Campaigns";
+    case "funds":
+      return "Funds";
+    case "reports":
+      return "Reports";
+    case "settings":
+      return "Settings";
+    case "supporters":
+      return "Supporters";
+    case "team":
+      return "Team";
+    default:
+      return "Overview";
+  }
 }
 
 function Icon({
@@ -413,98 +457,133 @@ function RecentGivingTable({
   );
 }
 
+function SectionContent({
+  activeSection,
+  activeSupporters,
+  dashboard,
+  recurringEstimate,
+}: {
+  activeSection: AdminSection;
+  activeSupporters: number;
+  dashboard: AdminDashboardData;
+  recurringEstimate: number;
+}) {
+  const title = getSectionTitle(activeSection);
+
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+          {title}
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          {activeSection === "funds"
+            ? "Monitor fund totals and completed giving."
+            : activeSection === "supporters"
+              ? "See giving activity linked to supporters."
+              : activeSection === "reports"
+                ? "Review giving performance and payment status."
+                : `Manage ${title.toLowerCase()} for ${dashboard.organisationName}.`}
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <DashboardStatCard
+          accent="bg-emerald-50 text-emerald-600"
+          icon="wallet"
+          label="Total Raised"
+          trend="Up 21.4% vs previous period"
+          value={formatGbp(dashboard.summary.totalContributedAmountMinor)}
+        />
+        <DashboardStatCard
+          accent="bg-blue-50 text-blue-600"
+          icon="gift"
+          label="Total Gifts"
+          trend="Up 15.7% vs previous period"
+          value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-violet-50 text-violet-600"
+          icon="members"
+          label="Active Supporters"
+          trend="Up 12.1% vs previous period"
+          value={activeSupporters.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-emerald-50 text-emerald-600"
+          icon="refresh"
+          label="Recurring Gifts"
+          trend="Up 18.3% vs previous period"
+          value={formatGbp(recurringEstimate)}
+        />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+        {activeSection === "funds" ? (
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <h2 className="text-base font-semibold text-slate-950">
+              Fund Breakdown
+            </h2>
+            <div className="mt-5">
+              <FundDonut funds={dashboard.fundBreakdown} />
+            </div>
+          </section>
+        ) : (
+          <RecentGivingTable
+            contributions={dashboard.recentContributions}
+            organisationSlug={dashboard.organisationSlug}
+          />
+        )}
+
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Payment Status</h2>
+          <div className="mt-5 space-y-3">
+            {dashboard.statusSummary.length > 0 ? dashboard.statusSummary.map((status) => (
+              <div
+                className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"
+                key={status.status}
+              >
+                <span className="font-semibold text-slate-700">
+                  {getStatusLabel(status.status)}
+                </span>
+                <span className="text-slate-500">
+                  {status.contributionsCount} gifts - {formatGbp(status.totalAmountMinor)}
+                </span>
+              </div>
+            )) : (
+              <p className="text-sm text-slate-500">No payment activity yet.</p>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function AdminDashboardShell({
+  activeSection,
   dashboard,
   userEmail,
 }: {
+  activeSection: AdminSection;
   dashboard: AdminDashboardData;
   userEmail: string | null;
 }) {
   const succeededCount = dashboard.statusSummary.find((item) => item.status === "succeeded")?.contributionsCount ?? 0;
   const recurringEstimate = Math.round(dashboard.summary.totalSucceededAmountMinor * 0.37);
   const activeSupporters = Math.max(succeededCount, dashboard.recentContributions.filter((item) => item.guestEmail).length);
-  const firstName = userEmail?.split("@")[0] ?? "Admin";
   const orgParam = `?org=${dashboard.organisationSlug}`;
   const activityItems = dashboard.recentContributions.slice(0, 5);
 
   return (
-    <main className="min-h-screen bg-[#f7f9fc] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
-      <div className="mx-auto min-h-[calc(100vh-2.5rem)] max-w-[1440px] overflow-hidden rounded-[2px] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.12)]">
-        <div className="grid min-h-[calc(100vh-2.5rem)] lg:grid-cols-[240px_1fr]">
-          <aside className="hidden border-r border-slate-200 bg-white lg:flex lg:flex-col">
-            <div className="flex h-20 items-center gap-3 px-6">
-              <span className="h-4 w-4 rounded-full bg-gradient-to-br from-blue-500 to-emerald-400" />
-              <span className="text-xl font-semibold tracking-tight text-slate-900">GetFlow</span>
-            </div>
-            <nav className="flex-1 space-y-2 px-4 py-4">
-              {[
-                ["Overview", "home", `/admin${orgParam}`, true],
-                ["Giving", "gift", `/admin/contributions${orgParam}`, false],
-                ["Supporters", "support", `/admin/contributions${orgParam}`, false],
-                ["Funds", "wallet", `/admin/contributions${orgParam}`, false],
-                ["Campaigns", "campaign", `/admin${orgParam}`, false],
-                ["Reports", "chart", `/admin/contributions${orgParam}`, false],
-                ["Team", "team", `/admin${orgParam}`, false],
-                ["Settings", "settings", `/account`, false],
-              ].map(([label, icon, href, active]) => (
-                <Link
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${active ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
-                  href={href as string}
-                  key={label as string}
-                >
-                  <Icon className="h-5 w-5" name={icon as Parameters<typeof Icon>[0]["name"]} />
-                  {label}
-                </Link>
-              ))}
-            </nav>
-            <div className="p-5">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-950">Need help?</p>
-                <p className="mt-2 text-xs leading-5 text-slate-500">Visit our help center for guides and support.</p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-xs font-semibold text-slate-700 shadow-sm" href="/account">
-                  View Help Center
-                  <Icon className="h-3.5 w-3.5" name="chevron" />
-                </Link>
-              </div>
-            </div>
-          </aside>
-
-          <div className="min-w-0 bg-[#f8fafc]">
-            <header className="flex min-h-20 flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between xl:px-7">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                  <Icon className="h-5 w-5" name="home" />
-                </span>
-                <button className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm" type="button">
-                  <span className="truncate">{dashboard.organisationName}</span>
-                  <Icon className="h-4 w-4 text-slate-400" name="chevron" />
-                </button>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm" type="button">
-                  <Icon className="h-4 w-4 text-slate-500" name="calendar" />
-                  Jun 1 - Jun 24, 2026
-                </button>
-                <div className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm sm:w-64">
-                  <Icon className="h-4 w-4" name="search" />
-                  <span className="truncate">Search anything...</span>
-                </div>
-                <button className="hidden h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 xl:inline-flex" type="button">
-                  <Icon className="h-5 w-5" name="bell" />
-                </button>
-                <form action="/auth/sign-out" method="post">
-                  <button className="flex items-center gap-3 rounded-full px-2 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100" type="submit">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-rose-100 text-xs font-bold text-slate-700">
-                      {firstName.slice(0, 1).toUpperCase()}
-                    </span>
-                    <span>{firstName}</span>
-                    <Icon className="h-4 w-4 text-slate-400" name="chevron" />
-                  </button>
-                </form>
-              </div>
-            </header>
-
-            <div className="grid gap-5 p-5 xl:grid-cols-[1fr_290px] xl:p-7">
+    <AdminDashboardChrome
+      activeSection={activeSection}
+      organisationName={dashboard.organisationName}
+      organisationSlug={dashboard.organisationSlug}
+      userEmail={userEmail}
+    >
+      {activeSection === "overview" ? (
+        <div className="grid gap-5 p-5 xl:grid-cols-[1fr_290px] xl:p-7">
               <section className="min-w-0 space-y-5">
                 <div>
                   <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -520,28 +599,28 @@ function AdminDashboardShell({
                     accent="bg-emerald-50 text-emerald-600"
                     icon="wallet"
                     label="Total Raised"
-                    trend="↑ 21.4% vs previous period"
+                    trend="Up 21.4% vs previous period"
                     value={formatGbp(dashboard.summary.totalContributedAmountMinor)}
                   />
                   <DashboardStatCard
                     accent="bg-blue-50 text-blue-600"
                     icon="gift"
                     label="Total Gifts"
-                    trend="↑ 15.7% vs previous period"
+                    trend="Up 15.7% vs previous period"
                     value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
                   />
                   <DashboardStatCard
                     accent="bg-violet-50 text-violet-600"
                     icon="members"
                     label="Active Supporters"
-                    trend="↑ 12.1% vs previous period"
+                    trend="Up 12.1% vs previous period"
                     value={activeSupporters.toLocaleString("en-GB")}
                   />
                   <DashboardStatCard
                     accent="bg-emerald-50 text-emerald-600"
                     icon="refresh"
                     label="Recurring Gifts"
-                    trend="↑ 18.3% vs previous period"
+                    trend="Up 18.3% vs previous period"
                     value={formatGbp(recurringEstimate)}
                   />
                 </div>
@@ -647,11 +726,16 @@ function AdminDashboardShell({
                   </div>
                 </section>
               </aside>
-            </div>
-          </div>
-        </div>
       </div>
-    </main>
+      ) : (
+        <SectionContent
+          activeSection={activeSection}
+          activeSupporters={activeSupporters}
+          dashboard={dashboard}
+          recurringEstimate={recurringEstimate}
+        />
+      )}
+    </AdminDashboardChrome>
   );
 }
 
@@ -796,7 +880,8 @@ function UnauthorizedState({
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { org } = await searchParams;
+  const { org, section } = await searchParams;
+  const activeSection = getAdminSection(section);
   const access = await requireAdminRole(org);
 
   if (access.kind === "unauthenticated") {
@@ -853,6 +938,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   return (
     <AdminDashboardShell
+      activeSection={activeSection}
       dashboard={dashboard}
       userEmail={access.value.user.email ?? null}
     />
