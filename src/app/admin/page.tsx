@@ -76,6 +76,10 @@ function percentOf(value: number, total: number) {
   return Math.round((value / total) * 100);
 }
 
+function getSupporterDisplayName(contribution: AdminRecentContribution) {
+  return contribution.donorName || contribution.guestEmail || `Gift ${contribution.shortId}`;
+}
+
 function getAdminSection(section?: string): AdminSection {
   if (
     section === "campaigns" ||
@@ -427,10 +431,10 @@ function RecentGivingTable({
                 <td className="py-3 pr-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-blue-100 text-xs font-bold text-slate-700">
-                      {(contribution.guestEmail ?? "G").slice(0, 1).toUpperCase()}
+                      {getSupporterDisplayName(contribution).slice(0, 1).toUpperCase()}
                     </span>
                     <span className="truncate text-sm font-semibold text-slate-700">
-                      {contribution.guestEmail ?? `Gift ${contribution.shortId}`}
+                      {getSupporterDisplayName(contribution)}
                     </span>
                   </div>
                 </td>
@@ -569,9 +573,8 @@ function AdminDashboardShell({
   dashboard: AdminDashboardData;
   userEmail: string | null;
 }) {
-  const succeededCount = dashboard.statusSummary.find((item) => item.status === "succeeded")?.contributionsCount ?? 0;
   const recurringEstimate = Math.round(dashboard.summary.totalSucceededAmountMinor * 0.37);
-  const activeSupporters = Math.max(succeededCount, dashboard.recentContributions.filter((item) => item.guestEmail).length);
+  const activeSupporters = dashboard.activeSupportersCount;
   const orgParam = `?org=${dashboard.organisationSlug}`;
   const activityItems = dashboard.recentContributions.slice(0, 5);
 

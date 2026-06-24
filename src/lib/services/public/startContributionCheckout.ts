@@ -50,6 +50,7 @@ export async function startContributionCheckout(
     fundId: fund.id,
     amountMinor: validated.amountMinor,
     currencyCode: organisation.currencyCode,
+    donorName: validated.donorName,
     guestEmail: validated.guestEmail,
     userId: authenticatedUser?.user.id,
   });
@@ -63,6 +64,7 @@ export async function startContributionCheckout(
       intent_id: intent.id,
       organisation_id: organisation.id,
       fund_id: fund.id,
+      donor_name: validated.donorName ?? "",
       org_slug: organisation.slug,
     },
     line_items: [

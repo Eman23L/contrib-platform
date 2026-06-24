@@ -16,6 +16,7 @@ type AdminOrganisationRow = {
 
 export type AdminSummaryRow = {
   amount_minor: number;
+  guest_email: string | null;
   status: ContributionIntent["status"];
 };
 
@@ -25,6 +26,7 @@ export type AdminRecentContributionRow = {
   amount_minor: number;
   status: ContributionIntent["status"];
   guest_email: string | null;
+  donor_name: string | null;
   organisations: {
     name: string;
   } | null;
@@ -80,7 +82,7 @@ export async function listAdminSummaryRows(
 ): Promise<AdminSummaryRow[]> {
   const { data, error } = await supabase
     .from("contribution_intents")
-    .select("amount_minor, status")
+    .select("amount_minor, guest_email, status")
     .eq("organisation_id", organisationId)
     .returns<AdminSummaryRow[]>();
 
@@ -105,6 +107,7 @@ export async function listAdminRecentContributionRows(
         amount_minor,
         status,
         guest_email,
+        donor_name,
         organisations:organisations!inner (
           name
         ),

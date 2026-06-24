@@ -6,6 +6,9 @@ export type ValidatedContributionIntentInput = {
   amount: number;
   amountMinor: number;
   guestEmail?: string;
+  guestFirstName?: string;
+  guestLastName?: string;
+  donorName?: string;
 };
 
 function normalizeGuestEmail(value: unknown): string | undefined {
@@ -23,6 +26,24 @@ function normalizeGuestEmail(value: unknown): string | undefined {
 
   if (!emailPattern.test(trimmed)) {
     throw new Error("Enter a valid email address or leave it blank.");
+  }
+
+  return trimmed;
+}
+
+function normalizeName(value: unknown, label: string): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim().replace(/\s+/g, " ");
+
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed.length > 80) {
+    throw new Error(`${label} must be 80 characters or fewer.`);
   }
 
   return trimmed;
@@ -73,11 +94,18 @@ export function validateContributionIntentPayload(
     throw new Error("Contribution amount is too large.");
   }
 
+  const guestFirstName = normalizeName(candidate.guestFirstName, "First name");
+  const guestLastName = normalizeName(candidate.guestLastName, "Last name");
+  const donorName = [guestFirstName, guestLastName].filter(Boolean).join(" ") || undefined;
+
   return {
     organisationSlug,
     fundId,
     amount: roundedAmount,
     amountMinor,
     guestEmail: normalizeGuestEmail(candidate.guestEmail),
+    guestFirstName,
+    guestLastName,
+    donorName,
   };
 }

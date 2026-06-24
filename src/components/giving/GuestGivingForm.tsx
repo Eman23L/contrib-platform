@@ -46,6 +46,8 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
     QUICK_AMOUNTS[1] ?? null,
   );
   const [customAmount, setCustomAmount] = useState("");
+  const [guestFirstName, setGuestFirstName] = useState("");
+  const [guestLastName, setGuestLastName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -101,6 +103,8 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
           organisationSlug: organisation.organisationSlug,
           fundId: selectedFundId,
           amount,
+          guestFirstName,
+          guestLastName,
           guestEmail,
         }),
       });
@@ -179,8 +183,36 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
             Send me a receipt
           </h2>
           <p className="gf-helper mt-2">
-            Add your email address if you would like a receipt for this gift.
+            Add your name and email address if you would like a receipt for this gift.
           </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="gf-label">
+              First name
+            </span>
+            <input
+              autoComplete="given-name"
+              className="gf-input"
+              onChange={(event) => setGuestFirstName(event.target.value)}
+              placeholder="Jane"
+              type="text"
+              value={guestFirstName}
+            />
+          </label>
+          <label className="block">
+            <span className="gf-label">
+              Last name
+            </span>
+            <input
+              autoComplete="family-name"
+              className="gf-input"
+              onChange={(event) => setGuestLastName(event.target.value)}
+              placeholder="Smith"
+              type="text"
+              value={guestLastName}
+            />
+          </label>
         </div>
         <label className="block">
           <span className="gf-label">

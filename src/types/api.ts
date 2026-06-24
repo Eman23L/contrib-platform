@@ -5,6 +5,8 @@ export type CreateContributionIntentRequest = {
   fundId: string;
   amount: number;
   guestEmail?: string;
+  guestFirstName?: string;
+  guestLastName?: string;
 };
 
 export type CreateContributionIntentSuccessResponse = {
@@ -45,6 +47,7 @@ export type AdminRecentContribution = {
   amountMinor: number;
   status: string;
   guestEmail: string | null;
+  donorName: string | null;
 };
 
 export type AdminFundBreakdownItem = {
@@ -66,6 +69,7 @@ export type AdminDashboardData = {
   organisationName: string;
   organisationSlug: string;
   currencyCode: string;
+  activeSupportersCount: number;
   summary: AdminSummary;
   recentContributions: AdminRecentContribution[];
   fundBreakdown: AdminFundBreakdownItem[];
@@ -82,6 +86,7 @@ export type AdminContributionListItem = {
   currencyCode: string;
   status: string;
   guestEmail: string | null;
+  donorName: string | null;
   paymentProvider: string;
   stripeCheckoutSessionId: string | null;
   paidAt: string | null;

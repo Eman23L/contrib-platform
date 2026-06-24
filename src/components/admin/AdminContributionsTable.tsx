@@ -31,6 +31,10 @@ function getStatusClasses(status: string) {
   }
 }
 
+function getSupporterDisplayName(contribution: AdminContributionListItem) {
+  return contribution.donorName || contribution.guestEmail || "No name recorded";
+}
+
 export function AdminContributionsTable({
   contributions,
   formatAmount,
@@ -81,6 +85,7 @@ export function AdminContributionsTable({
                   <p>{formatDateTime(contribution.createdAt)}</p>
                   <p>{contribution.organisationName}</p>
                   <p>{contribution.fundName ?? "Unassigned fund"}</p>
+                  <p>{getSupporterDisplayName(contribution)}</p>
                   <p>{contribution.guestEmail ?? "No email recorded"}</p>
                   <p>Provider: {contribution.paymentProvider}</p>
                   <p>
@@ -102,6 +107,7 @@ export function AdminContributionsTable({
                   <th className="pb-1 pr-4">Fund</th>
                   <th className="pb-1 pr-4">Amount</th>
                   <th className="pb-1 pr-4">Status</th>
+                  <th className="pb-1 pr-4">Supporter</th>
                   <th className="pb-1 pr-4">Email</th>
                   <th className="pb-1 pr-4">Provider</th>
                   <th className="pb-1 pr-4">Checkout Session</th>
@@ -135,6 +141,9 @@ export function AdminContributionsTable({
                       >
                         {contribution.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-black/70">
+                      {getSupporterDisplayName(contribution)}
                     </td>
                     <td className="px-4 py-4 text-sm text-black/70">
                       {contribution.guestEmail ?? "No email recorded"}

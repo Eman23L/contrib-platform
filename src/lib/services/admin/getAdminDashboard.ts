@@ -53,6 +53,16 @@ function getStatusSortOrder(status: string) {
   }
 }
 
+function getActiveSupportersCount(
+  rows: Array<{ guest_email: string | null }>,
+) {
+  return new Set(
+    rows
+      .map((row) => row.guest_email?.trim().toLowerCase())
+      .filter((email): email is string => Boolean(email)),
+  ).size;
+}
+
 export function getAdminOverallSummary(
   rows: Array<{ amount_minor: number; status: ContributionIntent["status"] }>,
 ): AdminSummary {
@@ -87,6 +97,7 @@ export function getAdminRecentContributions(
     amountMinor: row.amount_minor,
     status: toDashboardStatusLabel(row.status),
     guestEmail: row.guest_email,
+    donorName: row.donor_name,
   }));
 }
 
@@ -166,6 +177,7 @@ export async function getAdminDashboard(
     organisationName: organisation.name,
     organisationSlug: organisation.slug,
     currencyCode: organisation.currencyCode,
+    activeSupportersCount: getActiveSupportersCount(summaryRows),
     summary: getAdminOverallSummary(summaryRows),
     recentContributions: getAdminRecentContributions(recentRows),
     fundBreakdown: getAdminTotalsByFund(fundRows),

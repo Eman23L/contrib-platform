@@ -17,6 +17,7 @@ export type AdminContributionRow = {
   currency_code: string;
   status: ContributionIntent["status"];
   guest_email: string | null;
+  donor_name: string | null;
   payment_provider: ContributionIntent["paymentProvider"];
   stripe_checkout_session_id: string | null;
   paid_at: string | null;
@@ -48,6 +49,7 @@ export async function listAdminContributionRows(
         currency_code,
         status,
         guest_email,
+        donor_name,
         payment_provider,
         stripe_checkout_session_id,
         paid_at,

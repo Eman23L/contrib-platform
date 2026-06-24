@@ -79,6 +79,7 @@ export async function getAdminContributions(
     amountMinor: row.amount_minor,
     createdAt: row.created_at,
     currencyCode: row.currency_code,
+    donorName: row.donor_name,
     guestEmail: row.guest_email,
     id: row.id,
     organisationName: row.organisations?.name ?? organisation.name,

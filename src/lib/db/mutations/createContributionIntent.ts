@@ -7,6 +7,7 @@ type CreateContributionIntentInput = {
   fundId: string;
   amountMinor: number;
   currencyCode: string;
+  donorName?: string;
   guestEmail?: string;
   userId?: string;
 };
@@ -101,6 +102,7 @@ export async function createContributionIntent(
       user_id: input.userId ?? null,
       amount_minor: input.amountMinor,
       currency_code: input.currencyCode,
+      donor_name: input.donorName ?? null,
       guest_email: input.guestEmail ?? null,
       payment_provider: "stripe",
       status: "draft",
