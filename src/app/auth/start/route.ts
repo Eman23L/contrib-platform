@@ -60,6 +60,17 @@ export async function POST(request: Request) {
       );
     }
 
+    try {
+      if (await hasAdminSignInAccess(email)) {
+        return NextResponse.json({
+          mode: "password",
+          ok: true,
+        });
+      }
+    } catch {
+      // Fall through to magic-link sign-in if the admin lookup cannot be completed.
+    }
+
     const authenticatedUser = await getAuthenticatedServerUser();
 
     if (
@@ -77,17 +88,6 @@ export async function POST(request: Request) {
         next: memberships.length > 0 ? nextPath : DEFAULT_PUBLIC_PATH,
         ok: true,
       });
-    }
-
-    try {
-      if (await hasAdminSignInAccess(email)) {
-        return NextResponse.json({
-          mode: "password",
-          ok: true,
-        });
-      }
-    } catch {
-      // Fall through to magic-link sign-in if the admin lookup cannot be completed.
     }
 
     const { error } = await sendMagicLink(request, email, nextPath);

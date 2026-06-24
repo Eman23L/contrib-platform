@@ -10,6 +10,8 @@ const AUTH_FLOW_STORAGE_KEY = "contrib-platform-auth";
 
 export const ADMIN_ACCESS_TOKEN_COOKIE = "contrib-admin-access-token";
 export const ADMIN_REFRESH_TOKEN_COOKIE = "contrib-admin-refresh-token";
+export const SUPPORTER_ACCESS_TOKEN_COOKIE = "contrib-supporter-access-token";
+export const SUPPORTER_REFRESH_TOKEN_COOKIE = "contrib-supporter-refresh-token";
 const AUTH_FLOW_CODE_VERIFIER_COOKIE = `${AUTH_FLOW_STORAGE_KEY}-code-verifier`;
 
 type CookieState = { value: string } | undefined;
@@ -132,10 +134,9 @@ export function createServerSupabaseUserClient(accessToken: string): SupabaseCli
   });
 }
 
-export async function getAuthenticatedServerUser(): Promise<AuthenticatedServerUser | null> {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get(ADMIN_ACCESS_TOKEN_COOKIE)?.value;
-
+async function getAuthenticatedUserFromToken(
+  accessToken: string | undefined,
+): Promise<AuthenticatedServerUser | null> {
   if (!accessToken) {
     return null;
   }
@@ -162,6 +163,26 @@ export async function getAuthenticatedServerUser(): Promise<AuthenticatedServerU
   };
 }
 
+export async function getAuthenticatedAdminUser(): Promise<AuthenticatedServerUser | null> {
+  const cookieStore = await cookies();
+
+  return getAuthenticatedUserFromToken(
+    cookieStore.get(ADMIN_ACCESS_TOKEN_COOKIE)?.value,
+  );
+}
+
+export async function getAuthenticatedServerUser(): Promise<AuthenticatedServerUser | null> {
+  const cookieStore = await cookies();
+
+  return (
+    await getAuthenticatedUserFromToken(
+      cookieStore.get(ADMIN_ACCESS_TOKEN_COOKIE)?.value,
+    )
+  ) ?? getAuthenticatedUserFromToken(
+    cookieStore.get(SUPPORTER_ACCESS_TOKEN_COOKIE)?.value,
+  );
+}
+
 export function setAdminSessionCookies(cookieStore: CookieWriter, session: Session) {
   cookieStore.set(
     ADMIN_ACCESS_TOKEN_COOKIE,
@@ -175,9 +196,24 @@ export function setAdminSessionCookies(cookieStore: CookieWriter, session: Sessi
   );
 }
 
+export function setSupporterSessionCookies(cookieStore: CookieWriter, session: Session) {
+  cookieStore.set(
+    SUPPORTER_ACCESS_TOKEN_COOKIE,
+    session.access_token,
+    getCookieOptions(session.expires_in),
+  );
+  cookieStore.set(
+    SUPPORTER_REFRESH_TOKEN_COOKIE,
+    session.refresh_token,
+    getCookieOptions(60 * 60 * 24 * 30),
+  );
+}
+
 export function clearAdminSessionCookies(cookieStore: CookieWriter) {
   cookieStore.delete(ADMIN_ACCESS_TOKEN_COOKIE);
   cookieStore.delete(ADMIN_REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(SUPPORTER_ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(SUPPORTER_REFRESH_TOKEN_COOKIE);
   cookieStore.delete(AUTH_FLOW_STORAGE_KEY);
   cookieStore.delete(AUTH_FLOW_CODE_VERIFIER_COOKIE);
 }

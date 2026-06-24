@@ -5,8 +5,8 @@ import type { User } from "@supabase/supabase-js";
 import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
 import { getSafeInternalPath } from "@/lib/auth/urls";
 import {
+  getAuthenticatedAdminUser,
   createServerSupabaseUserClient,
-  getAuthenticatedServerUser,
 } from "@/lib/supabase/server";
 import type { OrganisationMembership } from "@/types/domain";
 
@@ -54,7 +54,7 @@ export async function requireAdminRole(
   orgSlug?: string,
   nextPath?: string,
 ): Promise<RequireAdminRoleResult> {
-  const authenticatedUser = await getAuthenticatedServerUser();
+  const authenticatedUser = await getAuthenticatedAdminUser();
 
   if (!authenticatedUser) {
     return {
