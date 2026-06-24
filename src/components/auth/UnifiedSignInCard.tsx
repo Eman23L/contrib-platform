@@ -8,6 +8,7 @@ type UnifiedSignInCardProps = {
   guestHref: string;
   initialError?: string | null;
   publicNextPath: string;
+  startNextPath?: string;
 };
 
 type StartSignInResponse =
@@ -49,6 +50,7 @@ export function UnifiedSignInCard({
   guestHref,
   initialError = null,
   publicNextPath,
+  startNextPath = publicNextPath,
 }: UnifiedSignInCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +63,7 @@ export function UnifiedSignInCard({
     const response = await fetch("/auth/start", {
       body: JSON.stringify({
         email,
-        next: publicNextPath,
+        next: startNextPath,
       }),
       headers: {
         "Content-Type": "application/json",

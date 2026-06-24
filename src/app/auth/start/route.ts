@@ -28,6 +28,22 @@ function normalizeEmail(email?: string) {
   return email?.trim().toLowerCase() ?? "";
 }
 
+function isAdminPath(path: string) {
+  return path === "/admin" || path.startsWith("/admin?");
+}
+
+function getMagicLinkErrorMessage(message?: string) {
+  if (!message) {
+    return "We could not send a sign-in link. Please try again.";
+  }
+
+  if (message.toLowerCase().includes("signup")) {
+    return "No account exists for this email address. Use an existing account or continue as guest.";
+  }
+
+  return "We could not send a sign-in link. Please try again.";
+}
+
 async function sendMagicLink(request: Request, email: string, nextPath: string) {
   const cookieStore = await cookies();
   const supabase = createServerSupabaseAuthClient(cookieStore);
@@ -60,15 +76,41 @@ export async function POST(request: Request) {
       );
     }
 
+    const adminPath = isAdminPath(nextPath);
+
     try {
-      if (await hasAdminSignInAccess(email)) {
+      const hasAdminAccess = await hasAdminSignInAccess(email);
+
+      if (hasAdminAccess) {
         return NextResponse.json({
           mode: "password",
           ok: true,
         });
       }
-    } catch {
-      // Fall through to magic-link sign-in if the admin lookup cannot be completed.
+
+      if (adminPath) {
+        return NextResponse.json(
+          {
+            error:
+              "This email is not set up as an admin account. Use the admin email you were invited with.",
+            ok: false,
+          },
+          { status: 403 },
+        );
+      }
+    } catch (error) {
+      console.error("[auth/start] Admin sign-in lookup failed", error);
+
+      if (adminPath) {
+        return NextResponse.json(
+          {
+            error:
+              "We could not check admin access right now. Please try again in a moment.",
+            ok: false,
+          },
+          { status: 503 },
+        );
+      }
     }
 
     const authenticatedUser = await getAuthenticatedServerUser();
@@ -93,9 +135,14 @@ export async function POST(request: Request) {
     const { error } = await sendMagicLink(request, email, nextPath);
 
     if (error) {
+      console.error("[auth/start] Magic-link sign-in failed", {
+        message: error.message,
+        nextPath,
+      });
+
       return NextResponse.json(
         {
-          error: "Something went wrong. Please try again.",
+          error: getMagicLinkErrorMessage(error.message),
           ok: false,
         },
         { status: 400 },
@@ -106,7 +153,9 @@ export async function POST(request: Request) {
       mode: "magic_link_sent",
       ok: true,
     });
-  } catch {
+  } catch (error) {
+    console.error("[auth/start] Unexpected sign-in start failure", error);
+
     return NextResponse.json(
       {
         error: "Something went wrong. Please try again.",

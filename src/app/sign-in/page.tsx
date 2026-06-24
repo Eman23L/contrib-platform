@@ -52,6 +52,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           guestHref="/o/grace-community/give"
           initialError={errorMessage}
           publicNextPath={publicNextPath}
+          startNextPath={nextPath}
         />
       </div>
     </main>
