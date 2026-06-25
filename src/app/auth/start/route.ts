@@ -38,6 +38,15 @@ function getMagicLinkErrorMessage(message?: string) {
     return "We could not send a sign-in link. Please try again.";
   }
 
+  const normalizedMessage = message.toLowerCase();
+
+  if (
+    normalizedMessage.includes("rate limit") ||
+    normalizedMessage.includes("email send rate")
+  ) {
+    return "Too many sign-in emails have been requested. Please wait a few minutes, then try again.";
+  }
+
   if (message.toLowerCase().includes("signup")) {
     return "No account exists for this email address. Use an existing account or continue as guest.";
   }
