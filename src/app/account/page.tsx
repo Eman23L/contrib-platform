@@ -13,6 +13,18 @@ import {
 
 const DEFAULT_GIVING_PATH = "/o/grace-community/give";
 
+type AccountSection =
+  | "giving"
+  | "home"
+  | "profile"
+  | "receipts"
+  | "recurring"
+  | "support";
+
+type AccountPageProps = {
+  searchParams: Promise<{ section?: string }>;
+};
+
 type IconName =
   | "bell"
   | "document"
@@ -187,6 +199,37 @@ function getCurrencyCode(history: SupporterGivingHistoryItem[]) {
   return history[0]?.currencyCode ?? "GBP";
 }
 
+function getAccountSection(section?: string): AccountSection {
+  if (
+    section === "giving" ||
+    section === "profile" ||
+    section === "receipts" ||
+    section === "recurring" ||
+    section === "support"
+  ) {
+    return section;
+  }
+
+  return "home";
+}
+
+function getSectionTitle(section: AccountSection) {
+  switch (section) {
+    case "giving":
+      return "My Giving";
+    case "profile":
+      return "Profile";
+    case "receipts":
+      return "Receipts";
+    case "recurring":
+      return "Recurring Gifts";
+    case "support":
+      return "Support";
+    default:
+      return "Home";
+  }
+}
+
 function StatCard({
   detail,
   icon,
@@ -234,7 +277,7 @@ function RecentContributionsTable({
     <section className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between px-5 py-4">
         <h2 className="text-base font-semibold text-slate-950">Recent Contributions</h2>
-        <Link className="text-sm font-semibold text-blue-600" href="/me/giving">
+        <Link className="text-sm font-semibold text-blue-600" href="/account?section=giving">
           View all
         </Link>
       </div>
@@ -313,7 +356,332 @@ function RecentContributionsTable({
   );
 }
 
-export default async function AccountPage() {
+function SectionContent({
+  currencyCode,
+  email,
+  firstName,
+  giveAgainHref,
+  history,
+  latestGift,
+  latestPaidGift,
+  receiptCount,
+  section,
+  totalGiven,
+}: {
+  currencyCode: string;
+  email: string | null;
+  firstName: string;
+  giveAgainHref: string;
+  history: SupporterGivingHistoryItem[];
+  latestGift: SupporterGivingHistoryItem | null;
+  latestPaidGift: SupporterGivingHistoryItem | null;
+  receiptCount: number;
+  section: AccountSection;
+  totalGiven: number;
+}) {
+  if (section === "home") {
+    return (
+      <>
+        <div className="grid gap-5 xl:grid-cols-[1fr_350px] xl:items-start">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+              Welcome back, {firstName}
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Here's a simple view of your giving and receipts.
+            </p>
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+            <div className="flex gap-3">
+              <Icon className="h-5 w-5 shrink-0 text-emerald-500" name="heart" />
+              <p className="text-sm font-medium leading-6 text-slate-700">
+                Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+          <StatCard
+            detail="Across all funds"
+            icon="gift"
+            label="Total Given This Year"
+            value={formatAmount(totalGiven, currencyCode)}
+            variant="emerald"
+          />
+          <StatCard
+            detail="This year"
+            icon="heart"
+            label="Gifts Made"
+            value={history.length.toLocaleString("en-GB")}
+            variant="blue"
+          />
+          <StatCard
+            detail={latestGift ? `${formatAmount(latestGift.amountMinor, latestGift.currencyCode)} latest gift` : "No active recurring gift"}
+            icon="refresh"
+            label="Recurring Donation"
+            value={latestGift ? "Active" : "None"}
+            variant="emerald"
+          />
+          <StatCard
+            detail="View and download"
+            icon="document"
+            label="Receipts Available"
+            value={receiptCount.toLocaleString("en-GB")}
+            variant="blue"
+          />
+        </div>
+
+        <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+          <div className="space-y-5">
+            <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
+
+            <div className="grid gap-4 lg:grid-cols-3">
+              <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <Icon className="h-6 w-6" name="heart" />
+                </span>
+                <h2 className="mt-4 text-sm font-semibold text-slate-950">Give Again</h2>
+                <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
+                  Support the mission and ministry that matter most.
+                </p>
+                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
+                  Give to Tithe
+                </Link>
+              </article>
+              <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <Icon className="h-6 w-6" name="gift" />
+                </span>
+                <h2 className="mt-4 text-sm font-semibold text-slate-950">Support Another Fund</h2>
+                <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
+                  Choose a fund to make a one-time donation.
+                </p>
+                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={DEFAULT_GIVING_PATH}>
+                  Explore Funds
+                </Link>
+              </article>
+              <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <Icon className="h-6 w-6" name="users" />
+                </span>
+                <h2 className="mt-4 text-sm font-semibold text-slate-950">Share Your Impact</h2>
+                <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
+                  Invite friends and family to join in giving.
+                </p>
+                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={DEFAULT_GIVING_PATH}>
+                  Invite to Give
+                </Link>
+              </article>
+            </div>
+          </div>
+
+          <AccountAside
+            currencyCode={currencyCode}
+            email={email}
+            latestGift={latestGift}
+            latestPaidGift={latestPaidGift}
+          />
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+          {getSectionTitle(section)}
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">
+          {section === "giving"
+            ? "Review your gifts and giving history."
+            : section === "receipts"
+              ? "Find receipts for completed gifts."
+              : section === "recurring"
+                ? "Manage recurring gifts and payment preferences."
+                : section === "profile"
+                  ? "Review your account and communication preferences."
+                  : "Get help with giving, receipts, and your account."}
+        </p>
+      </div>
+
+      {section === "giving" ? (
+        <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
+      ) : null}
+
+      {section === "receipts" ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <h2 className="text-base font-semibold text-slate-950">Receipts</h2>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {history.filter((item) => item.paymentStatus === "succeeded").length > 0 ? history.filter((item) => item.paymentStatus === "succeeded").map((item) => (
+              <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between" key={item.id}>
+                <div>
+                  <p className="font-semibold text-slate-950">{item.organisationName}</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {item.fundName} - {item.dateLabel} - {formatAmount(item.amountMinor, item.currencyCode)}
+                  </p>
+                </div>
+                <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-600" type="button">
+                  <Icon className="h-4 w-4" name="download" />
+                  Download
+                </button>
+              </div>
+            )) : (
+              <p className="px-5 py-8 text-sm text-slate-500">No paid receipts are available yet.</p>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      {section === "recurring" ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <div className="flex items-center gap-4">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <Icon className="h-7 w-7" name="refresh" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-slate-950">Recurring Gift</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Recurring gift management is not connected yet.
+              </p>
+            </div>
+          </div>
+          <Link className="mt-5 inline-flex rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href={giveAgainHref}>
+            Set up a gift
+          </Link>
+        </section>
+      ) : null}
+
+      {section === "profile" ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+              <Icon className="h-6 w-6" name="profile" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-slate-950">Your Profile</h2>
+              <p className="mt-1 truncate text-sm text-slate-500">{email ?? "your account"}</p>
+            </div>
+          </div>
+          <div className="mt-6 rounded-xl bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-700">Communication preferences</p>
+            <p className="mt-1 text-sm text-slate-500">Receipts, updates, and reminders by email</p>
+          </div>
+        </section>
+      ) : null}
+
+      {section === "support" ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <h2 className="text-base font-semibold text-slate-950">Support</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            For help with gifts, receipts, or account access, contact your organisation support team.
+          </p>
+          <Link className="mt-5 inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={DEFAULT_GIVING_PATH}>
+            Go to giving page
+          </Link>
+        </section>
+      ) : null}
+    </>
+  );
+}
+
+function AccountAside({
+  currencyCode,
+  email,
+  latestGift,
+  latestPaidGift,
+}: {
+  currencyCode: string;
+  email: string | null;
+  latestGift: SupporterGivingHistoryItem | null;
+  latestPaidGift: SupporterGivingHistoryItem | null;
+}) {
+  return (
+    <aside className="space-y-5">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+        <div className="flex items-start gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <Icon className="h-6 w-6" name="receipt" />
+          </span>
+          <div>
+            <h2 className="text-sm font-semibold text-slate-950">Receipt for Latest Gift</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              {latestPaidGift
+                ? `${latestPaidGift.fundName} - ${latestPaidGift.dateLabel} - ${formatAmount(latestPaidGift.amountMinor, latestPaidGift.currencyCode)}`
+                : "No receipt is available yet."}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" type="button">
+            <Icon className="h-4 w-4" name="download" />
+            Download Receipt
+          </button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" type="button">
+            <Icon className="h-4 w-4" name="mail" />
+            Email Receipt
+          </button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+        <div className="flex items-center gap-4">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <Icon className="h-7 w-7" name="refresh" />
+          </span>
+          <div>
+            <h2 className="text-sm font-semibold text-slate-950">Active Recurring Gift</h2>
+            <p className="mt-1 text-2xl font-semibold text-slate-950">
+              {latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : formatAmount(0, currencyCode)}
+              <span className="ml-2 text-sm font-medium text-slate-500">Monthly</span>
+            </p>
+          </div>
+        </div>
+        <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt className="text-slate-500">Next payment</dt>
+            <dd className="mt-1 font-semibold text-slate-800">Not scheduled</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Payment method</dt>
+            <dd className="mt-1 font-semibold text-slate-800">Not saved</dd>
+          </div>
+        </dl>
+        <button className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" type="button">
+          Manage Recurring Gift
+        </button>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <Icon className="h-6 w-6" name="profile" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-slate-950">Your Profile</h2>
+            <p className="mt-1 truncate text-sm text-slate-500">
+              {email ?? "your account"}
+            </p>
+          </div>
+        </div>
+        <p className="mt-5 text-sm font-semibold text-slate-700">Communication preferences</p>
+        <p className="mt-1 text-sm leading-6 text-slate-500">
+          Receipts, updates, and reminders by email
+        </p>
+        <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account?section=profile">
+          Edit Profile
+        </Link>
+      </section>
+    </aside>
+  );
+}
+
+export default async function AccountPage({ searchParams }: AccountPageProps) {
+  const { section } = await searchParams;
+  const activeSection = getAccountSection(section);
   const authenticatedUser = await getAuthenticatedServerUser();
 
   if (!authenticatedUser) {
@@ -348,22 +716,26 @@ export default async function AccountPage() {
             </div>
             <nav className="flex-1 space-y-3 px-5 py-6">
               {[
-                ["Home", "home"],
-                ["My Giving", "heart"],
-                ["Receipts", "receipt"],
-                ["Recurring Gifts", "refresh"],
-                ["Profile", "profile"],
-                ["Support", "support"],
-              ].map(([label, icon], index) => (
-                <Link
-                  className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
-                  href={index === 0 ? "/account" : index === 1 ? "/me/giving" : "#"}
-                  key={label}
-                >
-                  <Icon className="h-5 w-5" name={icon as IconName} />
-                  {label}
-                </Link>
-              ))}
+                { href: "/account", icon: "home", id: "home", label: "Home" },
+                { href: "/account?section=giving", icon: "heart", id: "giving", label: "My Giving" },
+                { href: "/account?section=receipts", icon: "receipt", id: "receipts", label: "Receipts" },
+                { href: "/account?section=recurring", icon: "refresh", id: "recurring", label: "Recurring Gifts" },
+                { href: "/account?section=profile", icon: "profile", id: "profile", label: "Profile" },
+                { href: "/account?section=support", icon: "support", id: "support", label: "Support" },
+              ].map((item) => {
+                const isActive = item.id === activeSection;
+
+                return (
+                  <Link
+                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                    href={item.href}
+                    key={item.id}
+                  >
+                    <Icon className="h-5 w-5" name={item.icon as IconName} />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
             <div className="p-7">
               <div className="rounded-2xl bg-slate-50 p-4">
@@ -413,177 +785,18 @@ export default async function AccountPage() {
             </header>
 
             <div className="space-y-5 p-5 xl:p-9">
-              <div className="grid gap-5 xl:grid-cols-[1fr_350px] xl:items-start">
-                <div>
-                  <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                    Welcome back, {firstName}
-                  </h1>
-                  <p className="mt-2 text-sm text-slate-500">
-                    Here's a simple view of your giving and receipts.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
-                  <div className="flex gap-3">
-                    <Icon className="h-5 w-5 shrink-0 text-emerald-500" name="heart" />
-                    <p className="text-sm font-medium leading-6 text-slate-700">
-                      Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-                <StatCard
-                  detail="Across all funds"
-                  icon="gift"
-                  label="Total Given This Year"
-                  value={formatAmount(totalGiven, currencyCode)}
-                  variant="emerald"
-                />
-                <StatCard
-                  detail="This year"
-                  icon="heart"
-                  label="Gifts Made"
-                  value={history.length.toLocaleString("en-GB")}
-                  variant="blue"
-                />
-                <StatCard
-                  detail={latestGift ? `${formatAmount(latestGift.amountMinor, latestGift.currencyCode)} latest gift` : "No active recurring gift"}
-                  icon="refresh"
-                  label="Recurring Donation"
-                  value={latestGift ? "Active" : "None"}
-                  variant="emerald"
-                />
-                <StatCard
-                  detail="View and download"
-                  icon="document"
-                  label="Receipts Available"
-                  value={receiptCount.toLocaleString("en-GB")}
-                  variant="blue"
-                />
-              </div>
-
-              <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-                <div className="space-y-5">
-                  <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
-
-                  <div className="grid gap-4 lg:grid-cols-3">
-                    <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                        <Icon className="h-6 w-6" name="heart" />
-                      </span>
-                      <h2 className="mt-4 text-sm font-semibold text-slate-950">Give Again</h2>
-                      <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                        Support the mission and ministry that matter most.
-                      </p>
-                      <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
-                        Give to Tithe
-                      </Link>
-                    </article>
-                    <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <Icon className="h-6 w-6" name="gift" />
-                      </span>
-                      <h2 className="mt-4 text-sm font-semibold text-slate-950">Support Another Fund</h2>
-                      <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                        Choose a fund to make a one-time donation.
-                      </p>
-                      <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={DEFAULT_GIVING_PATH}>
-                        Explore Funds
-                      </Link>
-                    </article>
-                    <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                        <Icon className="h-6 w-6" name="users" />
-                      </span>
-                      <h2 className="mt-4 text-sm font-semibold text-slate-950">Share Your Impact</h2>
-                      <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                        Invite friends and family to join in giving.
-                      </p>
-                      <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={DEFAULT_GIVING_PATH}>
-                        Invite to Give
-                      </Link>
-                    </article>
-                  </div>
-                </div>
-
-                <aside className="space-y-5">
-                  <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                    <div className="flex items-start gap-4">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                        <Icon className="h-6 w-6" name="receipt" />
-                      </span>
-                      <div>
-                        <h2 className="text-sm font-semibold text-slate-950">Receipt for Latest Gift</h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                          {latestPaidGift
-                            ? `${latestPaidGift.fundName} - ${latestPaidGift.dateLabel} - ${formatAmount(latestPaidGift.amountMinor, latestPaidGift.currencyCode)}`
-                            : "No receipt is available yet."}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" type="button">
-                        <Icon className="h-4 w-4" name="download" />
-                        Download Receipt
-                      </button>
-                      <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" type="button">
-                        <Icon className="h-4 w-4" name="mail" />
-                        Email Receipt
-                      </button>
-                    </div>
-                  </section>
-
-                  <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                    <div className="flex items-center gap-4">
-                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <Icon className="h-7 w-7" name="refresh" />
-                      </span>
-                      <div>
-                        <h2 className="text-sm font-semibold text-slate-950">Active Recurring Gift</h2>
-                        <p className="mt-1 text-2xl font-semibold text-slate-950">
-                          {latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : formatAmount(0, currencyCode)}
-                          <span className="ml-2 text-sm font-medium text-slate-500">Monthly</span>
-                        </p>
-                      </div>
-                    </div>
-                    <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <dt className="text-slate-500">Next payment</dt>
-                        <dd className="mt-1 font-semibold text-slate-800">Not scheduled</dd>
-                      </div>
-                      <div>
-                        <dt className="text-slate-500">Payment method</dt>
-                        <dd className="mt-1 font-semibold text-slate-800">Not saved</dd>
-                      </div>
-                    </dl>
-                    <button className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" type="button">
-                      Manage Recurring Gift
-                    </button>
-                  </section>
-
-                  <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                    <div className="flex items-center gap-4">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                        <Icon className="h-6 w-6" name="profile" />
-                      </span>
-                      <div className="min-w-0">
-                        <h2 className="text-sm font-semibold text-slate-950">Your Profile</h2>
-                        <p className="mt-1 truncate text-sm text-slate-500">
-                          {authenticatedUser.user.email ?? "your account"}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="mt-5 text-sm font-semibold text-slate-700">Communication preferences</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-500">
-                      Receipts, updates, and reminders by email
-                    </p>
-                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account">
-                      Edit Profile
-                    </Link>
-                  </section>
-                </aside>
-              </div>
+              <SectionContent
+                currencyCode={currencyCode}
+                email={authenticatedUser.user.email ?? null}
+                firstName={firstName}
+                giveAgainHref={giveAgainHref}
+                history={history}
+                latestGift={latestGift}
+                latestPaidGift={latestPaidGift}
+                receiptCount={receiptCount}
+                section={activeSection}
+                totalGiven={totalGiven}
+              />
             </div>
           </div>
         </div>
