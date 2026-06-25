@@ -1,5 +1,4 @@
 import { UnifiedSignInCard } from "@/components/auth/UnifiedSignInCard";
-import { buildAdminPath } from "@/lib/auth/requireAdminRole";
 
 type SignInPageProps = {
   searchParams: Promise<{
@@ -10,14 +9,14 @@ type SignInPageProps = {
 
 function getSafeNextPath(next?: string) {
   if (!next || !next.startsWith("/")) {
-    return buildAdminPath();
+    return DEFAULT_PUBLIC_PATH;
   }
 
   if (next === "/admin" || next.startsWith("/admin?")) {
     return next;
   }
 
-  return buildAdminPath();
+  return DEFAULT_PUBLIC_PATH;
 }
 
 const DEFAULT_PUBLIC_PATH = "/account";

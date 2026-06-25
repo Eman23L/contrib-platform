@@ -17,7 +17,7 @@ type StartSignInResponse =
       ok: false;
     }
   | {
-      mode: "magic_link_sent" | "password" | "redirect";
+      mode: "create_account_prompt" | "magic_link_sent" | "password" | "redirect";
       next?: string;
       ok: true;
     };
@@ -29,6 +29,8 @@ type AdminSignInResponse = {
 };
 
 const SUCCESS_MESSAGE = "Check your email - we've sent you a secure sign-in link.";
+const CREATE_ACCOUNT_MESSAGE =
+  "No password is needed. We can email you a secure link to create or sign in to your supporter account.";
 
 function getFriendlyError(error?: string) {
   if (!error) {
@@ -55,6 +57,7 @@ export function UnifiedSignInCard({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPasswordField, setShowPasswordField] = useState(false);
+  const [showCreateAccountPrompt, setShowCreateAccountPrompt] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(initialError);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +66,8 @@ export function UnifiedSignInCard({
     const response = await fetch("/auth/start", {
       body: JSON.stringify({
         email,
-        next: startNextPath,
+        createAccount: showCreateAccountPrompt,
+        next: showCreateAccountPrompt ? publicNextPath : startNextPath,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -79,7 +83,14 @@ export function UnifiedSignInCard({
     }
 
     if (payload.mode === "password") {
+      setShowCreateAccountPrompt(false);
       setShowPasswordField(true);
+      return;
+    }
+
+    if (payload.mode === "create_account_prompt") {
+      setShowPasswordField(false);
+      setShowCreateAccountPrompt(true);
       return;
     }
 
@@ -150,6 +161,7 @@ export function UnifiedSignInCard({
               onChange={(event) => {
                 setEmail(event.target.value);
                 setShowPasswordField(false);
+                setShowCreateAccountPrompt(false);
                 setPassword("");
                 setErrorMessage(null);
                 setSuccessMessage(null);
@@ -185,6 +197,15 @@ export function UnifiedSignInCard({
             </div>
           ) : null}
 
+          {showCreateAccountPrompt ? (
+            <div
+              aria-live="polite"
+              className="gf-notice border-emerald-200 bg-emerald-50 text-emerald-700"
+            >
+              {CREATE_ACCOUNT_MESSAGE}
+            </div>
+          ) : null}
+
           {successMessage ? (
             <div
               aria-live="polite"
@@ -203,6 +224,8 @@ export function UnifiedSignInCard({
               ? "Please wait..."
               : showPasswordField
                 ? "Sign in securely"
+                : showCreateAccountPrompt
+                  ? "Email me a sign-in link"
                 : "Continue"}
           </button>
         </form>

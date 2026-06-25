@@ -11,6 +11,7 @@ import {
 } from "@/lib/supabase/server";
 
 type StartSignInRequest = {
+  createAccount?: boolean;
   email?: string;
   next?: string;
 };
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
     }
 
     const adminPath = isAdminPath(nextPath);
+    const accountNextPath = adminPath ? DEFAULT_PUBLIC_PATH : nextPath;
 
     try {
       const hasAdminAccess = await hasAdminSignInAccess(email);
@@ -91,11 +93,9 @@ export async function POST(request: Request) {
       if (adminPath) {
         return NextResponse.json(
           {
-            error:
-              "This email is not set up as an admin account. Use the admin email you were invited with.",
-            ok: false,
+            mode: "create_account_prompt",
+            ok: true,
           },
-          { status: 403 },
         );
       }
     } catch (error) {
@@ -132,12 +132,19 @@ export async function POST(request: Request) {
       });
     }
 
-    const { error } = await sendMagicLink(request, email, nextPath);
+    if (!payload.createAccount) {
+      return NextResponse.json({
+        mode: "create_account_prompt",
+        ok: true,
+      });
+    }
+
+    const { error } = await sendMagicLink(request, email, accountNextPath);
 
     if (error) {
       console.error("[auth/start] Magic-link sign-in failed", {
         message: error.message,
-        nextPath,
+        nextPath: accountNextPath,
       });
 
       return NextResponse.json(
