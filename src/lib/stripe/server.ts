@@ -3,7 +3,6 @@ import "server-only";
 import Stripe from "stripe";
 
 import {
-  getOptionalServerEnv,
   getRequiredServerEnv,
   logServerEnvPresence,
 } from "@/lib/env/server";
@@ -28,8 +27,4 @@ export function getStripeServerClient() {
 
 export function getStripeWebhookSecret() {
   return getRequiredServerEnv("STRIPE_WEBHOOK_SECRET", "getStripeWebhookSecret");
-}
-
-export function getOptionalStripeWebhookSecret() {
-  return getOptionalServerEnv("STRIPE_WEBHOOK_SECRET");
 }

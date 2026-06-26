@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 
 import {
-  getOptionalStripeWebhookSecret,
+  getStripeWebhookSecret,
   getStripeServerClient,
 } from "@/lib/stripe/server";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
@@ -288,10 +288,10 @@ export async function processStripeWebhook(
   signature: string | null,
 ): Promise<ProcessStripeWebhookResult> {
   const stripe = getStripeServerClient();
-  const webhookSecret = getOptionalStripeWebhookSecret();
+  const webhookSecret = getStripeWebhookSecret();
   let event: Stripe.Event;
 
-  if (webhookSecret && !signature) {
+  if (!signature) {
     return {
       ok: false,
       status: 400,
@@ -302,11 +302,7 @@ export async function processStripeWebhook(
   }
 
   try {
-    if (webhookSecret) {
-      event = stripe.webhooks.constructEvent(payload, signature!, webhookSecret);
-    } else {
-      event = JSON.parse(payload) as Stripe.Event;
-    }
+    event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   } catch (error) {
     return {
       ok: false,
