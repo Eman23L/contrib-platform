@@ -34,6 +34,7 @@ type SupporterPaymentRow = {
 
 export type SupporterGivingHistoryItem = {
   amountMinor: number;
+  checkoutSessionId: string | null;
   contributionStatus: ContributionIntent["status"];
   createdAt: string;
   currencyCode: string;
@@ -169,6 +170,8 @@ export async function getSupporterGivingHistory(
 
     return {
       amountMinor: row.amount_minor,
+      checkoutSessionId:
+        payment?.stripe_checkout_session_id ?? row.stripe_checkout_session_id ?? null,
       contributionStatus: row.status,
       createdAt: row.created_at,
       currencyCode: row.currency_code,

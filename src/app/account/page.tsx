@@ -26,17 +26,13 @@ type AccountPageProps = {
 };
 
 type IconName =
-  | "bell"
   | "document"
-  | "download"
   | "gift"
   | "heart"
   | "home"
-  | "mail"
   | "profile"
   | "receipt"
   | "refresh"
-  | "search"
   | "support"
   | "users";
 
@@ -48,25 +44,12 @@ function Icon({
   name: IconName;
 }) {
   const paths: Record<IconName, ReactNode> = {
-    bell: (
-      <>
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-      </>
-    ),
     document: (
       <>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <path d="M14 2v6h6" />
         <path d="M8 13h8" />
         <path d="M8 17h5" />
-      </>
-    ),
-    download: (
-      <>
-        <path d="M12 3v12" />
-        <path d="m7 10 5 5 5-5" />
-        <path d="M5 21h14" />
       </>
     ),
     gift: (
@@ -86,12 +69,6 @@ function Icon({
         <path d="m3 11 9-8 9 8" />
         <path d="M5 10v10h14V10" />
         <path d="M9 20v-6h6v6" />
-      </>
-    ),
-    mail: (
-      <>
-        <rect height="16" rx="2" width="20" x="2" y="4" />
-        <path d="m22 7-10 6L2 7" />
       </>
     ),
     profile: (
@@ -114,12 +91,6 @@ function Icon({
         <path d="M3 12A9 9 0 0 1 18.5 5.8" />
         <path d="M18 2v4h4" />
         <path d="M6 22v-4H2" />
-      </>
-    ),
-    search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
       </>
     ),
     support: (
@@ -197,6 +168,14 @@ function getFirstName(email: string | null | undefined) {
 
 function getCurrencyCode(history: SupporterGivingHistoryItem[]) {
   return history[0]?.currencyCode ?? "GBP";
+}
+
+function getReceiptHref(item: SupporterGivingHistoryItem) {
+  if (!item.checkoutSessionId || !item.organisationSlug) {
+    return null;
+  }
+
+  return `/o/${item.organisationSlug}/success?session_id=${encodeURIComponent(item.checkoutSessionId)}`;
 }
 
 function getAccountSection(section?: string): AccountSection {
@@ -516,20 +495,30 @@ function SectionContent({
             <h2 className="text-base font-semibold text-slate-950">Receipts</h2>
           </div>
           <div className="divide-y divide-slate-100">
-            {history.filter((item) => item.paymentStatus === "succeeded").length > 0 ? history.filter((item) => item.paymentStatus === "succeeded").map((item) => (
-              <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between" key={item.id}>
-                <div>
-                  <p className="font-semibold text-slate-950">{item.organisationName}</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {item.fundName} - {item.dateLabel} - {formatAmount(item.amountMinor, item.currencyCode)}
-                  </p>
+            {history.filter((item) => item.paymentStatus === "succeeded").length > 0 ? history.filter((item) => item.paymentStatus === "succeeded").map((item) => {
+              const receiptHref = getReceiptHref(item);
+
+              return (
+                <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between" key={item.id}>
+                  <div>
+                    <p className="font-semibold text-slate-950">{item.organisationName}</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {item.fundName} - {item.dateLabel} - {formatAmount(item.amountMinor, item.currencyCode)}
+                    </p>
+                  </div>
+                  {receiptHref ? (
+                    <Link className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-600" href={receiptHref}>
+                      <Icon className="h-4 w-4" name="receipt" />
+                      View receipt
+                    </Link>
+                  ) : (
+                    <span className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500">
+                      Receipt pending
+                    </span>
+                  )}
                 </div>
-                <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-600" type="button">
-                  <Icon className="h-4 w-4" name="download" />
-                  Download
-                </button>
-              </div>
-            )) : (
+              );
+            }) : (
               <p className="px-5 py-8 text-sm text-slate-500">No paid receipts are available yet.</p>
             )}
           </div>
@@ -599,6 +588,8 @@ function AccountAside({
   latestGift: SupporterGivingHistoryItem | null;
   latestPaidGift: SupporterGivingHistoryItem | null;
 }) {
+  const latestReceiptHref = latestPaidGift ? getReceiptHref(latestPaidGift) : null;
+
   return (
     <aside className="space-y-5">
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
@@ -615,16 +606,17 @@ function AccountAside({
             </p>
           </div>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" type="button">
-            <Icon className="h-4 w-4" name="download" />
-            Download Receipt
-          </button>
-          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" type="button">
-            <Icon className="h-4 w-4" name="mail" />
-            Email Receipt
-          </button>
-        </div>
+        {latestReceiptHref ? (
+          <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" href={latestReceiptHref}>
+            <Icon className="h-4 w-4" name="receipt" />
+            View latest receipt
+          </Link>
+        ) : (
+          <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" href="/account?section=receipts">
+            <Icon className="h-4 w-4" name="receipt" />
+            View receipts
+          </Link>
+        )}
       </section>
 
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
@@ -650,9 +642,9 @@ function AccountAside({
             <dd className="mt-1 font-semibold text-slate-800">Not saved</dd>
           </div>
         </dl>
-        <button className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" type="button">
+        <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href="/account?section=recurring">
           Manage Recurring Gift
-        </button>
+        </Link>
       </section>
 
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
@@ -756,29 +748,21 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">
                   G
                 </span>
-                <button className="flex min-w-0 items-center gap-3 text-sm font-semibold text-slate-700" type="button">
-                  <span className="truncate">{history[0]?.organisationName ?? "Grace Community Church"}</span>
-                  <span className="text-slate-400">v</span>
-                </button>
+                <span className="truncate text-sm font-semibold text-slate-700">
+                  {history[0]?.organisationName ?? "Supporter account"}
+                </span>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm sm:w-[34rem]">
-                  <Icon className="h-4 w-4" name="search" />
-                  <span className="truncate">Search funds, giving history, receipts...</span>
-                </div>
-                <button className="relative hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 xl:inline-flex" type="button">
-                  <Icon className="h-5 w-5" name="bell" />
-                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
-                    {Math.min(history.length, 9)}
-                  </span>
-                </button>
+                <Link className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm" href="/account?section=receipts">
+                  <Icon className="h-4 w-4" name="receipt" />
+                  {receiptCount.toLocaleString("en-GB")} receipts
+                </Link>
                 <form action="/auth/sign-out" method="post">
-                  <button className="flex items-center gap-3 rounded-full px-2 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100" type="submit">
+                  <button className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" type="submit">
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-slate-700">
                       {firstName.slice(0, 1)}
                     </span>
-                    <span>{firstName}</span>
-                    <span className="text-slate-400">v</span>
+                    <span>Sign out</span>
                   </button>
                 </form>
               </div>
