@@ -24,6 +24,9 @@ importers:
         specifier: ^18.4.0
         version: 18.5.0(@types/node@22.19.17)
     devDependencies:
+      '@eslint/eslintrc':
+        specifier: ^3.3.5
+        version: 3.3.5
       '@types/node':
         specifier: ^22.15.18
         version: 22.19.17

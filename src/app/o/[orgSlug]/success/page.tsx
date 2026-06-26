@@ -14,6 +14,27 @@ function formatAmount(amountMinor: number, currencyCode: string) {
   }).format(amountMinor / 100);
 }
 
+function getSuccessPageCopy(status: string) {
+  if (status === "succeeded") {
+    return {
+      heading: "Thank you for your gift",
+      intro: "Your payment was completed successfully and recorded for the fund you selected.",
+      kicker: "Gift confirmed",
+      statusClass: "bg-emerald-100 text-emerald-800",
+      statusLabel: "succeeded",
+    };
+  }
+
+  return {
+    heading: "Thank you for giving",
+    intro:
+      "Your checkout was returned successfully. We are confirming the payment and your receipt will update shortly.",
+    kicker: "Gift processing",
+    statusClass: "bg-amber-100 text-amber-800",
+    statusLabel: "processing",
+  };
+}
+
 export default async function SuccessPage({
   params,
   searchParams,
@@ -33,6 +54,8 @@ export default async function SuccessPage({
     notFound();
   }
 
+  const pageCopy = getSuccessPageCopy(contribution.status);
+
   return (
     <main className="gf-page">
       <div className="gf-shell max-w-2xl">
@@ -42,14 +65,13 @@ export default async function SuccessPage({
               OK
             </div>
             <p className="gf-kicker mt-6">
-              Gift confirmed
+              {pageCopy.kicker}
             </p>
             <h1 className="gf-title mt-3">
-              Thank you for your gift
+              {pageCopy.heading}
             </h1>
             <p className="gf-copy mt-3 max-w-md">
-              Your payment was completed successfully and recorded for the
-              fund you selected.
+              {pageCopy.intro}
             </p>
           </div>
 
@@ -83,8 +105,10 @@ export default async function SuccessPage({
                 <dt className="text-sm font-medium text-[#5f7f66]">
                   Status
                 </dt>
-                <dd className="mt-1 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
-                  succeeded
+                <dd
+                  className={`mt-1 inline-flex rounded-full px-3 py-1 text-sm font-semibold ${pageCopy.statusClass}`}
+                >
+                  {pageCopy.statusLabel}
                 </dd>
               </div>
             </dl>

@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint src middleware.ts next.config.ts tailwind.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
@@ -17,6 +17,7 @@
     "stripe": "^18.4.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
     "@types/node": "^22.15.18",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

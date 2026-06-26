@@ -15,7 +15,9 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to create contribution intent.";
+      error instanceof Error
+        ? getPublicCheckoutErrorMessage(error.message)
+        : "We could not start secure checkout. Please try again.";
 
     return NextResponse.json(
       {
@@ -25,4 +27,32 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+}
+
+function getPublicCheckoutErrorMessage(message: string) {
+  const allowedMessages = new Set([
+    "Amount must be greater than zero.",
+    "Contribution amount is too large.",
+    "Enter a valid email address or leave it blank.",
+    "Fund selection is required.",
+    "Minimum contribution amount is 1.00.",
+    "Organisation not found.",
+    "Organisation slug is required.",
+    "Selected fund was not found.",
+    "Stripe Checkout is currently configured only for GBP.",
+  ]);
+
+  if (message.endsWith(" must be 80 characters or fewer.")) {
+    return message;
+  }
+
+  if (allowedMessages.has(message)) {
+    return message;
+  }
+
+  console.error("[api/public/contribution-intents] Checkout start failed", {
+    message,
+  });
+
+  return "We could not start secure checkout. Please try again.";
 }

@@ -27,11 +27,26 @@ function getConfiguredAppOrigin() {
 }
 
 export function getSafeInternalPath(path?: string | null) {
-  if (!path || !path.startsWith("/")) {
+  if (
+    !path ||
+    !path.startsWith("/") ||
+    path.startsWith("//") ||
+    path.includes("\\")
+  ) {
     return "/";
   }
 
-  return path;
+  try {
+    const url = new URL(path, "https://getflow.local");
+
+    if (url.origin !== "https://getflow.local") {
+      return "/";
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/";
+  }
 }
 
 export function getRequestOrigin(request: Request) {
