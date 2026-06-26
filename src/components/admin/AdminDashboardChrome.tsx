@@ -18,14 +18,12 @@ type AdminDashboardChromeProps = {
 };
 
 type IconName =
-  | "bell"
   | "calendar"
   | "campaign"
   | "chart"
   | "chevron"
   | "gift"
   | "home"
-  | "search"
   | "settings"
   | "support"
   | "team"
@@ -39,12 +37,6 @@ function Icon({
   name: IconName;
 }) {
   const paths: Record<IconName, ReactNode> = {
-    bell: (
-      <>
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-      </>
-    ),
     calendar: (
       <>
         <path d="M8 2v4" />
@@ -82,12 +74,6 @@ function Icon({
         <path d="m3 11 9-8 9 8" />
         <path d="M5 10v10h14V10" />
         <path d="M9 20v-6h6v6" />
-      </>
-    ),
-    search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
       </>
     ),
     settings: (
@@ -202,30 +188,25 @@ export function AdminDashboardChrome({
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                   <Icon className="h-5 w-5" name="home" />
                 </span>
-                <button className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm" type="button">
-                  <span className="truncate">{organisationName}</span>
-                  <Icon className="h-4 w-4 text-slate-400" name="chevron" />
-                </button>
+                <span className="truncate rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+                  {organisationName}
+                </span>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm" type="button">
+                <span className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
                   <Icon className="h-4 w-4 text-slate-500" name="calendar" />
-                  Jun 1 - Jun 24, 2026
-                </button>
-                <div className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm sm:w-64">
-                  <Icon className="h-4 w-4" name="search" />
-                  <span className="truncate">Search anything...</span>
-                </div>
-                <button className="hidden h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 xl:inline-flex" type="button">
-                  <Icon className="h-5 w-5" name="bell" />
-                </button>
+                  Current dashboard
+                </span>
+                <Link className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={`/admin/contributions${orgParam}`}>
+                  <Icon className="h-4 w-4" name="gift" />
+                  View giving
+                </Link>
                 <form action="/auth/sign-out" method="post">
-                  <button className="flex items-center gap-3 rounded-full px-2 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100" type="submit">
+                  <button className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" type="submit">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-rose-100 text-xs font-bold text-slate-700">
                       {firstName.slice(0, 1).toUpperCase()}
                     </span>
-                    <span>{firstName}</span>
-                    <Icon className="h-4 w-4 text-slate-400" name="chevron" />
+                    <span>Sign out</span>
                   </button>
                 </form>
               </div>

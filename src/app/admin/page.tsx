@@ -632,9 +632,9 @@ function AdminDashboardShell({
                   <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                     <div className="mb-5 flex items-center justify-between">
                       <h2 className="text-base font-semibold text-slate-950">Giving Trends</h2>
-                      <button className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600" type="button">
+                      <span className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600">
                         Last 6 months
-                      </button>
+                      </span>
                     </div>
                     <TrendChart totalAmountMinor={dashboard.summary.totalContributedAmountMinor} />
                   </section>
@@ -642,9 +642,9 @@ function AdminDashboardShell({
                   <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                     <div className="mb-6 flex items-center justify-between">
                       <h2 className="text-base font-semibold text-slate-950">Fund Breakdown</h2>
-                      <button className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600" type="button">
+                      <span className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600">
                         This Month
-                      </button>
+                      </span>
                     </div>
                     <FundDonut funds={dashboard.fundBreakdown} />
                   </section>
@@ -690,14 +690,14 @@ function AdminDashboardShell({
                   <h2 className="text-base font-semibold text-slate-950">Quick Actions</h2>
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     {[
-                      ["Create Campaign", "plus", "border-blue-100 bg-blue-50 text-blue-600"],
-                      ["Export Report", "download", "border-emerald-100 bg-emerald-50 text-emerald-700"],
-                      ["Invite Team", "members", "border-violet-100 bg-violet-50 text-violet-600"],
-                      ["View Receipts", "receipt", "border-amber-100 bg-amber-50 text-amber-700"],
-                    ].map(([label, icon, classes]) => (
+                      ["Campaigns", "plus", "border-blue-100 bg-blue-50 text-blue-600", `/admin${orgParam}&section=campaigns`],
+                      ["Reports", "download", "border-emerald-100 bg-emerald-50 text-emerald-700", `/admin${orgParam}&section=reports`],
+                      ["Team", "members", "border-violet-100 bg-violet-50 text-violet-600", `/admin${orgParam}&section=team`],
+                      ["Receipts", "receipt", "border-amber-100 bg-amber-50 text-amber-700", `/admin/contributions${orgParam}`],
+                    ].map(([label, icon, classes, href]) => (
                       <Link
                         className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold ${classes}`}
-                        href={label === "Export Report" || label === "View Receipts" ? `/admin/contributions${orgParam}` : `/admin${orgParam}`}
+                        href={href}
                         key={label}
                       >
                         <Icon className="h-4 w-4" name={icon as Parameters<typeof Icon>[0]["name"]} />
