@@ -106,7 +106,7 @@ export async function createContributionIntent(
       guest_email: input.guestEmail ?? null,
       payment_provider: "stripe",
       status: "draft",
-      source: "qr",
+      source: "web",
     })
     .select(contributionIntentSelect)
     .single<ContributionIntentRow>();

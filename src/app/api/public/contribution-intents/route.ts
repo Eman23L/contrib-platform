@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getRequestOrigin } from "@/lib/auth/urls";
 import { startContributionCheckout } from "@/lib/services/public/startContributionCheckout";
 
 export const runtime = "nodejs";
@@ -9,7 +10,7 @@ export async function POST(request: Request) {
     const payload = await request.json();
     const result = await startContributionCheckout(
       payload,
-      new URL(request.url).origin,
+      getRequestOrigin(request),
     );
 
     return NextResponse.json(result, { status: 200 });
