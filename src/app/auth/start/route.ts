@@ -30,7 +30,12 @@ function normalizeEmail(email?: string) {
 }
 
 function isAdminPath(path: string) {
-  return path === "/admin" || path.startsWith("/admin?");
+  return (
+    path === "/admin" ||
+    path.startsWith("/admin/") ||
+    path.startsWith("/admin?") ||
+    path.startsWith("/admin#")
+  );
 }
 
 function getMagicLinkErrorMessage(message?: string) {

@@ -27,7 +27,12 @@ function getSafeNextPath(next?: string | null) {
 }
 
 function isAdminPath(path: string) {
-  return path === "/admin" || path.startsWith("/admin?");
+  return (
+    path === "/admin" ||
+    path.startsWith("/admin/") ||
+    path.startsWith("/admin?") ||
+    path.startsWith("/admin#")
+  );
 }
 
 function getPublicFallbackPath(path: string) {
@@ -97,11 +102,13 @@ export async function GET(request: Request) {
   const callbackError = url.searchParams.get("error");
 
   if (callbackError) {
+    clearAuthFlowCookies(cookieStore);
+
     return NextResponse.redirect(
-        buildRequestUrl(
-          request,
-          `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
-        ),
+      buildRequestUrl(
+        request,
+        `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
+      ),
     );
   }
 
@@ -112,10 +119,10 @@ export async function GET(request: Request) {
     clearAdminSessionCookies(cookieStore);
 
     return NextResponse.redirect(
-        buildRequestUrl(
-          request,
-          `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
-        ),
+      buildRequestUrl(
+        request,
+        `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
+      ),
     );
   }
 
