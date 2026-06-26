@@ -17,6 +17,23 @@ function getSafeNextPath(next?: string) {
   return safePath === "/" ? DEFAULT_PUBLIC_PATH : safePath;
 }
 
+function getMagicLinkErrorMessage(message: string) {
+  const normalizedMessage = message.toLowerCase();
+
+  if (normalizedMessage.includes("signup")) {
+    return "This email is not provisioned for account access.";
+  }
+
+  if (
+    normalizedMessage.includes("rate limit") ||
+    normalizedMessage.includes("email send rate")
+  ) {
+    return "Too many sign-in emails have been requested. Please wait a few minutes, then try again.";
+  }
+
+  return "We could not send a sign-in link. Please try again.";
+}
+
 export async function POST(request: Request) {
   const payload = (await request.json()) as MagicLinkRequest;
   const email = payload.email?.trim().toLowerCase();
@@ -47,12 +64,14 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    console.error("[auth/magic-link] Magic-link sign-in failed", {
+      message: error.message,
+      nextPath,
+    });
+
     return NextResponse.json(
       {
-        error:
-          error.message === "Signups not allowed for otp"
-            ? "This email is not provisioned for admin access."
-            : error.message,
+        error: getMagicLinkErrorMessage(error.message),
         ok: false,
       },
       { status: 400 },
