@@ -12,6 +12,8 @@
 - Supporter profile editing is not implemented.
 - Payout status in admin dashboard is derived/displayed at a high level, not a full Stripe payout reconciliation workflow.
 - Custom SMTP is not represented as code; it must be configured in Supabase.
+- Mobile navigation for dashboard sidebars is still deferred; desktop sidebar behavior is current.
+- Guest checkout now requires email to satisfy contribution intent constraints and support giving history.
 
 ## Recent Worktree Note
 
@@ -27,6 +29,5 @@ Future sessions should check `git status` before editing and must not accidental
 - Auth separation between supporter and admin sessions.
 - Stripe webhook idempotency and payment status updates.
 - RLS policies in `supabase/migrations/009_rls.sql`.
-- Guest giving records must keep satisfying `contribution_intents_guest_or_user_chk`.
+- Guest checkout email validation must keep satisfying `contribution_intents_guest_or_user_chk`.
 - Email-based supporter history depends on consistent lower-cased `guest_email`.
-

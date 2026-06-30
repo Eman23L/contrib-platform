@@ -86,7 +86,7 @@ Important constraint:
 
 - `user_id is not null or guest_email is not null`
 
-Current guest giving supplies `guest_email` when available and can store `donor_name`.
+Current guest checkout requires `guest_email` and can store `donor_name`.
 
 ### `payments`
 
@@ -130,4 +130,3 @@ RLS policies are in `009_rls.sql`. Future Codex sessions should inspect this fil
 - Admin contribution list queries: `src/lib/db/queries/adminContributions.ts`
 - Membership queries: `src/lib/db/queries/memberships.ts`
 - Supporter history: `src/lib/services/account/getSupporterGivingHistory.ts`
-

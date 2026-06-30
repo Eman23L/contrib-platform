@@ -46,3 +46,17 @@ This file lists suggested next work. Items here are planned/not implemented unle
 4. Add user-facing empty states for all placeholder sections.
 5. Audit all buttons/links for dead actions.
 
+## Recently Completed Functional Fixes
+
+- Current: guest checkout requires email before creating a contribution intent.
+- Current: admin password sign-in preserves safe internal `/admin` paths.
+- Current: admin-password failure clears admin cookies without clearing supporter cookies.
+- Current: normal supporter sign-in avoids the service-role admin user scan unless the requested destination is an admin path.
+- Current: admin dashboard raised/fund amount totals use succeeded gifts only.
+- Current: Stripe webhook processing tracks supported expired, failed, and cancelled checkout/payment events.
+
+## Deferred by Product Decision
+
+- Planned: mobile navigation improvements for hidden sidebar sections.
+- Planned: placeholder/coming-soon treatment for non-functional UI actions.
+- Planned: Supabase custom SMTP setup outside app code.

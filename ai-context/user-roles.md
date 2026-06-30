@@ -5,8 +5,8 @@
 Current behavior:
 
 - Can visit `/o/[orgSlug]/give`.
-- Can choose a fund, enter an amount, optionally enter first name, last name, and email, then continue to Stripe Checkout.
-- If email is supplied, the contribution can later appear in a supporter account by matching `contribution_intents.guest_email`.
+- Can choose a fund, enter an amount, enter an email address, optionally enter first name and last name, then continue to Stripe Checkout.
+- Email is required because contribution records must have either `user_id` or `guest_email`, and supporter history is linked by matching `contribution_intents.guest_email`.
 
 Limits:
 
@@ -54,4 +54,3 @@ Current behavior:
 
 - Can access public landing and giving routes.
 - Is redirected to `/sign-in` when visiting `/account` or admin pages without an appropriate session.
-

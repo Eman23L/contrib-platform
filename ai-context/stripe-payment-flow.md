@@ -9,6 +9,8 @@
 5. Organisation and fund are loaded from Supabase.
 6. A `contribution_intents` row is inserted with status `draft`.
 7. Stripe Checkout session is created using `stripe.checkout.sessions.create`.
+   - Checkout Session metadata includes intent/org/fund identifiers.
+   - PaymentIntent metadata also includes intent/org/fund identifiers so later PaymentIntent webhooks can update the same contribution intent.
 8. Contribution intent is updated with:
    - `status: checkout_created`
    - `stripe_checkout_session_id`
@@ -32,6 +34,11 @@ Key files:
 3. Processing is delegated through payment webhook service modules.
 4. Webhook events are stored in `webhook_events`.
 5. Payment completion updates contribution/payment records.
+6. Supported non-completion events update contribution intent status where metadata is available:
+   - `checkout.session.expired` -> `expired`
+   - `checkout.session.async_payment_failed` -> `failed`
+   - `payment_intent.payment_failed` -> `failed`
+   - `payment_intent.canceled` -> `cancelled`
 
 Key files:
 
@@ -51,6 +58,7 @@ Implemented:
 - One-time Stripe Checkout payments.
 - GBP-only guard in public checkout service.
 - Stripe metadata includes intent/org/fund identifiers.
+- Stripe webhook processing updates succeeded, expired, failed, and cancelled contribution intent states for supported events.
 
 Not implemented yet:
 
@@ -70,4 +78,3 @@ Current payment-related names:
 - `STRIPE_WEBHOOK_SECRET`
 
 Do not commit real secrets.
-

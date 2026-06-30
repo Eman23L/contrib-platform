@@ -62,4 +62,6 @@ Current flow:
 - Do not let magic-link sessions authorize admin pages.
 - Do not send admin password sign-in to normal supporter users.
 - Supabase service role key is used server-side only for admin lookups and service queries.
-
+- `/auth/start` only performs the service-role admin access lookup for admin destination paths.
+- Admin-password failure clears admin session cookies only; full sign-out clears both admin and supporter cookies.
+- `/auth/sign-in` preserves safe internal admin paths including `/admin`, `/admin/...`, `/admin?...`, and `/admin#...`.
