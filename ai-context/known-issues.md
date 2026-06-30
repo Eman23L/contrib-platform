@@ -14,6 +14,7 @@
 - Custom SMTP is not represented as code; it must be configured in Supabase.
 - Mobile navigation for dashboard sidebars is still deferred; desktop sidebar behavior is current.
 - Guest checkout now requires email to satisfy contribution intent constraints and support giving history.
+- Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.
 
 ## Recent Worktree Note
 
@@ -31,3 +32,4 @@ Future sessions should check `git status` before editing and must not accidental
 - RLS policies in `supabase/migrations/009_rls.sql`.
 - Guest checkout email validation must keep satisfying `contribution_intents_guest_or_user_chk`.
 - Email-based supporter history depends on consistent lower-cased `guest_email`.
+- Admin detection by email should be revisited if a profile/member email table is added, so generic `/sign-in` can avoid scanning Supabase Auth users.

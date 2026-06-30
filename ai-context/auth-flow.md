@@ -29,14 +29,15 @@ Current flow:
 
 1. User enters email in `UnifiedSignInCard`.
 2. Client calls `POST /auth/start`.
-3. If the email is not an admin account, `/auth/start` can return `create_account_prompt`.
-4. User confirms by pressing the button again.
-5. `/auth/start` calls Supabase `signInWithOtp` with `shouldCreateUser: true`.
-6. User clicks the email link.
-7. `/auth/callback` exchanges the code/token for a Supabase session.
-8. `setSupporterSessionCookies` stores supporter cookies.
-9. User is redirected to `/account`.
-10. `/account` loads giving history by authenticated user ID and email.
+3. On the first email submission, `/auth/start` checks whether the email belongs to an active admin/member account. If it does, the client shows the password field.
+4. If the email is not an admin account, `/auth/start` can return `create_account_prompt`.
+5. User confirms by pressing the button again.
+6. `/auth/start` calls Supabase `signInWithOtp` with `shouldCreateUser: true`.
+7. User clicks the email link.
+8. `/auth/callback` exchanges the code/token for a Supabase session.
+9. `setSupporterSessionCookies` stores supporter cookies.
+10. User is redirected to `/account`.
+11. `/account` loads giving history by authenticated user ID and email.
 
 Known external dependency:
 
@@ -62,6 +63,7 @@ Current flow:
 - Do not let magic-link sessions authorize admin pages.
 - Do not send admin password sign-in to normal supporter users.
 - Supabase service role key is used server-side only for admin lookups and service queries.
-- `/auth/start` only performs the service-role admin access lookup for admin destination paths.
+- `/auth/start` performs admin access lookup for admin destination paths and for the first generic `/sign-in` email submission, so admin emails show the password field even outside `/admin`.
+- The follow-up supporter magic-link request skips the admin lookup after the user has confirmed the create/sign-in prompt.
 - Admin-password failure clears admin session cookies only; full sign-out clears both admin and supporter cookies.
 - `/auth/sign-in` preserves safe internal admin paths including `/admin`, `/admin/...`, `/admin?...`, and `/admin#...`.

@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     const adminPath = isAdminPath(nextPath);
     const accountNextPath = adminPath ? DEFAULT_PUBLIC_PATH : nextPath;
 
-    if (adminPath) {
+    if (adminPath || !payload.createAccount) {
       try {
         const hasAdminAccess = await hasAdminSignInAccess(email);
 
@@ -105,12 +105,10 @@ export async function POST(request: Request) {
           });
         }
 
-        return NextResponse.json(
-          {
-            mode: "create_account_prompt",
-            ok: true,
-          },
-        );
+        return NextResponse.json({
+          mode: "create_account_prompt",
+          ok: true,
+        });
       } catch (error) {
         console.error("[auth/start] Admin sign-in lookup failed", error);
 

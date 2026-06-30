@@ -1,4 +1,5 @@
 import { UnifiedSignInCard } from "@/components/auth/UnifiedSignInCard";
+import { getSafeInternalPath } from "@/lib/auth/urls";
 
 type SignInPageProps = {
   searchParams: Promise<{
@@ -8,12 +9,15 @@ type SignInPageProps = {
 };
 
 function getSafeNextPath(next?: string) {
-  if (!next || !next.startsWith("/")) {
-    return DEFAULT_PUBLIC_PATH;
-  }
+  const safePath = getSafeInternalPath(next);
 
-  if (next === "/admin" || next.startsWith("/admin?")) {
-    return next;
+  if (
+    safePath === "/admin" ||
+    safePath.startsWith("/admin/") ||
+    safePath.startsWith("/admin?") ||
+    safePath.startsWith("/admin#")
+  ) {
+    return safePath;
   }
 
   return DEFAULT_PUBLIC_PATH;
