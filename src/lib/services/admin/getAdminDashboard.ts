@@ -69,9 +69,9 @@ export function getAdminOverallSummary(
   return rows.reduce<AdminSummary>(
     (summary, row) => {
       summary.totalContributionsCount += 1;
-      summary.totalContributedAmountMinor += row.amount_minor;
 
       if (row.status === "succeeded") {
+        summary.totalContributedAmountMinor += row.amount_minor;
         summary.totalSucceededAmountMinor += row.amount_minor;
       }
 
@@ -117,9 +117,8 @@ export function getAdminTotalsByFund(
     };
 
     current.contributionsCount += 1;
-    current.totalAmountMinor += row.amount_minor;
-
     if (row.status === "succeeded") {
+      current.totalAmountMinor += row.amount_minor;
       current.succeededAmountMinor += row.amount_minor;
     }
 
