@@ -23,13 +23,14 @@ Current behavior:
 - Giving history is loaded from `getSupporterGivingHistory`, matching both:
   - `contribution_intents.user_id`
   - `contribution_intents.guest_email`
-- The account dashboard has sections for Home, My Giving, Receipts, Recurring Gifts, Profile, and Support.
+- The account dashboard has visible sections for Home, My Giving, Receipts, Profile, and Support.
+- The direct recurring section URL remains available as an honest no-recurring-records view, but recurring navigation/actions are hidden until subscriptions exist.
 
 Limits:
 
 - Profile editing is not implemented.
-- Receipt download/email buttons are UI only.
-- Recurring gift management is not connected to Stripe subscriptions.
+- Receipts currently link to existing success pages; PDF download and email receipt sending are not implemented.
+- Recurring gift management is not connected to Stripe subscriptions and is not shown as an active management action.
 
 ## Organisation Admin / Finance / Owner
 
@@ -44,8 +45,8 @@ Current behavior:
 
 Limits:
 
-- Team management is not implemented.
-- Settings section is only a dashboard section, not a real settings editor.
+- Team section is read-only and lists visible membership records; invite/remove/change role workflows are not implemented.
+- Settings section is read-only and shows organisation data; editing workflows are not implemented.
 - Admin password setup/invitation flows are not built in the app.
 
 ## Anonymous/Unauthenticated Visitor

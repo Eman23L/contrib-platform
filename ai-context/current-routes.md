@@ -16,7 +16,7 @@ Routes are Next.js App Router routes under `src/app`.
 - `/account` - authenticated supporter dashboard.
 - `/account?section=giving` - supporter giving history section.
 - `/account?section=receipts` - supporter receipts section.
-- `/account?section=recurring` - recurring gifts placeholder section.
+- `/account?section=recurring` - direct no-recurring-records view; recurring navigation/actions are hidden until subscriptions exist.
 - `/account?section=profile` - supporter profile section.
 - `/account?section=support` - support section.
 - `/me` - legacy route that redirects to `/account`.
@@ -26,7 +26,7 @@ Routes are Next.js App Router routes under `src/app`.
 
 - `/admin` - admin dashboard. If no org is provided and there is one membership, redirects to that organisation.
 - `/admin?org=[slug]` - admin overview dashboard for the organisation.
-- `/admin?org=[slug]&section=supporters|funds|campaigns|reports|team|settings` - section-specific admin dashboard content.
+- `/admin?org=[slug]&section=giving|supporters|funds|campaigns|reports|team|settings` - section-specific admin dashboard content.
 - `/admin/contributions?org=[slug]` - contribution records page inside admin dashboard chrome.
 - `/admin/donations` - legacy route that redirects to `/admin/contributions`.
 

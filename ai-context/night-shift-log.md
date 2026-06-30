@@ -39,6 +39,24 @@ What improved: Placeholder legacy route now redirects to the real admin contribu
 Blocked/risky items: None.
 Next task chosen: Pending after verification.
 
+## Task 4
+
+Date/time: 2026-07-01T01:05:00+01:00
+Starting commit: f1e2d2f1526538da5ed9acaf77a85421c009e7b6
+Task: Refresh context for current visible account/admin behavior.
+Why this task was chosen: Some `/ai-context` files still described receipt/profile/recurring actions as visible placeholders even though the app now hides or relabels those actions.
+Files changed:
+- `ai-context/current-routes.md`
+- `ai-context/user-roles.md`
+- `ai-context/ui-design-system.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed with existing `src/lib/env/server.ts` warning; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Future Codex sessions now have accurate context about visible supporter sections, recurring behavior, read-only team/settings, and the `section=giving` admin route.
+Blocked/risky items: None.
+Next task chosen: Pending after verification.
+
 ## Task 3
 
 Date/time: 2026-07-01T00:52:00+01:00

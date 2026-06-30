@@ -68,15 +68,15 @@ Supporter account uses a dashboard shell with:
 
 - Left nav sections.
 - Top organisation/search/profile bar.
-- Home/giving/receipts/recurring/profile/support content sections.
+- Home/giving/receipts/profile/support content sections.
+- A direct recurring URL exists, but recurring navigation/actions are hidden until subscriptions exist.
 - Giving stat cards and recent contributions table.
 
-Some actions are visual placeholders:
+Current action rules:
 
-- Download receipt.
-- Email receipt.
-- Manage recurring gift.
-- Edit profile.
+- Receipt actions link to existing receipt/success pages only.
+- Profile actions are labelled as view-only until editing exists.
+- Recurring-gift management actions are hidden until subscriptions exist.
 
 ## Guest UI
 
@@ -101,4 +101,3 @@ Guest giving uses a dashboard-like shell but remains focused on public checkout:
 - Do not add marketing landing-page sections where a functional dashboard/form is expected.
 - Avoid dead buttons: if a feature is not implemented, make the UI explicit or link to an existing safe route.
 - Avoid changing production logic while making style-only changes.
-
