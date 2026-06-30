@@ -19,8 +19,8 @@ Routes are Next.js App Router routes under `src/app`.
 - `/account?section=recurring` - recurring gifts placeholder section.
 - `/account?section=profile` - supporter profile section.
 - `/account?section=support` - support section.
-- `/me` - legacy/static account route currently present.
-- `/me/giving` - legacy/static giving route currently present.
+- `/me` - legacy route that redirects to `/account`.
+- `/me/giving` - legacy route that redirects to `/account?section=giving`.
 
 ## Admin Routes
 
@@ -28,7 +28,7 @@ Routes are Next.js App Router routes under `src/app`.
 - `/admin?org=[slug]` - admin overview dashboard for the organisation.
 - `/admin?org=[slug]&section=supporters|funds|campaigns|reports|team|settings` - section-specific admin dashboard content.
 - `/admin/contributions?org=[slug]` - contribution records page inside admin dashboard chrome.
-- `/admin/donations` - placeholder page only.
+- `/admin/donations` - legacy route that redirects to `/admin/contributions`.
 
 ## Auth Routes
 
@@ -47,4 +47,3 @@ Routes are Next.js App Router routes under `src/app`.
 
 - `src/app/error.tsx` - app error boundary.
 - `src/app/not-found.tsx` - not found page.
-

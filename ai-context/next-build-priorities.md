@@ -47,7 +47,7 @@ This file lists suggested next work. Items here are planned/not implemented unle
 
 1. Add focused tests for auth flow, payment flow, and dashboard data mappers.
 2. Review and document RLS assumptions for each service query.
-3. Remove or complete legacy routes `/me`, `/me/giving`, and `/admin/donations`.
+3. Monitor legacy redirect routes `/me`, `/me/giving`, and `/admin/donations`; remove only if no production links depend on them.
 4. Add focused empty states and detail pages where current read-only MVPs stop at summaries.
 5. Audit all buttons/links for dead actions.
 

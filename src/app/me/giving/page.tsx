@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function MyGivingPage() {
-  redirect("/account");
+  redirect("/account?section=giving");
 }

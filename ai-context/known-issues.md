@@ -7,8 +7,7 @@
 - Recurring gifts are not implemented; visible supporter recurring navigation/actions are hidden, and the direct recurring URL shows an honest no-recurring-records state.
 - Admin sections for supporters, funds, campaigns, reports, team, and settings are now section-specific read-only MVPs, not full CRUD workflows.
 - Search boxes in admin/supporter/guest dashboard shells are visual only.
-- `/admin/donations` is a placeholder page.
-- `/me` and `/me/giving` routes still exist as legacy/static routes.
+- `/admin/donations`, `/me`, and `/me/giving` still exist as legacy redirect routes for compatibility.
 - Supporter profile editing is not implemented.
 - Payout status in admin dashboard is derived/displayed at a high level, not a full Stripe payout reconciliation workflow.
 - Custom SMTP is not represented as code; it must be configured in Supabase.
