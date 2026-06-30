@@ -67,6 +67,15 @@ export async function startContributionCheckout(
       donor_name: validated.donorName ?? "",
       org_slug: organisation.slug,
     },
+    payment_intent_data: {
+      metadata: {
+        intent_id: intent.id,
+        organisation_id: organisation.id,
+        fund_id: fund.id,
+        donor_name: validated.donorName ?? "",
+        org_slug: organisation.slug,
+      },
+    },
     line_items: [
       {
         quantity: 1,

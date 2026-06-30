@@ -5,6 +5,7 @@ import {
   getStripeServerClient,
 } from "@/lib/stripe/server";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
+import type { ContributionIntent } from "@/types/domain";
 
 type WebhookEventStatus = "received" | "processed" | "failed";
 
@@ -19,7 +20,7 @@ type ContributionIntentWebhookRow = {
   organisation_id: string;
   amount_minor: number;
   currency_code: string;
-  status: string;
+  status: ContributionIntent["status"];
   stripe_checkout_session_id: string | null;
 };
 
@@ -172,6 +173,54 @@ async function markIntentSucceeded(input: {
   }
 }
 
+async function markIntentTerminal(input: {
+  intentId: string;
+  organisationId?: string;
+  sessionId?: string;
+  status: Extract<ContributionIntent["status"], "cancelled" | "expired" | "failed">;
+}) {
+  const contributionIntent = await loadContributionIntent(input.intentId);
+
+  if (
+    input.organisationId &&
+    contributionIntent.organisation_id !== input.organisationId
+  ) {
+    throw new Error("Stripe metadata organisation does not match the contribution intent.");
+  }
+
+  if (
+    input.sessionId &&
+    contributionIntent.stripe_checkout_session_id &&
+    contributionIntent.stripe_checkout_session_id !== input.sessionId
+  ) {
+    throw new Error("Stripe Checkout session ID does not match the stored intent.");
+  }
+
+  if (contributionIntent.status === "succeeded") {
+    return {
+      organisationId: contributionIntent.organisation_id,
+    };
+  }
+
+  const supabase = createServerSupabaseServiceClient();
+  const { error } = await supabase
+    .from("contribution_intents")
+    .update({
+      status: input.status,
+      stripe_checkout_session_id:
+        input.sessionId ?? contributionIntent.stripe_checkout_session_id,
+    })
+    .eq("id", contributionIntent.id);
+
+  if (error) {
+    throw new Error(`Failed to update contribution intent status: ${error.message}`);
+  }
+
+  return {
+    organisationId: contributionIntent.organisation_id,
+  };
+}
+
 async function insertOrUpdatePayment(input: {
   organisationId: string;
   contributionIntentId: string;
@@ -283,6 +332,47 @@ async function processCompletedCheckout(event: Stripe.Event) {
   };
 }
 
+async function processCheckoutSessionStatus(
+  event: Stripe.Event,
+  status: Extract<ContributionIntent["status"], "expired" | "failed">,
+) {
+  const session = event.data.object as Stripe.Checkout.Session;
+  const intentId = session.metadata?.intent_id;
+  const organisationId = session.metadata?.organisation_id;
+
+  if (!intentId || !organisationId) {
+    throw new Error("Stripe Checkout session is missing required metadata.");
+  }
+
+  return markIntentTerminal({
+    intentId,
+    organisationId,
+    sessionId: session.id,
+    status,
+  });
+}
+
+async function processPaymentIntentStatus(
+  event: Stripe.Event,
+  status: Extract<ContributionIntent["status"], "cancelled" | "failed">,
+) {
+  const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  const intentId = paymentIntent.metadata?.intent_id;
+  const organisationId = paymentIntent.metadata?.organisation_id;
+
+  if (!intentId) {
+    return {
+      organisationId: null,
+    };
+  }
+
+  return markIntentTerminal({
+    intentId,
+    organisationId,
+    status,
+  });
+}
+
 export async function processStripeWebhook(
   payload: string,
   signature: string | null,
@@ -333,22 +423,38 @@ export async function processStripeWebhook(
       };
     }
 
-    if (event.type !== "checkout.session.completed") {
-      await updateWebhookEvent(webhookEvent.id, {
-        status: "processed",
-      });
+    let result: { organisationId: string | null } | null = null;
 
-      return {
-        ok: true,
-        status: 200,
-        body: {
-          received: true,
-          ignored: true,
-        },
-      };
+    switch (event.type) {
+      case "checkout.session.completed":
+        result = await processCompletedCheckout(event);
+        break;
+      case "checkout.session.expired":
+        result = await processCheckoutSessionStatus(event, "expired");
+        break;
+      case "checkout.session.async_payment_failed":
+        result = await processCheckoutSessionStatus(event, "failed");
+        break;
+      case "payment_intent.canceled":
+        result = await processPaymentIntentStatus(event, "cancelled");
+        break;
+      case "payment_intent.payment_failed":
+        result = await processPaymentIntentStatus(event, "failed");
+        break;
+      default:
+        await updateWebhookEvent(webhookEvent.id, {
+          status: "processed",
+        });
+
+        return {
+          ok: true,
+          status: 200,
+          body: {
+            received: true,
+            ignored: true,
+          },
+        };
     }
-
-    const result = await processCompletedCheckout(event);
 
     await updateWebhookEvent(webhookEvent.id, {
       organisationId: result.organisationId,
