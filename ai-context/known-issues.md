@@ -16,6 +16,7 @@
 - Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.
 - Admin team member email addresses are not shown because `organisation_memberships` stores user IDs and roles, but not app-owned member email/profile fields.
 - Admin campaign, fund, team, settings, and report write workflows still need product/security decisions before CRUD/export/invite/edit actions are added.
+- Some supporter/account fallback giving links still use `grace-community` when the supporter has no giving history to infer an organisation.
 
 ## Risk Areas
 

@@ -24,6 +24,22 @@ function getSafeNextPath(next?: string) {
 }
 
 const DEFAULT_PUBLIC_PATH = "/account";
+const DEFAULT_GUEST_GIVING_PATH = "/o/grace-community/give";
+
+function getGuestGivingPath(nextPath: string) {
+  try {
+    const url = new URL(nextPath, "https://getflow.local");
+    const orgSlug = url.searchParams.get("org")?.trim();
+
+    if (orgSlug) {
+      return `/o/${encodeURIComponent(orgSlug)}/give`;
+    }
+  } catch {
+    return DEFAULT_GUEST_GIVING_PATH;
+  }
+
+  return DEFAULT_GUEST_GIVING_PATH;
+}
 
 function getErrorMessage(error?: string) {
   switch (error) {
@@ -44,6 +60,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
   const publicNextPath = DEFAULT_PUBLIC_PATH;
+  const guestGivingPath = getGuestGivingPath(nextPath);
 
   const errorMessage = getErrorMessage(params.error);
 
@@ -52,7 +69,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       <div className="gf-shell max-w-lg">
         <UnifiedSignInCard
           adminNextPath={nextPath}
-          guestHref="/o/grace-community/give"
+          guestHref={guestGivingPath}
           initialError={errorMessage}
           publicNextPath={publicNextPath}
           startNextPath={nextPath}

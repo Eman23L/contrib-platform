@@ -38,3 +38,21 @@ Push status: Pending.
 What improved: Placeholder legacy route now redirects to the real admin contribution page; legacy supporter giving route now lands on the giving history section.
 Blocked/risky items: None.
 Next task chosen: Pending after verification.
+
+## Task 2
+
+Date/time: 2026-07-01T00:35:00+01:00
+Starting commit: 1a6406192a20800bd7d79fc542ff58aee6e78745
+Task: Improve sign-in guest giving link for multi-community context.
+Why this task was chosen: `/sign-in` always linked guest users to Grace Community giving even when the safe admin next path identified a different organisation slug.
+Files changed:
+- `src/app/sign-in/page.tsx`
+- `ai-context/scaling-and-multi-community-notes.md`
+- `ai-context/known-issues.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed with existing `src/lib/env/server.ts` warning; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: The guest giving link on sign-in now uses the safe `next` path's `org` query parameter when available, preserving multi-community context without changing auth behavior.
+Blocked/risky items: Broader supporter account fallback organisation selection remains for a later product decision because empty-history supporters have no current organisation context.
+Next task chosen: Pending after verification.
