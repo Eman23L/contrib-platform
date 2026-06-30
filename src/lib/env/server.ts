@@ -22,7 +22,6 @@ const SERVER_ENV_NAMES = [
 type ServerEnvName = (typeof SERVER_ENV_NAMES)[number];
 
 declare global {
-  // eslint-disable-next-line no-var
   var __contribPlatformServerEnvLogged__: boolean | undefined;
 }
 

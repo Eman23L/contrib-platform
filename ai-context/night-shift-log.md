@@ -39,6 +39,22 @@ What improved: Placeholder legacy route now redirects to the real admin contribu
 Blocked/risky items: None.
 Next task chosen: Pending after verification.
 
+## Task 5
+
+Date/time: 2026-07-01T01:22:00+01:00
+Starting commit: efb43ddc6d4ba94865aafb0b60f9347ff71cbed8
+Task: Remove obsolete env lint suppression.
+Why this task was chosen: Every verification run reported the same unused eslint-disable warning, so lint was passing with noise instead of being clean.
+Files changed:
+- `src/lib/env/server.ts`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed with no warnings; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed with no lint warnings.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Removes a stale lint suppression without changing environment validation behavior.
+Blocked/risky items: None.
+Next task chosen: Pending after verification.
+
 ## Task 4
 
 Date/time: 2026-07-01T01:05:00+01:00
