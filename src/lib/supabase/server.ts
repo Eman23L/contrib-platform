@@ -212,8 +212,16 @@ export function setSupporterSessionCookies(cookieStore: CookieWriter, session: S
 export function clearAdminSessionCookies(cookieStore: CookieWriter) {
   cookieStore.delete(ADMIN_ACCESS_TOKEN_COOKIE);
   cookieStore.delete(ADMIN_REFRESH_TOKEN_COOKIE);
+}
+
+export function clearSupporterSessionCookies(cookieStore: CookieWriter) {
   cookieStore.delete(SUPPORTER_ACCESS_TOKEN_COOKIE);
   cookieStore.delete(SUPPORTER_REFRESH_TOKEN_COOKIE);
+}
+
+export function clearAllSessionCookies(cookieStore: CookieWriter) {
+  clearAdminSessionCookies(cookieStore);
+  clearSupporterSessionCookies(cookieStore);
   cookieStore.delete(AUTH_FLOW_STORAGE_KEY);
   cookieStore.delete(AUTH_FLOW_CODE_VERIFIER_COOKIE);
 }

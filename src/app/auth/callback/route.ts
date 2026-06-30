@@ -4,7 +4,6 @@ import type { EmailOtpType, Session } from "@supabase/supabase-js";
 
 import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
 import {
-  clearAdminSessionCookies,
   clearAuthFlowCookies,
   createServerSupabaseAuthClient,
   setSupporterSessionCookies,
@@ -116,7 +115,7 @@ export async function GET(request: Request) {
   const { error, session } = await exchangeCallbackForSession(supabase, url);
 
   if (error || !session) {
-    clearAdminSessionCookies(cookieStore);
+    clearAuthFlowCookies(cookieStore);
 
     return NextResponse.redirect(
       buildRequestUrl(
