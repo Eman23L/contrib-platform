@@ -367,7 +367,7 @@ function SectionContent({
               Welcome back, {firstName}
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              Here's a simple view of your giving and receipts.
+              Here is a simple view of your giving and receipts.
             </p>
           </div>
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">

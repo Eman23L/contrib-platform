@@ -593,7 +593,7 @@ function AdminDashboardShell({
                     {dashboard.organisationName} Dashboard
                   </h1>
                   <p className="mt-1 text-sm text-slate-500">
-                    Here's what's happening with your giving community.
+                    Here is what is happening with your giving community.
                   </p>
                 </div>
 
