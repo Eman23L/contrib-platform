@@ -5,27 +5,27 @@ export type ValidatedContributionIntentInput = {
   fundId: string;
   amount: number;
   amountMinor: number;
-  guestEmail?: string;
+  guestEmail: string;
   guestFirstName?: string;
   guestLastName?: string;
   donorName?: string;
 };
 
-function normalizeGuestEmail(value: unknown): string | undefined {
+function normalizeGuestEmail(value: unknown): string {
   if (typeof value !== "string") {
-    return undefined;
+    throw new Error("Email address is required for receipts and giving history.");
   }
 
   const trimmed = value.trim().toLowerCase();
 
   if (!trimmed) {
-    return undefined;
+    throw new Error("Email address is required for receipts and giving history.");
   }
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!emailPattern.test(trimmed)) {
-    throw new Error("Enter a valid email address or leave it blank.");
+    throw new Error("Enter a valid email address.");
   }
 
   return trimmed;

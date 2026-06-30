@@ -109,6 +109,11 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
       return;
     }
 
+    if (!guestEmail.trim()) {
+      setErrorMessage("Enter your email address to receive receipts and view this gift later.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -219,7 +224,7 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
             Send me a receipt
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Add your name and email address if you would like a receipt for this gift.
+            Add your email address so we can send receipts and link this gift to your giving history.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -259,6 +264,7 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
             className="gf-input"
             onChange={(event) => setGuestEmail(event.target.value)}
             placeholder="name@example.com"
+            required
             type="email"
             value={guestEmail}
           />
