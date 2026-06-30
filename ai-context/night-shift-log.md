@@ -39,6 +39,23 @@ What improved: Placeholder legacy route now redirects to the real admin contribu
 Blocked/risky items: None.
 Next task chosen: Pending after verification.
 
+## Task 3
+
+Date/time: 2026-07-01T00:52:00+01:00
+Starting commit: 73f785498ec50ce9ad83424289d5d0da43678921
+Task: Align guest checkout email API errors.
+Why this task was chosen: The API error allowlist still referenced optional email behavior and masked the current required/invalid email validator messages.
+Files changed:
+- `src/app/api/public/contribution-intents/route.ts`
+- `ai-context/known-issues.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed with existing `src/lib/env/server.ts` warning; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Server-side checkout validation now returns the same required/invalid email guidance as the guest giving UI.
+Blocked/risky items: None.
+Next task chosen: Pending after verification.
+
 ## Task 2
 
 Date/time: 2026-07-01T00:35:00+01:00

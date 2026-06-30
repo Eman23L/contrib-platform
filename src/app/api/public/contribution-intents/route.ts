@@ -34,7 +34,8 @@ function getPublicCheckoutErrorMessage(message: string) {
   const allowedMessages = new Set([
     "Amount must be greater than zero.",
     "Contribution amount is too large.",
-    "Enter a valid email address or leave it blank.",
+    "Email address is required for receipts and giving history.",
+    "Enter a valid email address.",
     "Fund selection is required.",
     "Minimum contribution amount is 1.00.",
     "Organisation not found.",
