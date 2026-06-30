@@ -10,6 +10,8 @@ import type {
   AdminDashboardData,
   AdminFundBreakdownItem,
   AdminRecentContribution,
+  AdminStatusSummaryItem,
+  AdminTeamMemberItem,
 } from "@/types/api";
 
 type AdminPageProps = {
@@ -19,6 +21,7 @@ type AdminPageProps = {
 type AdminSection =
   | "campaigns"
   | "funds"
+  | "giving"
   | "overview"
   | "reports"
   | "settings"
@@ -68,6 +71,36 @@ function getStatusClasses(status: string) {
   }
 }
 
+function getRoleLabel(role: string) {
+  return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+function getShortId(value: string) {
+  return value.slice(0, 8);
+}
+
+function formatOptionalDate(value: string | null) {
+  return value ? formatShortDate(value) : "No activity";
+}
+
+function getStatusCount(statuses: AdminStatusSummaryItem[], names: string[]) {
+  return statuses
+    .filter((status) => names.includes(status.status))
+    .reduce((total, status) => total + status.contributionsCount, 0);
+}
+
+function getSettingsRows(settings: Record<string, unknown>) {
+  return Object.entries(settings).map(([key, value]) => ({
+    key,
+    value:
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+        ? String(value)
+        : JSON.stringify(value),
+  }));
+}
+
 function percentOf(value: number, total: number) {
   if (total <= 0) {
     return 0;
@@ -84,6 +117,7 @@ function getAdminSection(section?: string): AdminSection {
   if (
     section === "campaigns" ||
     section === "funds" ||
+    section === "giving" ||
     section === "reports" ||
     section === "settings" ||
     section === "supporters" ||
@@ -93,25 +127,6 @@ function getAdminSection(section?: string): AdminSection {
   }
 
   return "overview";
-}
-
-function getSectionTitle(section: AdminSection) {
-  switch (section) {
-    case "campaigns":
-      return "Campaigns";
-    case "funds":
-      return "Funds";
-    case "reports":
-      return "Reports";
-    case "settings":
-      return "Settings";
-    case "supporters":
-      return "Supporters";
-    case "team":
-      return "Team";
-    default:
-      return "Overview";
-  }
 }
 
 function Icon({
@@ -465,79 +480,103 @@ function SectionContent({
   activeSection,
   activeSupporters,
   dashboard,
-  recurringEstimate,
 }: {
   activeSection: AdminSection;
   activeSupporters: number;
   dashboard: AdminDashboardData;
-  recurringEstimate: number;
 }) {
-  const title = getSectionTitle(activeSection);
+  if (activeSection === "supporters") {
+    return (
+      <SupportersSection
+        activeSupporters={activeSupporters}
+        dashboard={dashboard}
+      />
+    );
+  }
+
+  if (activeSection === "funds") {
+    return <FundsSection dashboard={dashboard} />;
+  }
+
+  if (activeSection === "giving") {
+    return (
+      <GivingSection
+        activeSupporters={activeSupporters}
+        dashboard={dashboard}
+      />
+    );
+  }
+
+  if (activeSection === "campaigns") {
+    return <CampaignsSection dashboard={dashboard} />;
+  }
+
+  if (activeSection === "reports") {
+    return <ReportsSection dashboard={dashboard} />;
+  }
+
+  if (activeSection === "team") {
+    return <TeamSection dashboard={dashboard} />;
+  }
+
+  if (activeSection === "settings") {
+    return <SettingsSection dashboard={dashboard} />;
+  }
+
+  return null;
+}
+
+function GivingSection({
+  activeSupporters,
+  dashboard,
+}: {
+  activeSupporters: number;
+  dashboard: AdminDashboardData;
+}) {
+  const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
 
   return (
     <div className="space-y-5 p-5 xl:p-7">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-          {title}
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          {activeSection === "funds"
-            ? "Monitor fund totals and completed giving."
-            : activeSection === "supporters"
-              ? "See giving activity linked to supporters."
-              : activeSection === "reports"
-                ? "Review giving performance and payment status."
-                : `Manage ${title.toLowerCase()} for ${dashboard.organisationName}.`}
-        </p>
-      </div>
+      <SectionIntro title="Giving">
+        Contribution records and payment status for {dashboard.organisationName}.
+      </SectionIntro>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
           accent="bg-emerald-50 text-emerald-600"
           icon="wallet"
-          label="Total Raised"
-          trend="Up 21.4% vs previous period"
-          value={formatGbp(dashboard.summary.totalContributedAmountMinor)}
+          label="Paid Total"
+          trend="Succeeded gifts only"
+          value={formatGbp(dashboard.summary.totalSucceededAmountMinor)}
         />
         <DashboardStatCard
           accent="bg-blue-50 text-blue-600"
           icon="gift"
-          label="Total Gifts"
-          trend="Up 15.7% vs previous period"
+          label="Gift Records"
+          trend="All contribution statuses"
           value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
         />
         <DashboardStatCard
           accent="bg-violet-50 text-violet-600"
           icon="members"
-          label="Active Supporters"
-          trend="Up 12.1% vs previous period"
+          label="Supporters"
+          trend="Unique emails in records"
           value={activeSupporters.toLocaleString("en-GB")}
         />
         <DashboardStatCard
-          accent="bg-emerald-50 text-emerald-600"
-          icon="refresh"
-          label="Recurring Gifts"
-          trend="Up 18.3% vs previous period"
-          value={formatGbp(recurringEstimate)}
+          accent="bg-amber-50 text-amber-700"
+          icon="calendar"
+          label="Pending"
+          trend="Checkout or payment in progress"
+          value={pendingCount.toLocaleString("en-GB")}
         />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
-        {activeSection === "funds" ? (
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <h2 className="text-base font-semibold text-slate-950">
-              Fund Breakdown
-            </h2>
-            <div className="mt-5">
-              <FundDonut funds={dashboard.fundBreakdown} />
-            </div>
-          </section>
-        ) : (
-          <RecentGivingTable
-            contributions={dashboard.recentContributions}
-            organisationSlug={dashboard.organisationSlug}
-          />
-        )}
+        <RecentGivingTable
+          contributions={dashboard.recentContributions}
+          organisationSlug={dashboard.organisationSlug}
+        />
 
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
           <h2 className="text-base font-semibold text-slate-950">Payment Status</h2>
@@ -564,6 +603,365 @@ function SectionContent({
   );
 }
 
+function SectionIntro({
+  children,
+  title,
+}: {
+  children: ReactNode;
+  title: string;
+}) {
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+        {title}
+      </h1>
+      <p className="mt-1 text-sm text-slate-500">{children}</p>
+    </div>
+  );
+}
+
+function EmptyState({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-8 text-sm leading-6 text-slate-600">
+      {children}
+    </div>
+  );
+}
+
+function SupportersSection({
+  activeSupporters,
+  dashboard,
+}: {
+  activeSupporters: number;
+  dashboard: AdminDashboardData;
+}) {
+  const supporters = dashboard.supporterSummaries;
+  const paidSupporters = supporters.filter((supporter) => supporter.totalGivenAmountMinor > 0);
+
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <SectionIntro title="Supporters">
+        People linked to contribution records for {dashboard.organisationName}.
+      </SectionIntro>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <DashboardStatCard
+          accent="bg-violet-50 text-violet-600"
+          icon="members"
+          label="Known Supporters"
+          trend="Unique emails in giving records"
+          value={activeSupporters.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-emerald-50 text-emerald-600"
+          icon="wallet"
+          label="Paid Supporters"
+          trend="Supporters with succeeded gifts"
+          value={paidSupporters.length.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-blue-50 text-blue-600"
+          icon="gift"
+          label="Total Gifts"
+          trend="All contribution records"
+          value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
+        />
+      </div>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <h2 className="text-base font-semibold text-slate-950">Supporter Records</h2>
+        <div className="mt-4 overflow-x-auto">
+          {supporters.length > 0 ? (
+            <table className="min-w-full table-fixed text-left">
+              <thead>
+                <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500">
+                  <th className="w-[26%] py-3 pr-4">Supporter</th>
+                  <th className="w-[22%] py-3 pr-4">Email</th>
+                  <th className="w-[14%] py-3 pr-4">Paid Total</th>
+                  <th className="w-[12%] py-3 pr-4">Gifts</th>
+                  <th className="w-[14%] py-3 pr-4">Last Gift</th>
+                  <th className="w-[12%] py-3">Latest Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {supporters.map((supporter) => (
+                  <tr key={supporter.email}>
+                    <td className="truncate py-3 pr-4 text-sm font-semibold text-slate-700">{supporter.displayName}</td>
+                    <td className="truncate py-3 pr-4 text-sm text-slate-600">{supporter.email}</td>
+                    <td className="py-3 pr-4 text-sm font-semibold text-slate-950">{formatGbp(supporter.totalGivenAmountMinor)}</td>
+                    <td className="py-3 pr-4 text-sm text-slate-600">{supporter.giftsCount.toLocaleString("en-GB")}</td>
+                    <td className="py-3 pr-4 text-sm text-slate-600">{formatShortDate(supporter.lastGiftAt)}</td>
+                    <td className="py-3">
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(supporter.latestStatus)}`}>
+                        {getStatusLabel(supporter.latestStatus)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <EmptyState>
+              No supporter records are available yet. Supporters appear here after a contributor gives with an email address.
+            </EmptyState>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <SectionIntro title="Funds">
+        Fund performance based on existing contribution records.
+      </SectionIntro>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Fund Breakdown</h2>
+          <div className="mt-5">
+            <FundDonut funds={dashboard.fundBreakdown} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Fund Activity</h2>
+          <div className="mt-5 space-y-3">
+            {dashboard.fundBreakdown.length > 0 ? dashboard.fundBreakdown.map((fund) => (
+              <div className="rounded-xl bg-slate-50 px-4 py-3" key={fund.fundId ?? fund.fundName}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="truncate text-sm font-semibold text-slate-800">{fund.fundName}</p>
+                  <p className="shrink-0 text-sm font-semibold text-slate-950">{formatGbp(fund.succeededAmountMinor)}</p>
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  {fund.contributionsCount.toLocaleString("en-GB")} gifts - Last activity {formatOptionalDate(fund.latestContributionAt)}
+                </p>
+              </div>
+            )) : (
+              <p className="text-sm text-slate-500">No fund contribution activity yet.</p>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function CampaignsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <SectionIntro title="Campaigns">
+        Fundraising areas using current campaign records where present, otherwise fund-based performance.
+      </SectionIntro>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <h2 className="text-base font-semibold text-slate-950">Fundraising Areas</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {dashboard.campaignSummaries.length > 0 ? dashboard.campaignSummaries.map((campaign) => (
+            <article className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-4" key={campaign.campaignId ?? campaign.campaignName}>
+              <p className="text-sm font-semibold text-slate-950">{campaign.campaignName}</p>
+              <p className="mt-1 text-xs text-slate-500">{campaign.fundName ?? "Fund-based giving area"}</p>
+              <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">Raised</p>
+                  <p className="mt-1 font-semibold text-slate-950">{formatGbp(campaign.totalRaisedAmountMinor)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">Gifts</p>
+                  <p className="mt-1 font-semibold text-slate-950">{campaign.giftsCount.toLocaleString("en-GB")}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">Recent</p>
+                  <p className="mt-1 font-semibold text-slate-950">{formatOptionalDate(campaign.latestContributionAt)}</p>
+                </div>
+              </div>
+            </article>
+          )) : (
+            <EmptyState>
+              No fund or campaign activity is available yet. Fundraising areas will appear after funds receive contribution records.
+            </EmptyState>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+  const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
+  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
+
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <SectionIntro title="Reports">
+        Giving and payment reporting from current contribution records.
+      </SectionIntro>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <DashboardStatCard
+          accent="bg-emerald-50 text-emerald-600"
+          icon="wallet"
+          label="Paid Total"
+          trend="Succeeded gifts only"
+          value={formatGbp(dashboard.summary.totalSucceededAmountMinor)}
+        />
+        <DashboardStatCard
+          accent="bg-blue-50 text-blue-600"
+          icon="gift"
+          label="Gift Records"
+          trend="All statuses"
+          value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-amber-50 text-amber-700"
+          icon="calendar"
+          label="Pending"
+          trend="Checkout or payment in progress"
+          value={pendingCount.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-rose-50 text-rose-700"
+          icon="chart"
+          label="Not Completed"
+          trend="Failed, cancelled, or expired"
+          value={failedCount.toLocaleString("en-GB")}
+        />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Breakdown by Fund</h2>
+          <div className="mt-5 space-y-3">
+            {dashboard.fundBreakdown.length > 0 ? dashboard.fundBreakdown.map((fund) => (
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm" key={fund.fundId ?? fund.fundName}>
+                <span className="truncate font-semibold text-slate-700">{fund.fundName}</span>
+                <span className="shrink-0 text-slate-600">{fund.contributionsCount} gifts - {formatGbp(fund.succeededAmountMinor)}</span>
+              </div>
+            )) : (
+              <p className="text-sm text-slate-500">No fund activity yet.</p>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Breakdown by Status</h2>
+          <div className="mt-5 space-y-3">
+            {dashboard.statusSummary.length > 0 ? dashboard.statusSummary.map((status) => (
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm" key={status.status}>
+                <span className="font-semibold text-slate-700">{getStatusLabel(status.status)}</span>
+                <span className="text-slate-500">{status.contributionsCount} gifts - {formatGbp(status.totalAmountMinor)}</span>
+              </div>
+            )) : (
+              <p className="text-sm text-slate-500">No payment activity yet.</p>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <RecentGivingTable contributions={dashboard.recentContributions} organisationSlug={dashboard.organisationSlug} />
+    </div>
+  );
+}
+
+function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <SectionIntro title="Team">
+        Current members with admin, finance, owner, or member records for this organisation.
+      </SectionIntro>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <h2 className="text-base font-semibold text-slate-950">Team Members</h2>
+        <div className="mt-4 overflow-x-auto">
+          {dashboard.teamMembers.length > 0 ? (
+            <table className="min-w-full table-fixed text-left">
+              <thead>
+                <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500">
+                  <th className="w-[34%] py-3 pr-4">User ID</th>
+                  <th className="w-[18%] py-3 pr-4">Role</th>
+                  <th className="w-[18%] py-3 pr-4">Status</th>
+                  <th className="w-[30%] py-3">Joined</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {dashboard.teamMembers.map((member: AdminTeamMemberItem) => (
+                  <tr key={member.id}>
+                    <td className="py-3 pr-4">
+                      <span className="font-mono text-xs text-slate-600">{getShortId(member.userId)}...</span>
+                    </td>
+                    <td className="py-3 pr-4 text-sm font-semibold text-slate-700">{getRoleLabel(member.role)}</td>
+                    <td className="py-3 pr-4">
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${member.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+                        {member.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="py-3 text-sm text-slate-600">{formatShortDate(member.joinedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <EmptyState>
+              No team member records are visible for this organisation.
+            </EmptyState>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SettingsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+  const settings = dashboard.organisationSettings;
+  const settingsRows = getSettingsRows(settings.settings);
+
+  return (
+    <div className="space-y-5 p-5 xl:p-7">
+      <SectionIntro title="Settings">
+        Current organisation configuration used by public giving and admin scoping.
+      </SectionIntro>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Organisation Profile</h2>
+          <dl className="mt-5 grid gap-3 text-sm">
+            {[
+              ["Display name", settings.name],
+              ["Public slug", settings.slug],
+              ["Legal name", settings.legalName ?? "Not set"],
+              ["Currency", settings.currencyCode],
+              ["Timezone", settings.timezone],
+            ].map(([label, value]) => (
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3" key={label}>
+                <dt className="font-semibold text-slate-600">{label}</dt>
+                <dd className="truncate text-right font-semibold text-slate-950">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Public Configuration</h2>
+          <div className="mt-5 space-y-3 text-sm">
+            {settingsRows.length > 0 ? settingsRows.map((row) => (
+              <div className="rounded-xl bg-slate-50 px-4 py-3" key={row.key}>
+                <p className="font-semibold text-slate-700">{row.key}</p>
+                <p className="mt-1 break-words text-slate-500">{row.value}</p>
+              </div>
+            )) : (
+              <p className="rounded-xl bg-slate-50 px-4 py-3 text-slate-500">
+                No custom public settings are stored yet. Public pages currently use the organisation name, slug, currency, and active funds.
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function AdminDashboardShell({
   activeSection,
   dashboard,
@@ -573,8 +971,8 @@ function AdminDashboardShell({
   dashboard: AdminDashboardData;
   userEmail: string | null;
 }) {
-  const recurringEstimate = Math.round(dashboard.summary.totalSucceededAmountMinor * 0.37);
   const activeSupporters = dashboard.activeSupportersCount;
+  const paidGiftCount = getStatusCount(dashboard.statusSummary, ["succeeded"]);
   const orgParam = `?org=${dashboard.organisationSlug}`;
   const activityItems = dashboard.recentContributions.slice(0, 5);
 
@@ -622,9 +1020,9 @@ function AdminDashboardShell({
                   <DashboardStatCard
                     accent="bg-emerald-50 text-emerald-600"
                     icon="refresh"
-                    label="Recurring Gifts"
-                    trend="Up 18.3% vs previous period"
-                    value={formatGbp(recurringEstimate)}
+                    label="Paid Gifts"
+                    trend="Succeeded contribution records"
+                    value={paidGiftCount.toLocaleString("en-GB")}
                   />
                 </div>
 
@@ -690,10 +1088,10 @@ function AdminDashboardShell({
                   <h2 className="text-base font-semibold text-slate-950">Quick Actions</h2>
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     {[
-                      ["Campaigns", "plus", "border-blue-100 bg-blue-50 text-blue-600", `/admin${orgParam}&section=campaigns`],
-                      ["Reports", "download", "border-emerald-100 bg-emerald-50 text-emerald-700", `/admin${orgParam}&section=reports`],
-                      ["Team", "members", "border-violet-100 bg-violet-50 text-violet-600", `/admin${orgParam}&section=team`],
-                      ["Receipts", "receipt", "border-amber-100 bg-amber-50 text-amber-700", `/admin/contributions${orgParam}`],
+                      ["Campaigns", "campaign", "border-blue-100 bg-blue-50 text-blue-600", `/admin${orgParam}&section=campaigns`],
+                      ["Reports", "chart", "border-emerald-100 bg-emerald-50 text-emerald-700", `/admin${orgParam}&section=reports`],
+                      ["Team", "team", "border-violet-100 bg-violet-50 text-violet-600", `/admin${orgParam}&section=team`],
+                      ["Giving", "gift", "border-amber-100 bg-amber-50 text-amber-700", `/admin/contributions${orgParam}`],
                     ].map(([label, icon, classes, href]) => (
                       <Link
                         className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold ${classes}`}
@@ -735,7 +1133,6 @@ function AdminDashboardShell({
           activeSection={activeSection}
           activeSupporters={activeSupporters}
           dashboard={dashboard}
-          recurringEstimate={recurringEstimate}
         />
       )}
     </AdminDashboardChrome>

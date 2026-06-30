@@ -396,14 +396,14 @@ function SectionContent({
             variant="blue"
           />
           <StatCard
-            detail={latestGift ? `${formatAmount(latestGift.amountMinor, latestGift.currencyCode)} latest gift` : "No active recurring gift"}
+            detail={latestGift ? `${latestGift.dateLabel} - ${getStatusLabel(latestGift.paymentStatus)}` : "No gifts recorded yet"}
             icon="refresh"
-            label="Recurring Donation"
-            value={latestGift ? "Active" : "None"}
+            label="Latest Gift"
+            value={latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : "None"}
             variant="emerald"
           />
           <StatCard
-            detail="View and download"
+            detail="View paid gift receipts"
             icon="document"
             label="Receipts Available"
             value={receiptCount.toLocaleString("en-GB")}
@@ -436,20 +436,20 @@ function SectionContent({
                 <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
                   Choose a fund to make a one-time donation.
                 </p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={DEFAULT_GIVING_PATH}>
+                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={giveAgainHref}>
                   Explore Funds
                 </Link>
               </article>
               <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                  <Icon className="h-6 w-6" name="users" />
+                  <Icon className="h-6 w-6" name="document" />
                 </span>
-                <h2 className="mt-4 text-sm font-semibold text-slate-950">Share Your Impact</h2>
+                <h2 className="mt-4 text-sm font-semibold text-slate-950">View Receipts</h2>
                 <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                  Invite friends and family to join in giving.
+                  Review receipt pages for completed gifts.
                 </p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={DEFAULT_GIVING_PATH}>
-                  Invite to Give
+                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account?section=receipts">
+                  View Receipts
                 </Link>
               </article>
             </div>
@@ -478,7 +478,7 @@ function SectionContent({
             : section === "receipts"
               ? "Find receipts for completed gifts."
               : section === "recurring"
-                ? "Manage recurring gifts and payment preferences."
+                ? "Review whether recurring gifts are connected to this account."
                 : section === "profile"
                   ? "Review your account and communication preferences."
                   : "Get help with giving, receipts, and your account."}
@@ -534,12 +534,12 @@ function SectionContent({
             <div>
               <h2 className="text-base font-semibold text-slate-950">Recurring Gift</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Recurring gift management is not connected yet.
+                No recurring gifts are recorded for this account. Current giving history contains one-time contribution records.
               </p>
             </div>
           </div>
           <Link className="mt-5 inline-flex rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href={giveAgainHref}>
-            Set up a gift
+            Make a one-time gift
           </Link>
         </section>
       ) : null}
@@ -622,28 +622,27 @@ function AccountAside({
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
         <div className="flex items-center gap-4">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-            <Icon className="h-7 w-7" name="refresh" />
+            <Icon className="h-7 w-7" name="gift" />
           </span>
           <div>
-            <h2 className="text-sm font-semibold text-slate-950">Active Recurring Gift</h2>
+            <h2 className="text-sm font-semibold text-slate-950">Latest Contribution</h2>
             <p className="mt-1 text-2xl font-semibold text-slate-950">
               {latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : formatAmount(0, currencyCode)}
-              <span className="ml-2 text-sm font-medium text-slate-500">Monthly</span>
             </p>
           </div>
         </div>
         <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-slate-500">Next payment</dt>
-            <dd className="mt-1 font-semibold text-slate-800">Not scheduled</dd>
+            <dt className="text-slate-500">Date</dt>
+            <dd className="mt-1 font-semibold text-slate-800">{latestGift ? latestGift.dateLabel : "No gifts yet"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Payment method</dt>
-            <dd className="mt-1 font-semibold text-slate-800">Not saved</dd>
+            <dt className="text-slate-500">Status</dt>
+            <dd className="mt-1 font-semibold text-slate-800">{latestGift ? getStatusLabel(latestGift.paymentStatus) : "None"}</dd>
           </div>
         </dl>
-        <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href="/account?section=recurring">
-          Manage Recurring Gift
+        <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href="/account?section=giving">
+          View Giving History
         </Link>
       </section>
 
@@ -664,7 +663,7 @@ function AccountAside({
           Receipts, updates, and reminders by email
         </p>
         <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account?section=profile">
-          Edit Profile
+          View Profile
         </Link>
       </section>
     </aside>
@@ -711,7 +710,6 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 { href: "/account", icon: "home", id: "home", label: "Home" },
                 { href: "/account?section=giving", icon: "heart", id: "giving", label: "My Giving" },
                 { href: "/account?section=receipts", icon: "receipt", id: "receipts", label: "Receipts" },
-                { href: "/account?section=recurring", icon: "refresh", id: "recurring", label: "Recurring Gifts" },
                 { href: "/account?section=profile", icon: "profile", id: "profile", label: "Profile" },
                 { href: "/account?section=support", icon: "support", id: "support", label: "Support" },
               ].map((item) => {

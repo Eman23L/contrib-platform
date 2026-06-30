@@ -3,9 +3,9 @@
 ## Current Known Issues
 
 - Supabase built-in email sender can hit strict magic-link rate limits. Custom SMTP should be configured in Supabase for real usage.
-- Receipt download and email buttons exist in the supporter dashboard UI but do not generate or send real receipts yet.
-- Recurring gift UI is a placeholder; Stripe subscriptions are not implemented.
-- Admin sections for campaigns, team, reports, settings, supporters, and funds are mostly dashboard summaries/placeholders, not full CRUD workflows.
+- Supporter receipts link to existing success pages, but downloadable receipt PDFs and email receipt sending are not implemented.
+- Recurring gifts are not implemented; visible supporter recurring navigation/actions are hidden, and the direct recurring URL shows an honest no-recurring-records state.
+- Admin sections for supporters, funds, campaigns, reports, team, and settings are now section-specific read-only MVPs, not full CRUD workflows.
 - Search boxes in admin/supporter/guest dashboard shells are visual only.
 - `/admin/donations` is a placeholder page.
 - `/me` and `/me/giving` routes still exist as legacy/static routes.
@@ -15,16 +15,8 @@
 - Mobile navigation for dashboard sidebars is still deferred; desktop sidebar behavior is current.
 - Guest checkout now requires email to satisfy contribution intent constraints and support giving history.
 - Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.
-- Some visible admin sections and quick actions are placeholders or duplicate/generic dashboard content. Supporters, Campaigns, Reports, Team, and Settings must be made section-specific, marked coming soon, or hidden before production use.
-
-## Recent Worktree Note
-
-Before creating this documentation, the working tree already had uncommitted app-code changes in:
-
-- `src/app/account/page.tsx`
-- `src/app/admin/page.tsx`
-
-Future sessions should check `git status` before editing and must not accidentally stage unrelated app-code changes when committing docs or scoped work.
+- Admin team member email addresses are not shown because `organisation_memberships` stores user IDs and roles, but not app-owned member email/profile fields.
+- Admin campaign, fund, team, settings, and report write workflows still need product/security decisions before CRUD/export/invite/edit actions are added.
 
 ## Risk Areas
 

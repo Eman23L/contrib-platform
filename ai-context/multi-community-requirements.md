@@ -114,8 +114,8 @@ Requirement:
 
 Current status:
 
-- Placeholder: Settings section is visible but does not yet manage organisation settings.
-- Planned/not implemented: settings forms, validation, permissions, and audit behavior.
+- Partial: Settings section shows current organisation name, slug, legal name, currency, timezone, and stored settings data where present.
+- Planned/not implemented: editable settings forms, validation, permissions, public copy editing, and audit behavior.
 
 ## Product Rule for Multi-Community Work
 

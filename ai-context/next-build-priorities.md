@@ -12,34 +12,35 @@ This file lists suggested next work. Items here are planned/not implemented unle
    - Current: payments and contribution history exist.
    - Planned: downloadable receipt PDFs and email receipt action.
 
-3. Replace placeholder recurring gift UI with real product decisions.
+3. Decide and build recurring gifts.
    - Current: one-time Stripe Checkout only.
+   - Current: visible supporter recurring navigation/actions are hidden; the direct recurring URL shows no recurring records instead of presenting one-time gifts as recurring gifts.
    - Planned: decide whether recurring gifts use Stripe subscriptions and implement end-to-end flow.
 
 4. Complete supporter dashboard actions.
-   - Current: profile/receipt/recurring/support sections render.
-   - Planned: functional edit profile, receipt actions, and support/contact flows.
+   - Current: profile is read-only, receipts link to success pages, recurring shows no connected recurring records, support uses generic organisation support copy.
+   - Planned: functional profile editing, receipt PDF/email actions, recurring management, and configurable support/contact flows.
 
 ## Admin Priorities
 
-1. Audit and replace placeholder admin sections with real section-specific functionality.
-   - Current: several visible sections reuse generic dashboard content or summary cards.
-   - Planned: each visible nav item either performs its named workflow, is clearly marked coming soon, or is hidden until ready.
+1. Build admin write workflows on top of the read-only MVP sections.
+   - Current: Supporters, Giving, Funds, Campaigns, Reports, Team, and Settings show section-specific data from current tables.
+   - Planned: add safe write workflows only after schema, RLS, and product decisions are clear.
 
 2. Build CRUD for funds.
-   - Current: funds exist in database and are displayed/selectable.
+   - Current: funds exist in database, are displayed/selectable, and have admin read-only performance summaries.
    - Planned: admin create/edit/archive/reorder funds.
 
 3. Build campaign management.
-   - Current: campaigns table exists and admin campaign section is placeholder-level.
+   - Current: campaigns table exists and admin campaign section shows campaign summaries or fund-based fundraising areas.
    - Planned: campaign create/edit/archive and contribution attribution.
 
 4. Build team management.
-   - Current: memberships determine access, but team UI is placeholder-level.
+   - Current: memberships determine access and the team section lists visible membership role/status records.
    - Planned: invite/remove/change roles.
 
 5. Improve reports.
-   - Current: dashboard summaries and contribution table exist.
+   - Current: reports show paid totals, pending/not-completed counts, fund/status breakdowns, and recent contributions.
    - Planned: date ranges, exports, charts, and reconciliation reports.
 
 ## Technical Priorities
@@ -47,7 +48,7 @@ This file lists suggested next work. Items here are planned/not implemented unle
 1. Add focused tests for auth flow, payment flow, and dashboard data mappers.
 2. Review and document RLS assumptions for each service query.
 3. Remove or complete legacy routes `/me`, `/me/giving`, and `/admin/donations`.
-4. Add user-facing empty states for all placeholder sections.
+4. Add focused empty states and detail pages where current read-only MVPs stop at summaries.
 5. Audit all buttons/links for dead actions.
 
 ## Recently Completed Functional Fixes
@@ -62,5 +63,5 @@ This file lists suggested next work. Items here are planned/not implemented unle
 ## Deferred by Product Decision
 
 - Planned: mobile navigation improvements for hidden sidebar sections.
-- Planned: placeholder/coming-soon treatment for non-functional UI actions.
+- Planned: deeper button/action audit as new workflows are added.
 - Planned: Supabase custom SMTP setup outside app code.

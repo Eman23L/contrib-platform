@@ -19,7 +19,8 @@ Current behavior:
 
 - Shows organisation name, summary cards, trend chart, fund breakdown, recent giving, recent activity, quick actions, and payout status using dashboard aggregates.
 - Total Raised and fund amount totals use succeeded gifts only.
-- Some trend percentages, recurring estimate, quick actions, and payout presentation are derived/static rather than full workflows.
+- Quick actions link to real admin sections or the contribution list.
+- Some trend percentages and payout presentation are derived/static rather than full workflows.
 
 Status: Partial.
 
@@ -51,6 +52,26 @@ Acceptance criteria:
 - Rows expose enough detail for support/reconciliation without leaking sensitive data.
 - Export/reporting actions are either implemented or not visible.
 
+## Admin Giving
+
+User expectation:
+
+- See recent giving activity, supporter count, paid totals, pending gifts, and payment status for the selected organisation.
+
+Current behavior:
+
+- `/admin?org=[slug]&section=giving` is parsed as a real section.
+- Shows paid total, total contribution records, unique supporter emails, pending count, recent giving, and payment status breakdown from contribution intent data.
+- The deeper `/admin/contributions?org=[slug]` page remains the detailed contribution list.
+
+Status: Partial.
+
+Acceptance criteria:
+
+- Giving metrics remain organisation-scoped and do not include other communities.
+- Recent gifts and payment statuses match contribution intent/payment state.
+- The section links naturally to detailed contribution records and filters.
+
 ## Supporters
 
 User expectation:
@@ -60,10 +81,11 @@ User expectation:
 Current behavior:
 
 - Visible admin nav section exists at `/admin?org=[slug]&section=supporters`.
-- Section currently reuses generic dashboard cards and recent giving table.
+- Shows unique supporter emails from contribution records, supporter display names where captured, paid total, gift count, last gift date, and latest contribution status.
 - Active supporter count is based on unique `guest_email`, not a full supporter profile model.
+- No supporter detail page or communication/receipt status workflow is implemented.
 
-Status: Placeholder.
+Status: Partial.
 
 Acceptance criteria:
 
@@ -81,7 +103,7 @@ User expectation:
 Current behavior:
 
 - Public giving lists active funds from database.
-- Admin funds section shows fund breakdown totals only.
+- Admin funds section shows fund breakdown totals, paid totals, gift counts, and latest activity from contribution records.
 - No admin CRUD for funds is implemented.
 
 Status: Partial.
@@ -102,10 +124,11 @@ User expectation:
 Current behavior:
 
 - Campaign table exists and contribution intents can reference campaigns.
-- Admin campaign section is visible but mostly generic placeholder content.
+- Admin campaign section shows campaign summaries where campaign records exist.
+- When no campaign records exist, it shows fund-based fundraising areas from contribution data rather than fake campaigns.
 - No campaign CRUD or public campaign giving flow is implemented.
 
-Status: Placeholder.
+Status: Partial.
 
 Acceptance criteria:
 
@@ -122,10 +145,10 @@ User expectation:
 
 Current behavior:
 
-- Reports section is visible but uses generic dashboard/status content.
-- No true report builder, date range controls, export, or reconciliation report exists.
+- Reports section shows paid total, all gift records, pending count, failed/cancelled/expired count, breakdown by fund, breakdown by status, and recent contributions.
+- No true report builder, date range controls, export, or Stripe payout reconciliation report exists.
 
-Status: Placeholder.
+Status: Partial.
 
 Acceptance criteria:
 
@@ -143,10 +166,11 @@ User expectation:
 Current behavior:
 
 - Access control uses `organisation_memberships`.
-- Team section is visible but placeholder-level.
+- Team section lists visible organisation membership records with user ID, role, active status, and joined date.
+- Member email addresses are not available from the current app-owned membership schema.
 - No invite/remove/change role UI is implemented.
 
-Status: Placeholder.
+Status: Partial.
 
 Acceptance criteria:
 
@@ -163,11 +187,10 @@ User expectation:
 
 Current behavior:
 
-- Settings section is visible but placeholder-level.
-- Organisation display name/slug/currency are stored in database.
+- Settings section shows organisation display name, public slug, legal name, currency, timezone, and stored settings JSON where present.
 - Public wording and branding settings are not editable through UI.
 
-Status: Placeholder.
+Status: Partial.
 
 Acceptance criteria:
 
@@ -187,7 +210,8 @@ Current behavior:
 - `/account` loads giving history by authenticated user ID and email.
 - Home and My Giving show real contribution history.
 - Receipts section links to existing success pages for paid gifts, but real receipt PDFs/email receipts are not implemented.
-- Recurring, profile editing, support contact, and some dashboard side actions are partial/placeholder.
+- Recurring gift navigation/actions are hidden because subscriptions are not implemented; the direct recurring URL shows a factual no-records state.
+- Profile is read-only and side actions link to real account sections or giving pages.
 
 Status: Partial.
 

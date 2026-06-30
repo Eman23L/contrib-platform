@@ -4,14 +4,17 @@ import type { ContributionIntent, Organisation } from "@/types/domain";
 
 export type AdminOrganisation = Pick<
   Organisation,
-  "id" | "name" | "slug" | "currencyCode"
+  "currencyCode" | "id" | "legalName" | "name" | "settings" | "slug" | "timezone"
 >;
 
 type AdminOrganisationRow = {
   id: string;
+  legal_name: string | null;
   name: string;
   slug: string;
   currency_code: string;
+  settings: Record<string, unknown>;
+  timezone: string;
 };
 
 export type AdminSummaryRow = {
@@ -36,6 +39,7 @@ export type AdminRecentContributionRow = {
 };
 
 export type AdminFundTotalsRow = {
+  created_at: string;
   fund_id: string | null;
   amount_minor: number;
   status: ContributionIntent["status"];
@@ -49,12 +53,46 @@ export type AdminStatusTotalsRow = {
   status: ContributionIntent["status"];
 };
 
+export type AdminSectionContributionRow = {
+  id: string;
+  amount_minor: number;
+  campaign_id: string | null;
+  created_at: string;
+  donor_name: string | null;
+  guest_email: string | null;
+  status: ContributionIntent["status"];
+  funds: {
+    name: string;
+  } | null;
+};
+
+export type AdminCampaignRow = {
+  id: string;
+  fund_id: string;
+  name: string;
+  is_active: boolean;
+  funds: {
+    name: string;
+  } | null;
+};
+
+export type AdminTeamMemberRow = {
+  id: string;
+  user_id: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+};
+
 function mapAdminOrganisation(row: AdminOrganisationRow): AdminOrganisation {
   return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
     currencyCode: row.currency_code,
+    id: row.id,
+    legalName: row.legal_name,
+    name: row.name,
+    settings: row.settings,
+    slug: row.slug,
+    timezone: row.timezone,
   };
 }
 
@@ -64,7 +102,7 @@ export async function getAdminOrganisationBySlug(
 ): Promise<AdminOrganisation | null> {
   const { data, error } = await supabase
     .from("organisations")
-    .select("id, name, slug, currency_code")
+    .select("id, name, slug, legal_name, currency_code, timezone, settings")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle<AdminOrganisationRow>();
@@ -137,6 +175,7 @@ export async function listAdminFundTotalsRows(
     .select(
       `
         fund_id,
+        created_at,
         amount_minor,
         status,
         funds:funds (
@@ -166,6 +205,83 @@ export async function listAdminStatusTotalsRows(
 
   if (error) {
     throw new Error(`Failed to load status totals rows: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function listAdminSectionContributionRows(
+  supabase: SupabaseClient,
+  organisationId: string,
+): Promise<AdminSectionContributionRow[]> {
+  const { data, error } = await supabase
+    .from("contribution_intents")
+    .select(
+      `
+        id,
+        amount_minor,
+        campaign_id,
+        created_at,
+        donor_name,
+        guest_email,
+        status,
+        funds:funds (
+          name
+        )
+      `,
+    )
+    .eq("organisation_id", organisationId)
+    .order("created_at", { ascending: false })
+    .returns<AdminSectionContributionRow[]>();
+
+  if (error) {
+    throw new Error(`Failed to load section contribution rows: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function listAdminCampaignRows(
+  supabase: SupabaseClient,
+  organisationId: string,
+): Promise<AdminCampaignRow[]> {
+  const { data, error } = await supabase
+    .from("campaigns")
+    .select(
+      `
+        id,
+        fund_id,
+        name,
+        is_active,
+        funds:funds (
+          name
+        )
+      `,
+    )
+    .eq("organisation_id", organisationId)
+    .order("name", { ascending: true })
+    .returns<AdminCampaignRow[]>();
+
+  if (error) {
+    throw new Error(`Failed to load campaign rows: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function listAdminTeamMemberRows(
+  supabase: SupabaseClient,
+  organisationId: string,
+): Promise<AdminTeamMemberRow[]> {
+  const { data, error } = await supabase
+    .from("organisation_memberships")
+    .select("id, user_id, role, is_active, created_at")
+    .eq("organisation_id", organisationId)
+    .order("created_at", { ascending: true })
+    .returns<AdminTeamMemberRow[]>();
+
+  if (error) {
+    throw new Error(`Failed to load team member rows: ${error.message}`);
   }
 
   return data;

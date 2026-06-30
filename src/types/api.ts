@@ -56,6 +56,7 @@ export type AdminFundBreakdownItem = {
   contributionsCount: number;
   totalAmountMinor: number;
   succeededAmountMinor: number;
+  latestContributionAt: string | null;
 };
 
 export type AdminStatusSummaryItem = {
@@ -64,16 +65,55 @@ export type AdminStatusSummaryItem = {
   totalAmountMinor: number;
 };
 
+export type AdminSupporterSummaryItem = {
+  displayName: string;
+  email: string;
+  giftsCount: number;
+  lastGiftAt: string;
+  latestStatus: string;
+  totalGivenAmountMinor: number;
+};
+
+export type AdminCampaignSummaryItem = {
+  campaignId: string | null;
+  campaignName: string;
+  fundName: string | null;
+  giftsCount: number;
+  latestContributionAt: string | null;
+  totalRaisedAmountMinor: number;
+};
+
+export type AdminTeamMemberItem = {
+  id: string;
+  isActive: boolean;
+  joinedAt: string;
+  role: string;
+  userId: string;
+};
+
+export type AdminOrganisationSettings = {
+  currencyCode: string;
+  legalName: string | null;
+  name: string;
+  settings: Record<string, unknown>;
+  slug: string;
+  timezone: string;
+};
+
 export type AdminDashboardData = {
   organisationId: string;
   organisationName: string;
   organisationSlug: string;
   currencyCode: string;
   activeSupportersCount: number;
+  campaignSummaries: AdminCampaignSummaryItem[];
   summary: AdminSummary;
   recentContributions: AdminRecentContribution[];
   fundBreakdown: AdminFundBreakdownItem[];
+  organisationSettings: AdminOrganisationSettings;
   statusSummary: AdminStatusSummaryItem[];
+  supporterSummaries: AdminSupporterSummaryItem[];
+  teamMembers: AdminTeamMemberItem[];
 };
 
 export type AdminContributionListItem = {
