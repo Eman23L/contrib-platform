@@ -19,7 +19,12 @@ type AdminPasswordSignInRequest = {
 function getSafeNextPath(next?: string) {
   const safePath = getSafeInternalPath(next);
 
-  if (safePath === "/admin" || safePath.startsWith("/admin?")) {
+  if (
+    safePath === "/admin" ||
+    safePath.startsWith("/admin/") ||
+    safePath.startsWith("/admin?") ||
+    safePath.startsWith("/admin#")
+  ) {
     return safePath;
   }
 
