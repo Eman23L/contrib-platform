@@ -15,6 +15,7 @@
 - Mobile navigation for dashboard sidebars is still deferred; desktop sidebar behavior is current.
 - Guest checkout now requires email to satisfy contribution intent constraints and support giving history.
 - Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.
+- Some visible admin sections and quick actions are placeholders or duplicate/generic dashboard content. Supporters, Campaigns, Reports, Team, and Settings must be made section-specific, marked coming soon, or hidden before production use.
 
 ## Recent Worktree Note
 

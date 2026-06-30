@@ -22,19 +22,23 @@ This file lists suggested next work. Items here are planned/not implemented unle
 
 ## Admin Priorities
 
-1. Build CRUD for funds.
+1. Audit and replace placeholder admin sections with real section-specific functionality.
+   - Current: several visible sections reuse generic dashboard content or summary cards.
+   - Planned: each visible nav item either performs its named workflow, is clearly marked coming soon, or is hidden until ready.
+
+2. Build CRUD for funds.
    - Current: funds exist in database and are displayed/selectable.
    - Planned: admin create/edit/archive/reorder funds.
 
-2. Build campaign management.
+3. Build campaign management.
    - Current: campaigns table exists and admin campaign section is placeholder-level.
    - Planned: campaign create/edit/archive and contribution attribution.
 
-3. Build team management.
+4. Build team management.
    - Current: memberships determine access, but team UI is placeholder-level.
    - Planned: invite/remove/change roles.
 
-4. Improve reports.
+5. Improve reports.
    - Current: dashboard summaries and contribution table exist.
    - Planned: date ranges, exports, charts, and reconciliation reports.
 

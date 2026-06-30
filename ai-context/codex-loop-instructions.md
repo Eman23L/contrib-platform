@@ -50,9 +50,21 @@ Before changing database behavior:
 Before changing UI:
 
 - Read `ui-design-system.md`.
+- Read `feature-contracts.md` when the task touches a visible page, section, navigation item, button, or workflow.
 - Keep admin, supporter, and guest dashboard shells visually consistent.
 - Avoid dead links/buttons. If an action is planned but not implemented, make the state clear or link to a safe current route.
 - Verify desktop and mobile responsiveness.
+
+## Feature Contract Rule
+
+Before implementing new work, Codex must check whether the visible feature already does what it claims to do. If a feature is only a placeholder, Codex must propose one of these paths before changing functionality:
+
+- Make it real.
+- Disable it.
+- Hide it.
+- Clearly mark it as coming soon.
+
+Do not add new visible controls or sections that imply working functionality unless the implementation is included in the same approved task.
 
 ## Verification
 
@@ -72,4 +84,3 @@ Known environment issue:
 3. Commit with the requested message when provided.
 4. Push only after the commit is correct.
 5. In the final response, include changed files, verification, commit hash, and push status.
-

@@ -14,6 +14,7 @@ Read these files before making changes:
 - `known-issues.md` - current limitations and risks.
 - `next-build-priorities.md` - suggested next work, clearly separated from implemented behavior.
 - `codex-loop-instructions.md` - operating instructions for future Codex sessions.
+- `feature-contracts.md` - visible feature/page contracts, current status, and completion criteria.
+- `multi-community-requirements.md` - requirements for supporting multiple organisations/communities.
 
 Current snapshot: based on the codebase as inspected on 2026-06-30.
-
