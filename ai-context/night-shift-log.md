@@ -215,3 +215,21 @@ Push status: Pending.
 What improved: Reports now expose a real admin-only CSV download of organisation-scoped contribution records.
 Blocked/risky items: Export is currently unfiltered and contribution-only. Filtered exports, supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
 Next task chosen: Pending after checks, commit, and push.
+
+## Task 3 - Improve Supporter Organisation Links
+
+Date/time: 2026-07-02T03:35:00+01:00
+Starting commit: ca59c1f11a50f9623f0b98099fd2fcc42a840104
+Task: Improve supporter account organisation-aware giving links.
+Why this task was chosen: Multi-community notes still identified Grace Community fallback behavior in supporter account links; the app can safely use giving-history organisation context where it exists.
+Files changed:
+- `src/app/account/page.tsx`
+- `ai-context/known-issues.md`
+- `ai-context/scaling-and-multi-community-notes.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Supporter account recent contribution links, support link, and give-again action now reuse the inferred organisation route when giving history exists.
+Blocked/risky items: Supporters with no giving history still have no organisation context, so the fallback remains a product decision until an organisation selector or invite/context route exists.
+Next task chosen: Pending after checks, commit, and push.

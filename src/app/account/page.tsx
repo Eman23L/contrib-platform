@@ -178,6 +178,15 @@ function getReceiptHref(item: SupporterGivingHistoryItem) {
   return `/o/${item.organisationSlug}/success?session_id=${encodeURIComponent(item.checkoutSessionId)}`;
 }
 
+function getGivingHrefForHistoryItem(
+  item: SupporterGivingHistoryItem,
+  fallbackHref: string,
+) {
+  return item.organisationSlug
+    ? `/o/${item.organisationSlug}/give`
+    : fallbackHref;
+}
+
 function getAccountSection(section?: string): AccountSection {
   if (
     section === "giving" ||
@@ -285,7 +294,7 @@ function RecentContributionsTable({
                 {rows.map((item) => (
                   <tr key={item.id}>
                     <td className="px-5 py-4">
-                      <Link className="flex items-center gap-3 text-sm font-semibold text-slate-700" href={`/o/${item.organisationSlug || "grace-community"}/give`}>
+                      <Link className="flex items-center gap-3 text-sm font-semibold text-slate-700" href={getGivingHrefForHistoryItem(item, giveAgainHref)}>
                         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700 text-xs font-bold text-white">
                           {item.organisationName.slice(0, 1)}
                         </span>
@@ -422,10 +431,12 @@ function SectionContent({
                 </span>
                 <h2 className="mt-4 text-sm font-semibold text-slate-950">Give Again</h2>
                 <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                  Support the mission and ministry that matter most.
+                  {latestGift
+                    ? `Support ${latestGift.organisationName} again.`
+                    : "Support the mission and ministry that matter most."}
                 </p>
                 <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
-                  Give to Tithe
+                  {latestGift?.fundName ? `Give to ${latestGift.fundName}` : "Give again"}
                 </Link>
               </article>
               <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
@@ -568,7 +579,7 @@ function SectionContent({
           <p className="mt-2 text-sm leading-6 text-slate-500">
             For help with gifts, receipts, or account access, contact your organisation support team.
           </p>
-          <Link className="mt-5 inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={DEFAULT_GIVING_PATH}>
+          <Link className="mt-5 inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
             Go to giving page
           </Link>
         </section>

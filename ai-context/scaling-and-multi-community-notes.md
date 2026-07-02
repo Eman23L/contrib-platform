@@ -12,9 +12,10 @@ GetFlow should support multiple churches, charities, and communities without cod
 
 ## Current Limitations
 
-- Some fallback links still use `grace-community` when no organisation can be inferred.
+- Some fallback links still use `grace-community` only when no organisation can be inferred.
 - The `/sign-in` guest giving link uses the safe admin `next` path's `org` query parameter when present.
 - Supporter account does not have an explicit current organisation selector.
+- Supporter account give-again/support links use the latest giving-history organisation when available.
 - Organisation settings are read-only in the admin UI.
 - Public giving copy and support contact details are not editable per organisation.
 - Team member display lacks email/profile fields in app-owned tables.

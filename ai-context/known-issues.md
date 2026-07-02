@@ -19,7 +19,7 @@
 - Admin team member email addresses are not shown because `organisation_memberships` stores user IDs and roles, but not app-owned member email/profile fields.
 - Admin campaign, fund, team, and report write workflows still need product/security decisions before CRUD/export/invite/edit actions are added.
 - Settings writes are implemented for safe text/profile fields only; broader settings such as payment configuration, multi-currency checkout, and publication controls need separate decisions.
-- Some supporter/account fallback giving links still use `grace-community` when the supporter has no giving history to infer an organisation.
+- Supporter/account fallback giving links still use `grace-community` only when the supporter has no giving history to infer an organisation.
 
 ## Risk Areas
 
