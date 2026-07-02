@@ -9,6 +9,17 @@ Status labels:
 - Placeholder: the feature mostly reuses generic content, static estimates, or non-functional actions.
 - Missing: the expected feature is not implemented.
 
+## Product Specification Source
+
+`deep-research-feature-map.md` is now the product specification for intended feature depth, naming, acceptance criteria, and build order. Before changing any visible section, compare the current implementation against both that file and this contract. If the two disagree, prefer the Deep Research feature map and update this file in the same task.
+
+Deep Research defines four non-negotiable product capabilities for GetFlow:
+
+- A reliable Stripe-native payments core with webhook-driven status, recoverability, and reconciliation.
+- A real supporter model rather than payment-only history.
+- Flexible organisation settings for multi-community identity, wording, branding, and operational defaults.
+- Admin reporting that closes the loop from donation intent to bank payout.
+
 ## Admin Overview
 
 User expectation:
@@ -27,7 +38,9 @@ Status: Partial.
 Acceptance criteria:
 
 - Summary metrics are derived from real payments and labelled accurately.
+- Paid, pending, failed, cancelled, expired, refunded, and payout/reconciliation states are separated where the data exists.
 - Trend chart uses real date-range data.
+- Date, organisation, fund, and campaign filters update dashboard widgets consistently when those filters are added.
 - Quick actions link to real section-specific workflows or are marked coming soon/hidden.
 - Payout status is reconciled against Stripe payout/payment data or clearly labelled as an estimate.
 
@@ -49,6 +62,8 @@ Acceptance criteria:
 
 - Filters work reliably for org, status, fund, and date.
 - Payment status matches Stripe webhook/payment data.
+- One Stripe payment maps to one canonical contribution/donation record.
+- Rows expose relevant Stripe references, receipt state, refund state, and source/method details where the current schema supports them.
 - Rows expose enough detail for support/reconciliation without leaking sensitive data.
 - Export/reporting actions are either implemented or not visible.
 
@@ -92,6 +107,7 @@ Acceptance criteria:
 - Lists unique supporter records by verified user/email.
 - Shows supporter name, email, gift count, total paid amount, last gift date, and status.
 - Has supporter detail view with giving history and receipt references.
+- Long-term supporter profiles include first gift, average gift, active recurring state, preferences, declarations, admin notes, and safe segmentation.
 - Distinguishes supporter records from individual contribution rows.
 
 ## Funds
@@ -112,8 +128,10 @@ Acceptance criteria:
 
 - Admin can create/edit/archive/reorder funds.
 - Admin can set default fund.
+- Admin can control public visibility and default ask amounts once settings schema supports it.
 - Public giving immediately reflects active fund configuration.
 - Archived funds remain valid for historical contribution records.
+- Fund totals reconcile with contribution allocations and paid payment status.
 
 ## Campaigns
 
@@ -134,8 +152,10 @@ Acceptance criteria:
 
 - Admin can create/edit/archive campaigns.
 - Campaigns can be linked to funds and contribution intents.
+- Campaigns have goal amount, public story/description, status, start/end dates, visibility, progress, and share URL when campaign schema supports them.
 - Public campaign pages or campaign-selectable giving are supported.
 - Campaign metrics are specific to campaign gifts.
+- Campaign progress reflects paid gifts by default.
 
 ## Reports
 
@@ -153,9 +173,10 @@ Status: Partial.
 Acceptance criteria:
 
 - Reports have date-range filters and breakdowns by fund/campaign/status.
-- Export produces a useful CSV or similar file.
+- Export produces useful CSV or similar files for donations, supporters, funds, campaigns, receipts/statements, and payout/deposit detail as each data model becomes available.
 - Reports clearly separate paid, pending, failed, cancelled, and expired amounts.
 - Data can be reconciled against Stripe payments/payouts.
+- Saved views, scheduled reports, statements, and Gift Aid/tax reporting are V1 targets, not current behavior.
 
 ## Team
 
@@ -176,6 +197,7 @@ Acceptance criteria:
 
 - Owner/admin can invite members.
 - Roles are visible and editable according to permissions.
+- Team rows eventually show user, role, organisation/site access, invite status, last active, and security status where available.
 - Removing/deactivating team members updates access safely.
 - Invite flow is auditable and does not expose service-role capabilities client-side.
 
@@ -198,6 +220,7 @@ Acceptance criteria:
 - Settings ownership/permissions are clear.
 - Public pages use configured copy and support contact details.
 - Sensitive payment/environment settings are displayed safely or managed externally.
+- MVP settings include organisation display name, legal name, slug, public copy, thank-you copy, support email, currency, timezone, logo/brand colour, fund/campaign visibility, and payment configuration status where schema supports them.
 
 ## Supporter Account
 
@@ -222,6 +245,7 @@ Acceptance criteria:
 - Recurring gift management is either real or hidden/marked not implemented.
 - Profile/preferences can be updated or are clearly read-only.
 - Support contact points to configured organisation support details.
+- Long-term account self-service delegates sensitive payment method and subscription management to Stripe Customer Portal or an equivalent secure Stripe-backed flow.
 
 ## Guest Giving Page
 
@@ -245,6 +269,8 @@ Acceptance criteria:
 - Email validation prevents invalid records.
 - Checkout succeeds and webhook updates payment state.
 - Public wording/support copy can be configured per organisation or is intentionally standard.
+- Guest giving remains friction-light and does not require account creation before first gift.
+- Post-payment supporter account claiming/history matching remains email-based until a fuller supporter identity model exists.
 
 ## Auth/Sign-In
 
@@ -291,6 +317,8 @@ Acceptance criteria:
 - Expired/failed/canceled events update contribution status safely.
 - Webhook delivery is monitored and retry-safe.
 - Recurring/subscription behavior is either implemented or removed/marked not implemented.
+- Stripe remains the financial source of truth; webhook processing must be idempotent and resilient to retries or out-of-order events.
+- Payout, refund, dispute, subscription, and customer portal workflows are planned before pilot/V1 and must not be faked in UI.
 
 ## Public Organisation Page
 
@@ -311,3 +339,44 @@ Acceptance criteria:
 - Organisation name, slug, and giving link are correct.
 - Public copy and support contact can be configured per organisation.
 - Sign-in flow respects organisation context for admin destination and guest giving.
+- Public page eventually supports visible funds, campaigns, trust/support information, legal/charity details where relevant, and mobile-first giving CTAs.
+
+## Receipts / Statements / Gift Aid
+
+User expectation:
+
+- Receive prompt receipts for successful gifts, access annual or date-bounded statements, and support UK Gift Aid/tax evidence where relevant.
+
+Current behavior:
+
+- Stripe Checkout and success pages exist for one-time gifts.
+- The app does not yet generate first-class receipt records, downloadable receipt PDFs, annual statements, Gift Aid declarations, or Gift Aid claim/export workflows.
+
+Status: Missing for GetFlow-owned receipt/tax artifacts; partial for Stripe-hosted payment acknowledgement.
+
+Acceptance criteria:
+
+- Every successful donation creates or links to a receipt record.
+- Admins can view receipt status and resend receipts when delivery exists.
+- Supporters can download or view prior receipts/statements.
+- Gift Aid/tax declaration data is structured, auditable, and organisation-scoped before UK charity pilot use.
+
+## Multi-Community Platform
+
+User expectation:
+
+- Each church, charity, or community has isolated organisation data, public identity, settings, funds, campaigns, roles, reports, receipts, and payment configuration.
+
+Current behavior:
+
+- Organisation slugs and organisation-scoped contribution/admin queries exist.
+- Some public/supporter/admin copy still relies on generic defaults or Grace Community seed data where editable settings are not implemented.
+- Full per-organisation branding, settings, payment account health, receipt wording, and content controls are planned.
+
+Status: Partial.
+
+Acceptance criteria:
+
+- No cross-organisation data leakage in admin, supporter, public, or reporting views.
+- Organisation slug, display name, public copy, support contact, currency, timezone, funds, campaigns, team roles, reports, receipts, and payment configuration are scoped per organisation.
+- One auth user can safely belong to multiple organisations without leaking supporter or admin data between them.

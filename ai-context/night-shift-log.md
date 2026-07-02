@@ -127,3 +127,24 @@ Blocked/risky items:
 - Supporter account fallback organisation selection for no-history users needs product direction.
 - Production Stripe webhook verification requires Stripe/Vercel/Supabase dashboard access.
 Next task chosen: Morning review of blocked items and production manual QA.
+
+## Deep Research Feature Map Added
+
+Date/time: 2026-07-02T01:55:00+01:00
+Starting commit: 17872d236cf58b4e006a31aed5f9308ab66f0111
+Task: Add the Deep Research feature map as GetFlow's product specification.
+Why this task was chosen: The project needed a durable product specification covering the expected giving-platform loop, reference platform patterns, reporting model, supporter model, organisation settings, payments, receipts, UK considerations, roadmap, and Night Shift instructions.
+Files changed:
+- `ai-context/deep-research-feature-map.md`
+- `ai-context/README.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-mission.md`
+- `ai-context/codex-loop-instructions.md`
+- `ai-context/night-shift-log.md`
+Checks run: `git status --short --branch` before edits; documentation-only update.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Future Codex and Night Shift sessions now have a stronger source of truth for feature intent, dependency order, and acceptance criteria.
+Blocked/risky items: No implementation was attempted. Auth, Stripe, Supabase, schema, routes, environment variables, and UI behavior were intentionally unchanged.
+Next task chosen: Compare current organisation settings and payment/reconciliation surfaces against `deep-research-feature-map.md`, then choose the highest-value safe build loop with explicit approval.

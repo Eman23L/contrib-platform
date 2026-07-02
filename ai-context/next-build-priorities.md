@@ -2,6 +2,39 @@
 
 This file lists suggested next work. Items here are planned/not implemented unless explicitly marked current.
 
+## Deep Research Priority Frame
+
+`deep-research-feature-map.md` is the roadmap source of truth. It positions GetFlow as a multi-organisation, Stripe-native giving platform with light donor CRM capabilities.
+
+The four non-negotiable product capabilities are:
+
+1. Reliable payments core: webhook-driven status handling, idempotency, recoverability, refunds/failures, recurring lifecycle, and payout reconciliation.
+2. Real supporter model: history, profiles, receipts/statements, recurring gifts, preferences, and safe matching of guest/account gifts.
+3. Flexible organisation settings: editable organisation identity, public copy, support contact, branding, currency, timezone, visibility, and payment configuration state.
+4. Reporting and reconciliation: paid-vs-pending/failure separation, exports, fund/campaign/supporter reporting, statements, and bank payout traceability.
+
+## Must-Have Before Demo
+
+1. Finish organisation settings MVP.
+   - Current: Settings shows organisation fields read-only where available.
+   - Planned: editable display name, legal name, slug where safe, public heading/copy, thank-you copy, support email, currency, timezone, logo/brand colour, fund/campaign visibility, and payment configuration state.
+
+2. Strengthen money-flow visibility.
+   - Current: one-time Stripe Checkout, status webhooks, and paid-only admin totals exist.
+   - Planned: internal payment detail/status view, webhook delivery visibility, clearer failed/cancelled/expired reporting, and first payout/reconciliation model.
+
+3. Complete supporter profile basics.
+   - Current: supporters are grouped from contribution records by email/name where available.
+   - Planned: supporter detail page with giving history, first/last gift, average gift, receipt references, recurring state when implemented, and safe organisation scoping.
+
+4. Improve public and guest organisation experience.
+   - Current: public org and guest giving pages use organisation slug/name and active funds.
+   - Planned: editable public page copy, visible funds/campaigns, support/contact details, legal/charity details where applicable, and stronger post-payment account claim path.
+
+5. Make reports exportable.
+   - Current: reports show paid totals, pending/not-completed counts, status/fund breakdowns, and recent contributions.
+   - Planned: CSV exports for donations, supporters, funds, campaign/fund performance, receipt status when available, and payout/deposit detail.
+
 ## High Priority
 
 1. Configure custom SMTP in Supabase for reliable supporter magic-link sign-in.
@@ -23,25 +56,29 @@ This file lists suggested next work. Items here are planned/not implemented unle
 
 ## Admin Priorities
 
-1. Build admin write workflows on top of the read-only MVP sections.
+1. Build organisation settings write workflows.
+   - Current: Settings is read-only and public wording/branding is mostly fixed.
+   - Planned: safe editable organisation identity/public copy/support/contact/branding/payment-status settings, with schema/RLS reviewed before write access.
+
+2. Build admin write workflows on top of the read-only MVP sections.
    - Current: Supporters, Giving, Funds, Campaigns, Reports, Team, and Settings show section-specific data from current tables.
    - Planned: add safe write workflows only after schema, RLS, and product decisions are clear.
 
-2. Build CRUD for funds.
+3. Build CRUD for funds.
    - Current: funds exist in database, are displayed/selectable, and have admin read-only performance summaries.
    - Planned: admin create/edit/archive/reorder funds.
 
-3. Build campaign management.
+4. Build campaign management.
    - Current: campaigns table exists and admin campaign section shows campaign summaries or fund-based fundraising areas.
-   - Planned: campaign create/edit/archive and contribution attribution.
+   - Planned: campaign create/edit/archive, goal, story, visibility, linked funds, public page, progress, share link, and contribution attribution.
 
-4. Build team management.
+5. Build team management.
    - Current: memberships determine access and the team section lists visible membership role/status records.
-   - Planned: invite/remove/change roles.
+   - Planned: invite/remove/change roles, invite status, last active where available, and audit trail.
 
-5. Improve reports.
+6. Improve reports.
    - Current: reports show paid totals, pending/not-completed counts, fund/status breakdowns, and recent contributions.
-   - Planned: date ranges, exports, charts, and reconciliation reports.
+   - Planned: date ranges, exports, charts, receipt/statement reports, recurring reports, and payout reconciliation reports.
 
 ## Technical Priorities
 
@@ -50,6 +87,7 @@ This file lists suggested next work. Items here are planned/not implemented unle
 3. Monitor legacy redirect routes `/me`, `/me/giving`, and `/admin/donations`; remove only if no production links depend on them.
 4. Add focused empty states and detail pages where current read-only MVPs stop at summaries.
 5. Audit all buttons/links for dead actions.
+6. Add architecture notes for receipt records, recurring plans, payout reconciliation, Gift Aid declarations, and supporter identity before implementing those schemas.
 
 ## Recently Completed Functional Fixes
 
@@ -65,3 +103,4 @@ This file lists suggested next work. Items here are planned/not implemented unle
 - Planned: mobile navigation improvements for hidden sidebar sections.
 - Planned: deeper button/action audit as new workflows are added.
 - Planned: Supabase custom SMTP setup outside app code.
+- Planned: Gift Aid/tax workflows, receipt wording semantics, and retention/communication-preference policy need product/compliance decisions before pilot.

@@ -57,6 +57,8 @@ Before changing UI:
 
 ## Feature Contract Rule
 
+Before building or changing any visible section, compare the current implementation against `ai-context/deep-research-feature-map.md` and `ai-context/feature-contracts.md`.
+
 Before implementing new work, Codex must check whether the visible feature already does what it claims to do. If a feature is only a placeholder, Codex must propose one of these paths before changing functionality:
 
 - Make it real.

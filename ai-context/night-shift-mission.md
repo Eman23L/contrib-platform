@@ -6,6 +6,10 @@ Night Shift is an approved autonomous maintenance loop for GetFlow.
 
 GetFlow is a multi-community giving and contributions platform for churches, charities, and communities.
 
+## Product Specification
+
+Night Shift must treat `ai-context/deep-research-feature-map.md` as the product specification for feature intent, priority, and acceptance criteria. If older context disagrees with that file, prefer the Deep Research feature map and update the older context as part of the same focused task.
+
 ## Core Flows To Protect
 
 - Admin account/password access.

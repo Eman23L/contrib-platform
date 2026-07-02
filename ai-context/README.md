@@ -4,6 +4,7 @@ This folder is project memory for future Codex sessions. It is documentation onl
 
 Read these files before making changes:
 
+- `deep-research-feature-map.md` - Deep Research product specification, feature map, and roadmap reference for GetFlow.
 - `product-vision.md` - what the app is for and what is intentionally not built yet.
 - `user-roles.md` - current user types, access rules, and role boundaries.
 - `current-routes.md` - App Router pages and API endpoints currently present.
@@ -17,4 +18,4 @@ Read these files before making changes:
 - `feature-contracts.md` - visible feature/page contracts, current status, and completion criteria.
 - `multi-community-requirements.md` - requirements for supporting multiple organisations/communities.
 
-Current snapshot: based on the codebase as inspected on 2026-06-30.
+Current snapshot: based on the codebase and product context as inspected on 2026-07-02.
