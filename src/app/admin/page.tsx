@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { AdminDashboardChrome } from "@/components/admin/AdminDashboardChrome";
 import { requireAdminRole } from "@/lib/auth/requireAdminRole";
+import { getDefaultOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { createServerSupabaseUserClient } from "@/lib/supabase/server";
 import { getAdminDashboard } from "@/lib/services/admin/getAdminDashboard";
 import type {
@@ -100,16 +101,10 @@ function getStatusCount(statuses: AdminStatusSummaryItem[], names: string[]) {
     .reduce((total, status) => total + status.contributionsCount, 0);
 }
 
-function getSettingsRows(settings: Record<string, unknown>) {
-  return Object.entries(settings).map(([key, value]) => ({
-    key,
-    value:
-      typeof value === "string" ||
-      typeof value === "number" ||
-      typeof value === "boolean"
-        ? String(value)
-        : JSON.stringify(value),
-  }));
+function getStringSetting(settings: Record<string, unknown>, key: string) {
+  const value = settings[key];
+
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function percentOf(value: number, total: number) {
@@ -1043,17 +1038,37 @@ function SettingsTextarea({
   );
 }
 
-function getPublicSettingsRows(settings: AdminOrganisationSettings) {
-  return [
-    ["Public heading", settings.publicSettings.publicPageHeading],
-    ["Public intro", settings.publicSettings.publicPageIntro],
-    ["Giving heading", settings.publicSettings.givingPageHeading],
-    ["Giving intro", settings.publicSettings.givingPageIntro],
-    ["Giving action label", settings.publicSettings.givingActionLabel],
-    ["Thank-you message", settings.publicSettings.thankYouMessage],
-    ["Support email", settings.publicSettings.supportEmail || "Not set"],
-    ["Logo URL", settings.publicSettings.logoUrl || "Not set"],
-  ];
+function getCustomPublicSettings(settings: AdminOrganisationSettings) {
+  const defaults = getDefaultOrganisationPublicSettings(settings.name);
+
+  return {
+    givingActionLabel:
+      getStringSetting(settings.settings, "givingActionLabel") === defaults.givingActionLabel
+        ? ""
+        : getStringSetting(settings.settings, "givingActionLabel"),
+    givingPageHeading:
+      getStringSetting(settings.settings, "givingPageHeading") === defaults.givingPageHeading
+        ? ""
+        : getStringSetting(settings.settings, "givingPageHeading"),
+    givingPageIntro:
+      getStringSetting(settings.settings, "givingPageIntro") === defaults.givingPageIntro
+        ? ""
+        : getStringSetting(settings.settings, "givingPageIntro"),
+    logoUrl: getStringSetting(settings.settings, "logoUrl"),
+    publicPageHeading:
+      getStringSetting(settings.settings, "publicPageHeading") === defaults.publicPageHeading
+        ? ""
+        : getStringSetting(settings.settings, "publicPageHeading"),
+    publicPageIntro:
+      getStringSetting(settings.settings, "publicPageIntro") === defaults.publicPageIntro
+        ? ""
+        : getStringSetting(settings.settings, "publicPageIntro"),
+    supportEmail: getStringSetting(settings.settings, "supportEmail"),
+    thankYouMessage:
+      getStringSetting(settings.settings, "thankYouMessage") === defaults.thankYouMessage
+        ? ""
+        : getStringSetting(settings.settings, "thankYouMessage"),
+  };
 }
 
 function SettingsSection({
@@ -1066,8 +1081,8 @@ function SettingsSection({
   settingsStatus: SettingsStatus;
 }) {
   const settings = dashboard.organisationSettings;
-  const settingsRows = getSettingsRows(settings.settings);
-  const publicRows = getPublicSettingsRows(settings);
+  const defaultPublicSettings = getDefaultOrganisationPublicSettings(settings.name);
+  const customPublicSettings = getCustomPublicSettings(settings);
   const errorMessage = getSettingsErrorMessage(settingsStatus.error);
 
   return (
@@ -1088,7 +1103,7 @@ function SettingsSection({
         </div>
       ) : null}
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+      <div className="max-w-4xl">
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -1116,7 +1131,7 @@ function SettingsSection({
                   required
                 />
               </SettingsField>
-              <SettingsField label="Organisation slug" helper="Lowercase letters, numbers, and hyphens only.">
+              <SettingsField label="Organisation slug" helper="Used in the public URL. Spaces and capitals are saved as lowercase hyphens.">
                 <SettingsInput
                   defaultValue={settings.slug}
                   disabled={!canEditSettings}
@@ -1150,57 +1165,57 @@ function SettingsSection({
             <div className="grid gap-4 md:grid-cols-2">
               <SettingsField label="Public page heading">
                 <SettingsInput
-                  defaultValue={settings.publicSettings.publicPageHeading}
+                  defaultValue={customPublicSettings.publicPageHeading}
                   disabled={!canEditSettings}
                   maxLength={140}
                   name="publicPageHeading"
-                  placeholder={`Welcome to ${settings.name}`}
+                  placeholder={defaultPublicSettings.publicPageHeading}
                 />
               </SettingsField>
               <SettingsField label="Giving page heading">
                 <SettingsInput
-                  defaultValue={settings.publicSettings.givingPageHeading}
+                  defaultValue={customPublicSettings.givingPageHeading}
                   disabled={!canEditSettings}
                   maxLength={140}
                   name="givingPageHeading"
-                  placeholder={`Support ${settings.name}`}
+                  placeholder={defaultPublicSettings.givingPageHeading}
                 />
               </SettingsField>
             </div>
 
             <SettingsField label="Public page intro">
               <SettingsTextarea
-                defaultValue={settings.publicSettings.publicPageIntro}
+                defaultValue={customPublicSettings.publicPageIntro}
                 disabled={!canEditSettings}
                 maxLength={500}
                 name="publicPageIntro"
-                placeholder="Short public introduction for this community."
+                placeholder={defaultPublicSettings.publicPageIntro}
               />
             </SettingsField>
 
             <SettingsField label="Giving page intro">
               <SettingsTextarea
-                defaultValue={settings.publicSettings.givingPageIntro}
+                defaultValue={customPublicSettings.givingPageIntro}
                 disabled={!canEditSettings}
                 maxLength={500}
                 name="givingPageIntro"
-                placeholder="Short explanation shown above the giving form."
+                placeholder={defaultPublicSettings.givingPageIntro}
               />
             </SettingsField>
 
             <div className="grid gap-4 md:grid-cols-2">
               <SettingsField label="Giving action wording">
                 <SettingsInput
-                  defaultValue={settings.publicSettings.givingActionLabel}
+                  defaultValue={customPublicSettings.givingActionLabel}
                   disabled={!canEditSettings}
                   maxLength={80}
                   name="givingActionLabel"
-                  placeholder="Give"
+                  placeholder={defaultPublicSettings.givingActionLabel}
                 />
               </SettingsField>
               <SettingsField label="Support email">
                 <SettingsInput
-                  defaultValue={settings.publicSettings.supportEmail}
+                  defaultValue={customPublicSettings.supportEmail}
                   disabled={!canEditSettings}
                   maxLength={254}
                   name="supportEmail"
@@ -1212,17 +1227,17 @@ function SettingsSection({
 
             <SettingsField label="Thank-you message">
               <SettingsTextarea
-                defaultValue={settings.publicSettings.thankYouMessage}
+                defaultValue={customPublicSettings.thankYouMessage}
                 disabled={!canEditSettings}
                 maxLength={500}
                 name="thankYouMessage"
-                placeholder="Message shown after a successful gift."
+                placeholder={defaultPublicSettings.thankYouMessage}
               />
             </SettingsField>
 
             <SettingsField label="Logo URL" helper="Stored for public branding; image rendering can be expanded later without changing this data model.">
               <SettingsInput
-                defaultValue={settings.publicSettings.logoUrl}
+                defaultValue={customPublicSettings.logoUrl}
                 disabled={!canEditSettings}
                 maxLength={500}
                 name="logoUrl"
@@ -1232,7 +1247,7 @@ function SettingsSection({
             </SettingsField>
 
             <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-              Currency is currently <span className="font-semibold text-slate-900">{settings.currencyCode}</span>. Stripe checkout is configured for GBP in the current app, so payment currency is read-only in this MVP.
+              Currency is currently <span className="font-semibold text-slate-900">{settings.currencyCode}</span>. Stripe checkout is configured separately, so payment secrets are not shown or editable here.
             </div>
 
             {canEditSettings ? (
@@ -1241,45 +1256,6 @@ function SettingsSection({
               </button>
             ) : null}
           </form>
-        </section>
-
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <h2 className="text-base font-semibold text-slate-950">Configuration Overview</h2>
-          <div className="mt-5 space-y-3 text-sm">
-            <div className="rounded-xl bg-slate-50 px-4 py-3">
-              <p className="font-semibold text-slate-700">Payment status</p>
-              <p className="mt-1 text-slate-500">
-                Stripe checkout is managed by server environment variables. No payment secrets are editable here.
-              </p>
-            </div>
-
-            {publicRows.map(([label, value]) => (
-              <div className="rounded-xl bg-slate-50 px-4 py-3" key={label}>
-                <p className="font-semibold text-slate-700">{label}</p>
-                <p className="mt-1 break-words text-slate-500">{value}</p>
-              </div>
-            ))}
-
-            {settingsRows.length > 0 ? (
-              <details className="rounded-xl bg-slate-50 px-4 py-3">
-                <summary className="cursor-pointer font-semibold text-slate-700">
-                  Stored settings JSON
-                </summary>
-                <div className="mt-3 space-y-3">
-                  {settingsRows.map((row) => (
-                    <div key={row.key}>
-                      <p className="font-semibold text-slate-700">{row.key}</p>
-                      <p className="mt-1 break-words text-slate-500">{row.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            ) : (
-              <p className="rounded-xl bg-slate-50 px-4 py-3 text-slate-500">
-                No custom public settings are stored yet. Public pages use generated defaults from the organisation name, slug, currency, and active funds.
-              </p>
-            )}
-          </div>
         </section>
       </div>
     </div>

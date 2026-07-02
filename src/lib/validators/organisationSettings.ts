@@ -21,6 +21,7 @@ type ValidationResult =
     };
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SLUG_INPUT_PATTERN = /^[A-Za-z0-9 _-]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function getFormString(formData: FormData, key: string) {
@@ -60,10 +61,19 @@ function isValidOptionalUrl(value: string) {
   }
 }
 
+function normalizeSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replaceAll(/[\s_-]+/g, "-")
+    .replaceAll(/^-+|-+$/g, "");
+}
+
 export function validateOrganisationSettingsForm(formData: FormData): ValidationResult {
   const name = getFormString(formData, "name");
   const legalName = getFormString(formData, "legalName");
-  const slug = getFormString(formData, "slug").toLowerCase();
+  const rawSlug = getFormString(formData, "slug");
+  const slug = normalizeSlug(rawSlug);
   const timezone = getFormString(formData, "timezone");
   const supportEmail = getFormString(formData, "supportEmail").toLowerCase();
   const logoUrl = getFormString(formData, "logoUrl");
@@ -82,9 +92,14 @@ export function validateOrganisationSettingsForm(formData: FormData): Validation
     };
   }
 
-  if (!SLUG_PATTERN.test(slug) || slug.length > 80) {
+  if (
+    !rawSlug ||
+    !SLUG_INPUT_PATTERN.test(rawSlug) ||
+    !SLUG_PATTERN.test(slug) ||
+    slug.length > 80
+  ) {
     return {
-      error: "Organisation slug must use lowercase letters, numbers, and single hyphens.",
+      error: "Organisation slug must use letters, numbers, spaces, or hyphens.",
       ok: false,
     };
   }
@@ -116,7 +131,7 @@ export function validateOrganisationSettingsForm(formData: FormData): Validation
       legalName: legalName || null,
       name,
       publicSettings: {
-        givingActionLabel: optionalText(getFormString(formData, "givingActionLabel"), 80) || "Give",
+        givingActionLabel: optionalText(getFormString(formData, "givingActionLabel"), 80),
         givingPageHeading: optionalText(getFormString(formData, "givingPageHeading"), 140),
         givingPageIntro: optionalText(getFormString(formData, "givingPageIntro"), 500),
         logoUrl: optionalText(logoUrl, 500),
