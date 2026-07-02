@@ -166,7 +166,8 @@ User expectation:
 Current behavior:
 
 - Reports section shows paid total, all gift records, pending count, failed/cancelled/expired count, breakdown by fund, breakdown by status, and recent contributions.
-- No true report builder, date range controls, export, or Stripe payout reconciliation report exists.
+- Reports section links to an admin-only CSV export of scoped contribution records.
+- No true report builder, date range controls, saved views, receipt/statement exports, or Stripe payout reconciliation report exists.
 
 Status: Partial.
 

@@ -33,8 +33,8 @@ The four non-negotiable product capabilities are:
    - Planned: editable public page copy, visible funds/campaigns, support/contact details, legal/charity details where applicable, and stronger post-payment account claim path.
 
 5. Make reports exportable.
-   - Current: reports show paid totals, pending/not-completed counts, status/fund breakdowns, and recent contributions.
-   - Planned: CSV exports for donations, supporters, funds, campaign/fund performance, receipt status when available, and payout/deposit detail.
+   - Current: reports show paid totals, pending/not-completed counts, status/fund breakdowns, recent contributions, and an admin-only contribution CSV export.
+   - Planned: filtered exports, supporter/fund/campaign exports, receipt status export when available, saved views, and payout/deposit detail.
 
 ## High Priority
 
@@ -79,7 +79,8 @@ The four non-negotiable product capabilities are:
 
 6. Improve reports.
    - Current: reports show paid totals, pending/not-completed counts, fund/status breakdowns, and recent contributions.
-   - Planned: date ranges, exports, charts, receipt/statement reports, recurring reports, and payout reconciliation reports.
+   - Current: contribution CSV export is available from Reports.
+   - Planned: date ranges, filtered exports, charts, receipt/statement reports, recurring reports, and payout reconciliation reports.
 
 ## Technical Priorities
 

@@ -195,3 +195,23 @@ Push status: Pending.
 What improved: Owners/admins can edit safe organisation identity and public wording fields; finance users remain read-only; public organisation/giving/success pages now use saved wording where available; payment secrets remain outside the UI.
 Blocked/risky items: Currency remains read-only because current Stripe checkout is GBP-only. Brand colour rendering, settings audit logging, fund/campaign publication controls, and payment setup health checks remain separate future tasks.
 Next task chosen: After commit/push, evaluate the next safe gap from reports/export or payment-status visibility.
+
+## Task 2 - Contribution CSV Export
+
+Date/time: 2026-07-02T03:15:00+01:00
+Starting commit: f6d42e19eb2b7786bd5e28ee29c8acf3cc47705f
+Task: Add admin contribution CSV export.
+Why this task was chosen: Deep Research and feature contracts require useful exports before pilot, and the current Reports section had real data but no working export action.
+Files changed:
+- `src/app/admin/page.tsx`
+- `src/app/admin/reports/contributions/route.ts`
+- `ai-context/current-routes.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Reports now expose a real admin-only CSV download of organisation-scoped contribution records.
+Blocked/risky items: Export is currently unfiltered and contribution-only. Filtered exports, supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
+Next task chosen: Pending after checks, commit, and push.

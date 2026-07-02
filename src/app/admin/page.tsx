@@ -813,12 +813,22 @@ function CampaignsSection({ dashboard }: { dashboard: AdminDashboardData }) {
 function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
   const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
+  const exportHref = `/admin/reports/contributions?org=${dashboard.organisationSlug}`;
 
   return (
     <div className="space-y-5 p-5 xl:p-7">
-      <SectionIntro title="Reports">
-        Giving and payment reporting from current contribution records.
-      </SectionIntro>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <SectionIntro title="Reports">
+          Giving and payment reporting from current contribution records.
+        </SectionIntro>
+        <Link
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+          href={exportHref}
+        >
+          <Icon className="h-4 w-4" name="download" />
+          Download CSV
+        </Link>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
