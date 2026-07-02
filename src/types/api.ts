@@ -94,6 +94,8 @@ export type AdminCampaignSummaryItem = {
 };
 
 export type AdminTeamMemberItem = {
+  email: string | null;
+  displayName: string | null;
   id: string;
   isActive: boolean;
   joinedAt: string;

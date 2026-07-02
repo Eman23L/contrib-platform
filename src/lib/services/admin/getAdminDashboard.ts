@@ -17,6 +17,7 @@ import {
   type AdminStatusTotalsRow,
   type AdminTeamMemberRow,
 } from "@/lib/db/queries/admin";
+import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import type {
   AdminCampaignSummaryItem,
@@ -280,10 +281,50 @@ export function getAdminCampaignSummaries(
   );
 }
 
-export function getAdminTeamMembers(
+function getAuthDisplayName(metadata: Record<string, unknown> | undefined) {
+  const fullName = metadata?.full_name;
+  const displayName = metadata?.display_name;
+  const name = metadata?.name;
+  const firstName = metadata?.first_name;
+  const lastName = metadata?.last_name;
+
+  if (typeof fullName === "string" && fullName.trim()) {
+    return fullName.trim();
+  }
+
+  if (typeof displayName === "string" && displayName.trim()) {
+    return displayName.trim();
+  }
+
+  if (typeof name === "string" && name.trim()) {
+    return name.trim();
+  }
+
+  const parts = [firstName, lastName]
+    .filter((part): part is string => typeof part === "string" && Boolean(part.trim()))
+    .map((part) => part.trim());
+
+  return parts.length > 0 ? parts.join(" ") : null;
+}
+
+export async function getAdminTeamMembers(
   rows: AdminTeamMemberRow[],
-): AdminTeamMemberItem[] {
-  return rows.map((row) => ({
+): Promise<AdminTeamMemberItem[]> {
+  const serviceSupabase = createServerSupabaseServiceClient();
+  const authUsers = await Promise.all(
+    rows.map(async (row) => {
+      const { data, error } = await serviceSupabase.auth.admin.getUserById(row.user_id);
+
+      return {
+        row,
+        user: error ? null : data.user,
+      };
+    }),
+  );
+
+  return authUsers.map(({ row, user }) => ({
+    displayName: getAuthDisplayName(user?.user_metadata),
+    email: user?.email ?? null,
     id: row.id,
     isActive: row.is_active,
     joinedAt: row.created_at,
@@ -374,6 +415,6 @@ export async function getAdminDashboard(
     organisationSettings: getOrganisationSettings(organisation),
     statusSummary: getAdminTotalsByStatus(statusRows),
     supporterSummaries: getAdminSupporterSummaries(sectionContributionRows),
-    teamMembers: getAdminTeamMembers(teamRows),
+    teamMembers: await getAdminTeamMembers(teamRows),
   };
 }

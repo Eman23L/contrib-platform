@@ -905,17 +905,29 @@ function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
             <table className="min-w-full table-fixed text-left">
               <thead>
                 <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500">
-                  <th className="w-[34%] py-3 pr-4">User ID</th>
+                  <th className="w-[44%] py-3 pr-4">Member</th>
                   <th className="w-[18%] py-3 pr-4">Role</th>
                   <th className="w-[18%] py-3 pr-4">Status</th>
-                  <th className="w-[30%] py-3">Joined</th>
+                  <th className="w-[20%] py-3">Joined</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {dashboard.teamMembers.map((member: AdminTeamMemberItem) => (
                   <tr key={member.id}>
                     <td className="py-3 pr-4">
-                      <span className="font-mono text-xs text-slate-600">{getShortId(member.userId)}...</span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-800">
+                          {member.displayName ?? member.email ?? "Name not set"}
+                        </p>
+                        {member.email && member.email !== member.displayName ? (
+                          <p className="mt-1 truncate text-xs text-slate-500">
+                            {member.email}
+                          </p>
+                        ) : null}
+                        <p className="mt-1 font-mono text-xs text-slate-400">
+                          ID {getShortId(member.userId)}...
+                        </p>
+                      </div>
                     </td>
                     <td className="py-3 pr-4 text-sm font-semibold text-slate-700">{getRoleLabel(member.role)}</td>
                     <td className="py-3 pr-4">
