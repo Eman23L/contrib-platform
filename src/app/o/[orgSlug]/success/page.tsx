@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
+import { getPublicOrganisation } from "@/lib/services/public/getPublicOrganisation";
 import { getContributionBySessionId } from "@/lib/services/public/getContributionBySessionId";
 
 type SuccessPageProps = {
@@ -54,7 +56,15 @@ export default async function SuccessPage({
     notFound();
   }
 
+  const organisation = await getPublicOrganisation(orgSlug);
+  const publicSettings = organisation
+    ? getOrganisationPublicSettings(organisation.settings, organisation.name)
+    : null;
   const pageCopy = getSuccessPageCopy(contribution.status);
+  const successIntro =
+    contribution.status === "succeeded" && publicSettings?.thankYouMessage
+      ? publicSettings.thankYouMessage
+      : pageCopy.intro;
 
   return (
     <main className="gf-page">
@@ -71,7 +81,7 @@ export default async function SuccessPage({
               {pageCopy.heading}
             </h1>
             <p className="gf-copy mt-3 max-w-md">
-              {pageCopy.intro}
+              {successIntro}
             </p>
           </div>
 

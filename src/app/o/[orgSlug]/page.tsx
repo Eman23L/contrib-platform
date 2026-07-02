@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { UnifiedSignInCard } from "@/components/auth/UnifiedSignInCard";
+import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getPublicOrganisation } from "@/lib/services/public/getPublicOrganisation";
 
 type OrganisationLandingPageProps = {
@@ -17,13 +18,21 @@ export default async function OrganisationLandingPage({
     notFound();
   }
 
+  const publicSettings = getOrganisationPublicSettings(
+    organisation.settings,
+    organisation.name,
+  );
+
   return (
     <main className="gf-page">
       <div className="gf-shell max-w-lg">
         <UnifiedSignInCard
           adminNextPath={`/admin?org=${organisation.slug}`}
           guestHref={`/o/${organisation.slug}/give`}
+          intro={publicSettings.publicPageIntro}
+          kicker={organisation.name}
           publicNextPath="/account"
+          title={publicSettings.publicPageHeading}
         />
       </div>
     </main>

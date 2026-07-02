@@ -38,8 +38,9 @@ Requirement:
 
 Current status:
 
-- Partial: organisation name is dynamic.
-- Planned/not implemented: editable per-organisation public wording is not built.
+- Current: organisation name is dynamic.
+- Current: owners/admins can edit public page heading/intro, giving page heading/intro, giving action wording, and thank-you message through the admin Settings section.
+- Partial: richer public page blocks and campaign/fund-specific wording are not implemented.
 
 ## Support/Contact Email
 
@@ -49,7 +50,9 @@ Requirement:
 
 Current status:
 
-- Planned/not implemented: support copy is generic and no support email setting is exposed in admin UI.
+- Current: owners/admins can save a support/contact email in organisation Settings.
+- Current: the guest giving page shows the saved support email where available.
+- Partial: supporter account support still uses generic support copy unless it can infer an organisation from giving history.
 
 ## Funds
 
@@ -115,7 +118,8 @@ Requirement:
 Current status:
 
 - Partial: Settings section shows current organisation name, slug, legal name, currency, timezone, and stored settings data where present.
-- Planned/not implemented: editable settings forms, validation, permissions, public copy editing, and audit behavior.
+- Current: owners/admins can edit safe organisation identity and public wording fields with server-side validation; finance users can view but not edit.
+- Partial: audit behavior, brand colour rendering, editable currency/multi-currency checkout, and payment configuration health checks are not implemented.
 
 ## Product Rule for Multi-Community Work
 

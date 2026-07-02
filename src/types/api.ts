@@ -30,6 +30,16 @@ export type PublicGivingPageData = {
   organisationSlug: string;
   currencyCode: string;
   funds: PublicFund[];
+  publicSettings: {
+    givingActionLabel: string;
+    givingPageHeading: string;
+    givingPageIntro: string;
+    logoUrl: string;
+    publicPageHeading: string;
+    publicPageIntro: string;
+    supportEmail: string;
+    thankYouMessage: string;
+  };
 };
 
 export type AdminSummary = {
@@ -95,6 +105,7 @@ export type AdminOrganisationSettings = {
   currencyCode: string;
   legalName: string | null;
   name: string;
+  publicSettings: PublicGivingPageData["publicSettings"];
   settings: Record<string, unknown>;
   slug: string;
   timezone: string;

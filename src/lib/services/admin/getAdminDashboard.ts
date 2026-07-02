@@ -17,6 +17,7 @@ import {
   type AdminStatusTotalsRow,
   type AdminTeamMemberRow,
 } from "@/lib/db/queries/admin";
+import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import type {
   AdminCampaignSummaryItem,
   AdminDashboardData,
@@ -298,6 +299,10 @@ function getOrganisationSettings(
     currencyCode: organisation.currencyCode,
     legalName: organisation.legalName,
     name: organisation.name,
+    publicSettings: getOrganisationPublicSettings(
+      organisation.settings,
+      organisation.name,
+    ),
     settings: organisation.settings,
     slug: organisation.slug,
     timezone: organisation.timezone,

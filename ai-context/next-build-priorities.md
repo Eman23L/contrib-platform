@@ -15,9 +15,10 @@ The four non-negotiable product capabilities are:
 
 ## Must-Have Before Demo
 
-1. Finish organisation settings MVP.
-   - Current: Settings shows organisation fields read-only where available.
-   - Planned: editable display name, legal name, slug where safe, public heading/copy, thank-you copy, support email, currency, timezone, logo/brand colour, fund/campaign visibility, and payment configuration state.
+1. Extend organisation settings beyond the safe MVP.
+   - Current: owners/admins can edit display name, legal name, slug, timezone, public heading/copy, giving page heading/copy, thank-you copy, support email, giving action wording, and logo URL.
+   - Current: public organisation, guest giving, and success pages use saved wording where available.
+   - Planned: brand colour rendering, editable currency only after multi-currency checkout support, fund/campaign visibility controls, audit logging, and payment setup health checks.
 
 2. Strengthen money-flow visibility.
    - Current: one-time Stripe Checkout, status webhooks, and paid-only admin totals exist.
@@ -56,9 +57,9 @@ The four non-negotiable product capabilities are:
 
 ## Admin Priorities
 
-1. Build organisation settings write workflows.
-   - Current: Settings is read-only and public wording/branding is mostly fixed.
-   - Planned: safe editable organisation identity/public copy/support/contact/branding/payment-status settings, with schema/RLS reviewed before write access.
+1. Add settings audit and publication controls.
+   - Current: safe Settings write workflow exists for owner/admin identity and public wording fields.
+   - Planned: audit log entries, public fund/campaign visibility controls, brand colour usage, and payment setup status checks.
 
 2. Build admin write workflows on top of the read-only MVP sections.
    - Current: Supporters, Giving, Funds, Campaigns, Reports, Team, and Settings show section-specific data from current tables.

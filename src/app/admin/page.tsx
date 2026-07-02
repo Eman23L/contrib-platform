@@ -9,13 +9,19 @@ import { getAdminDashboard } from "@/lib/services/admin/getAdminDashboard";
 import type {
   AdminDashboardData,
   AdminFundBreakdownItem,
+  AdminOrganisationSettings,
   AdminRecentContribution,
   AdminStatusSummaryItem,
   AdminTeamMemberItem,
 } from "@/types/api";
 
 type AdminPageProps = {
-  searchParams: Promise<{ org?: string; section?: string }>;
+  searchParams: Promise<{
+    org?: string;
+    section?: string;
+    settingsError?: string;
+    settingsSaved?: string;
+  }>;
 };
 
 type AdminSection =
@@ -27,6 +33,11 @@ type AdminSection =
   | "settings"
   | "supporters"
   | "team";
+
+type SettingsStatus = {
+  error: string | null;
+  saved: boolean;
+};
 
 function formatGbp(amountMinor: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -480,10 +491,14 @@ function SectionContent({
   activeSection,
   activeSupporters,
   dashboard,
+  settingsStatus,
+  userRole,
 }: {
   activeSection: AdminSection;
   activeSupporters: number;
   dashboard: AdminDashboardData;
+  settingsStatus: SettingsStatus;
+  userRole: string;
 }) {
   if (activeSection === "supporters") {
     return (
@@ -520,7 +535,13 @@ function SectionContent({
   }
 
   if (activeSection === "settings") {
-    return <SettingsSection dashboard={dashboard} />;
+    return (
+      <SettingsSection
+        canEditSettings={userRole === "owner" || userRole === "admin"}
+        dashboard={dashboard}
+        settingsStatus={settingsStatus}
+      />
+    );
   }
 
   return null;
@@ -913,9 +934,131 @@ function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
   );
 }
 
-function SettingsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+function getSettingsErrorMessage(error: string | null) {
+  if (!error) {
+    return null;
+  }
+
+  switch (error) {
+    case "forbidden":
+      return "Only owners and admins can edit organisation settings.";
+    case "missing-org":
+    case "not-found":
+      return "We could not find this organisation to update settings.";
+    case "save-failed":
+      return "We could not save these settings. Check the slug is unique and try again.";
+    case "unauthorized":
+      return "This account cannot edit settings for this organisation.";
+    default:
+      return error;
+  }
+}
+
+function SettingsField({
+  children,
+  helper,
+  label,
+}: {
+  children: ReactNode;
+  helper?: string;
+  label: string;
+}) {
+  return (
+    <label className="block">
+      <span className="gf-label">{label}</span>
+      {children}
+      {helper ? (
+        <span className="mt-1 block text-xs leading-5 text-slate-500">
+          {helper}
+        </span>
+      ) : null}
+    </label>
+  );
+}
+
+function SettingsInput({
+  defaultValue,
+  disabled,
+  maxLength,
+  name,
+  placeholder,
+  required = false,
+  type = "text",
+}: {
+  defaultValue: string;
+  disabled: boolean;
+  maxLength?: number;
+  name: string;
+  placeholder?: string;
+  required?: boolean;
+  type?: string;
+}) {
+  return (
+    <input
+      className="gf-input"
+      defaultValue={defaultValue}
+      disabled={disabled}
+      maxLength={maxLength}
+      name={name}
+      placeholder={placeholder}
+      required={required}
+      type={type}
+    />
+  );
+}
+
+function SettingsTextarea({
+  defaultValue,
+  disabled,
+  maxLength,
+  name,
+  placeholder,
+}: {
+  defaultValue: string;
+  disabled: boolean;
+  maxLength: number;
+  name: string;
+  placeholder?: string;
+}) {
+  return (
+    <textarea
+      className="gf-input min-h-24 resize-y"
+      defaultValue={defaultValue}
+      disabled={disabled}
+      maxLength={maxLength}
+      name={name}
+      placeholder={placeholder}
+      rows={3}
+    />
+  );
+}
+
+function getPublicSettingsRows(settings: AdminOrganisationSettings) {
+  return [
+    ["Public heading", settings.publicSettings.publicPageHeading],
+    ["Public intro", settings.publicSettings.publicPageIntro],
+    ["Giving heading", settings.publicSettings.givingPageHeading],
+    ["Giving intro", settings.publicSettings.givingPageIntro],
+    ["Giving action label", settings.publicSettings.givingActionLabel],
+    ["Thank-you message", settings.publicSettings.thankYouMessage],
+    ["Support email", settings.publicSettings.supportEmail || "Not set"],
+    ["Logo URL", settings.publicSettings.logoUrl || "Not set"],
+  ];
+}
+
+function SettingsSection({
+  canEditSettings,
+  dashboard,
+  settingsStatus,
+}: {
+  canEditSettings: boolean;
+  dashboard: AdminDashboardData;
+  settingsStatus: SettingsStatus;
+}) {
   const settings = dashboard.organisationSettings;
   const settingsRows = getSettingsRows(settings.settings);
+  const publicRows = getPublicSettingsRows(settings);
+  const errorMessage = getSettingsErrorMessage(settingsStatus.error);
 
   return (
     <div className="space-y-5 p-5 xl:p-7">
@@ -923,36 +1066,207 @@ function SettingsSection({ dashboard }: { dashboard: AdminDashboardData }) {
         Current organisation configuration used by public giving and admin scoping.
       </SectionIntro>
 
+      {settingsStatus.saved ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+          Organisation settings saved.
+        </div>
+      ) : null}
+
+      {errorMessage ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
       <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <h2 className="text-base font-semibold text-slate-950">Organisation Profile</h2>
-          <dl className="mt-5 grid gap-3 text-sm">
-            {[
-              ["Display name", settings.name],
-              ["Public slug", settings.slug],
-              ["Legal name", settings.legalName ?? "Not set"],
-              ["Currency", settings.currencyCode],
-              ["Timezone", settings.timezone],
-            ].map(([label, value]) => (
-              <div className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-4 py-3" key={label}>
-                <dt className="font-semibold text-slate-600">{label}</dt>
-                <dd className="truncate text-right font-semibold text-slate-950">{value}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-slate-950">Organisation Settings</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                Safe public identity and wording fields for this organisation.
+              </p>
+            </div>
+            <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${canEditSettings ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+              {canEditSettings ? "Editable" : "Read only"}
+            </span>
+          </div>
+
+          <form action="/admin/settings" className="mt-5 space-y-5" method="post">
+            <input name="currentOrgSlug" type="hidden" value={settings.slug} />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <SettingsField label="Display name">
+                <SettingsInput
+                  defaultValue={settings.name}
+                  disabled={!canEditSettings}
+                  maxLength={120}
+                  name="name"
+                  placeholder="Grace Community Church"
+                  required
+                />
+              </SettingsField>
+              <SettingsField label="Organisation slug" helper="Lowercase letters, numbers, and hyphens only.">
+                <SettingsInput
+                  defaultValue={settings.slug}
+                  disabled={!canEditSettings}
+                  maxLength={80}
+                  name="slug"
+                  placeholder="grace-community"
+                  required
+                />
+              </SettingsField>
+              <SettingsField label="Legal name">
+                <SettingsInput
+                  defaultValue={settings.legalName ?? ""}
+                  disabled={!canEditSettings}
+                  maxLength={160}
+                  name="legalName"
+                  placeholder="Registered legal name"
+                />
+              </SettingsField>
+              <SettingsField label="Timezone">
+                <SettingsInput
+                  defaultValue={settings.timezone}
+                  disabled={!canEditSettings}
+                  maxLength={80}
+                  name="timezone"
+                  placeholder="Europe/London"
+                  required
+                />
+              </SettingsField>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <SettingsField label="Public page heading">
+                <SettingsInput
+                  defaultValue={settings.publicSettings.publicPageHeading}
+                  disabled={!canEditSettings}
+                  maxLength={140}
+                  name="publicPageHeading"
+                  placeholder={`Welcome to ${settings.name}`}
+                />
+              </SettingsField>
+              <SettingsField label="Giving page heading">
+                <SettingsInput
+                  defaultValue={settings.publicSettings.givingPageHeading}
+                  disabled={!canEditSettings}
+                  maxLength={140}
+                  name="givingPageHeading"
+                  placeholder={`Support ${settings.name}`}
+                />
+              </SettingsField>
+            </div>
+
+            <SettingsField label="Public page intro">
+              <SettingsTextarea
+                defaultValue={settings.publicSettings.publicPageIntro}
+                disabled={!canEditSettings}
+                maxLength={500}
+                name="publicPageIntro"
+                placeholder="Short public introduction for this community."
+              />
+            </SettingsField>
+
+            <SettingsField label="Giving page intro">
+              <SettingsTextarea
+                defaultValue={settings.publicSettings.givingPageIntro}
+                disabled={!canEditSettings}
+                maxLength={500}
+                name="givingPageIntro"
+                placeholder="Short explanation shown above the giving form."
+              />
+            </SettingsField>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <SettingsField label="Giving action wording">
+                <SettingsInput
+                  defaultValue={settings.publicSettings.givingActionLabel}
+                  disabled={!canEditSettings}
+                  maxLength={80}
+                  name="givingActionLabel"
+                  placeholder="Give"
+                />
+              </SettingsField>
+              <SettingsField label="Support email">
+                <SettingsInput
+                  defaultValue={settings.publicSettings.supportEmail}
+                  disabled={!canEditSettings}
+                  maxLength={254}
+                  name="supportEmail"
+                  placeholder="support@example.org"
+                  type="email"
+                />
+              </SettingsField>
+            </div>
+
+            <SettingsField label="Thank-you message">
+              <SettingsTextarea
+                defaultValue={settings.publicSettings.thankYouMessage}
+                disabled={!canEditSettings}
+                maxLength={500}
+                name="thankYouMessage"
+                placeholder="Message shown after a successful gift."
+              />
+            </SettingsField>
+
+            <SettingsField label="Logo URL" helper="Stored for public branding; image rendering can be expanded later without changing this data model.">
+              <SettingsInput
+                defaultValue={settings.publicSettings.logoUrl}
+                disabled={!canEditSettings}
+                maxLength={500}
+                name="logoUrl"
+                placeholder="https://example.org/logo.png"
+                type="url"
+              />
+            </SettingsField>
+
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+              Currency is currently <span className="font-semibold text-slate-900">{settings.currencyCode}</span>. Stripe checkout is configured for GBP in the current app, so payment currency is read-only in this MVP.
+            </div>
+
+            {canEditSettings ? (
+              <button className="gf-button-primary" type="submit">
+                Save organisation settings
+              </button>
+            ) : null}
+          </form>
         </section>
 
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <h2 className="text-base font-semibold text-slate-950">Public Configuration</h2>
+          <h2 className="text-base font-semibold text-slate-950">Configuration Overview</h2>
           <div className="mt-5 space-y-3 text-sm">
-            {settingsRows.length > 0 ? settingsRows.map((row) => (
-              <div className="rounded-xl bg-slate-50 px-4 py-3" key={row.key}>
-                <p className="font-semibold text-slate-700">{row.key}</p>
-                <p className="mt-1 break-words text-slate-500">{row.value}</p>
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              <p className="font-semibold text-slate-700">Payment status</p>
+              <p className="mt-1 text-slate-500">
+                Stripe checkout is managed by server environment variables. No payment secrets are editable here.
+              </p>
+            </div>
+
+            {publicRows.map(([label, value]) => (
+              <div className="rounded-xl bg-slate-50 px-4 py-3" key={label}>
+                <p className="font-semibold text-slate-700">{label}</p>
+                <p className="mt-1 break-words text-slate-500">{value}</p>
               </div>
-            )) : (
+            ))}
+
+            {settingsRows.length > 0 ? (
+              <details className="rounded-xl bg-slate-50 px-4 py-3">
+                <summary className="cursor-pointer font-semibold text-slate-700">
+                  Stored settings JSON
+                </summary>
+                <div className="mt-3 space-y-3">
+                  {settingsRows.map((row) => (
+                    <div key={row.key}>
+                      <p className="font-semibold text-slate-700">{row.key}</p>
+                      <p className="mt-1 break-words text-slate-500">{row.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            ) : (
               <p className="rounded-xl bg-slate-50 px-4 py-3 text-slate-500">
-                No custom public settings are stored yet. Public pages currently use the organisation name, slug, currency, and active funds.
+                No custom public settings are stored yet. Public pages use generated defaults from the organisation name, slug, currency, and active funds.
               </p>
             )}
           </div>
@@ -965,11 +1279,15 @@ function SettingsSection({ dashboard }: { dashboard: AdminDashboardData }) {
 function AdminDashboardShell({
   activeSection,
   dashboard,
+  settingsStatus,
   userEmail,
+  userRole,
 }: {
   activeSection: AdminSection;
   dashboard: AdminDashboardData;
+  settingsStatus: SettingsStatus;
   userEmail: string | null;
+  userRole: string;
 }) {
   const activeSupporters = dashboard.activeSupportersCount;
   const paidGiftCount = getStatusCount(dashboard.statusSummary, ["succeeded"]);
@@ -1133,6 +1451,8 @@ function AdminDashboardShell({
           activeSection={activeSection}
           activeSupporters={activeSupporters}
           dashboard={dashboard}
+          settingsStatus={settingsStatus}
+          userRole={userRole}
         />
       )}
     </AdminDashboardChrome>
@@ -1280,8 +1600,12 @@ function UnauthorizedState({
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { org, section } = await searchParams;
+  const { org, section, settingsError, settingsSaved } = await searchParams;
   const activeSection = getAdminSection(section);
+  const settingsStatus: SettingsStatus = {
+    error: settingsError ?? null,
+    saved: settingsSaved === "1",
+  };
   const access = await requireAdminRole(org);
 
   if (access.kind === "unauthenticated") {
@@ -1340,7 +1664,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     <AdminDashboardShell
       activeSection={activeSection}
       dashboard={dashboard}
+      settingsStatus={settingsStatus}
       userEmail={access.value.user.email ?? null}
+      userRole={access.value.membership.role}
     />
   );
 }

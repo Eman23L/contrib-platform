@@ -7,8 +7,11 @@ type UnifiedSignInCardProps = {
   adminNextPath: string;
   guestHref: string;
   initialError?: string | null;
+  intro?: string;
+  kicker?: string;
   publicNextPath: string;
   startNextPath?: string;
+  title?: string;
 };
 
 type StartSignInResponse =
@@ -51,8 +54,11 @@ export function UnifiedSignInCard({
   adminNextPath,
   guestHref,
   initialError = null,
+  intro,
+  kicker = "Welcome to GetFlow",
   publicNextPath,
   startNextPath = publicNextPath,
+  title = "Sign in to your account",
 }: UnifiedSignInCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -147,10 +153,15 @@ export function UnifiedSignInCard({
   return (
     <section className="gf-card w-full p-6 sm:p-8">
       <div className="mx-auto max-w-md">
-        <p className="gf-kicker">Welcome to GetFlow</p>
+        <p className="gf-kicker">{kicker}</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-          Sign in to your account
+          {title}
         </h1>
+        {intro ? (
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            {intro}
+          </p>
+        ) : null}
 
         <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
           <label className="block">

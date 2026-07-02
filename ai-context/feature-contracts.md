@@ -209,8 +209,11 @@ User expectation:
 
 Current behavior:
 
-- Settings section shows organisation display name, public slug, legal name, currency, timezone, and stored settings JSON where present.
-- Public wording and branding settings are not editable through UI.
+- Settings section shows organisation display name, public slug, legal name, currency, timezone, typed public wording fields, support email, logo URL, stored settings JSON where present, and a payment configuration overview.
+- Owners/admins can edit safe organisation text/settings fields through a server-validated admin form: display name, legal name, slug, timezone, public page heading/intro, giving page heading/intro, giving action wording, thank-you message, support email, and logo URL.
+- Finance users can view settings but cannot edit them.
+- Public organisation, guest giving, and successful gift pages use saved wording where available.
+- Currency is read-only because current Stripe checkout is GBP-only.
 
 Status: Partial.
 
@@ -221,6 +224,7 @@ Acceptance criteria:
 - Public pages use configured copy and support contact details.
 - Sensitive payment/environment settings are displayed safely or managed externally.
 - MVP settings include organisation display name, legal name, slug, public copy, thank-you copy, support email, currency, timezone, logo/brand colour, fund/campaign visibility, and payment configuration status where schema supports them.
+- Remaining gaps: brand colour rendering, editable currency/multi-currency checkout, public fund/campaign visibility controls, audit entries for settings changes, and payment configuration health checks.
 
 ## Supporter Account
 
@@ -330,7 +334,7 @@ Current behavior:
 
 - `/o/[orgSlug]` loads organisation by slug and renders sign-in card.
 - Continue as guest points to that organisation's giving page.
-- Public landing copy is generic and not configurable.
+- Public landing copy uses saved organisation public heading/intro where available, with generated defaults from organisation name.
 
 Status: Partial.
 

@@ -291,8 +291,7 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
           </div>
         </div>
         <p className="mt-4 rounded-2xl bg-white/78 px-4 py-3 text-sm leading-6 text-slate-600">
-          Your gift is processed securely. You will review the payment before it
-          is completed.
+          Your {organisation.publicSettings.givingActionLabel.toLowerCase()} is processed securely. You will review the payment before it is completed.
         </p>
       </section>
 

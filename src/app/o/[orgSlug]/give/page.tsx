@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { GuestGivingForm } from "@/components/giving/GuestGivingForm";
+import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getPublicOrganisation } from "@/lib/services/public/getPublicOrganisation";
 import { listPublicFunds } from "@/lib/services/public/listPublicFunds";
 
@@ -108,6 +109,10 @@ export default async function GivePage({ params }: GivePageProps) {
 
   const funds = await listPublicFunds(organisation.id);
   const defaultFund = funds.find((fund) => fund.isDefault) ?? funds[0] ?? null;
+  const publicSettings = getOrganisationPublicSettings(
+    organisation.settings,
+    organisation.name,
+  );
 
   return (
     <main className="min-h-screen bg-[#f6f9fd] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
@@ -142,7 +147,7 @@ export default async function GivePage({ params }: GivePageProps) {
                 </span>
                 <p className="mt-4 text-sm font-semibold text-slate-950">Giving with purpose.</p>
                 <p className="mt-2 text-xs leading-5 text-slate-500">
-                  Your gift supports the work of {organisation.name}.
+                  {publicSettings.publicPageIntro}
                 </p>
               </div>
             </div>
@@ -173,17 +178,17 @@ export default async function GivePage({ params }: GivePageProps) {
               <div className="grid gap-5 xl:grid-cols-[1fr_350px] xl:items-start">
                 <div>
                   <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                    Support {organisation.name}
+                    {publicSettings.givingPageHeading}
                   </h1>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                    Choose a fund, select an amount, and continue to secure checkout.
+                    {publicSettings.givingPageIntro}
                   </p>
                 </div>
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
                   <div className="flex gap-3">
                     <Icon className="h-5 w-5 shrink-0 text-emerald-500" name="heart" />
                     <p className="text-sm font-medium leading-6 text-slate-700">
-                      Each of you should give what you have decided in your heart to give.
+                      {publicSettings.publicPageIntro}
                     </p>
                   </div>
                 </div>
@@ -226,6 +231,7 @@ export default async function GivePage({ params }: GivePageProps) {
                         organisationSlug: organisation.slug,
                         currencyCode: organisation.currencyCode,
                         funds,
+                        publicSettings,
                       }}
                     />
                   )}
@@ -260,9 +266,13 @@ export default async function GivePage({ params }: GivePageProps) {
                     <div className="flex gap-3">
                       <Icon className="h-5 w-5 shrink-0 text-emerald-500" name="lock" />
                       <div>
-                        <h2 className="text-sm font-semibold text-slate-950">Protected checkout</h2>
+                        <h2 className="text-sm font-semibold text-slate-950">
+                          {publicSettings.supportEmail ? "Need help?" : "Protected checkout"}
+                        </h2>
                         <p className="mt-2 text-sm leading-6 text-slate-500">
-                          Your payment details are handled by Stripe. GetFlow stores the giving record for receipts and history.
+                          {publicSettings.supportEmail
+                            ? `Contact ${publicSettings.supportEmail} for help with gifts or receipts.`
+                            : "Your payment details are handled by Stripe. GetFlow stores the giving record for receipts and history."}
                         </p>
                       </div>
                     </div>

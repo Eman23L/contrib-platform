@@ -22,6 +22,19 @@ Stores organisation identity:
 
 Used by public org lookup, admin dashboard scoping, and payment records.
 
+Current `settings` JSON keys used by the app:
+
+- `publicPageHeading`
+- `publicPageIntro`
+- `givingPageHeading`
+- `givingPageIntro`
+- `givingActionLabel`
+- `thankYouMessage`
+- `supportEmail`
+- `logoUrl`
+
+These are edited through the admin Settings MVP and used by public organisation/giving/success pages where available.
+
 ### `organisation_memberships`
 
 Defined in `003_memberships.sql`.

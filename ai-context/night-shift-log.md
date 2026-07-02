@@ -148,3 +148,50 @@ Push status: Pending.
 What improved: Future Codex and Night Shift sessions now have a stronger source of truth for feature intent, dependency order, and acceptance criteria.
 Blocked/risky items: No implementation was attempted. Auth, Stripe, Supabase, schema, routes, environment variables, and UI behavior were intentionally unchanged.
 Next task chosen: Compare current organisation settings and payment/reconciliation surfaces against `deep-research-feature-map.md`, then choose the highest-value safe build loop with explicit approval.
+
+## Night Shift Run Started
+
+Date/time: 2026-07-02T02:15:00+01:00
+Starting commit: 100e3f52f6f03b413b68f940ef8a31ac9439e775
+Task: Start autonomous Night Shift run with Organisation Settings MVP as the first target.
+Why this task was chosen: Deep Research and the next-build priorities identify editable multi-community organisation settings as the highest-value safe gap before demo.
+Files changed:
+- `ai-context/night-shift-log.md`
+Checks run: `git status --short --branch`; `git pull origin main`; all `/ai-context` files read.
+Commit hash: Pending.
+Push status: Pending.
+What improved: The run has a recorded starting point before implementation.
+Blocked/risky items: None at start.
+Next task chosen: Audit current organisation settings schema, admin settings UI, public organisation page, and guest giving page for a safe settings MVP.
+
+## Task 1 - Organisation Settings MVP
+
+Date/time: 2026-07-02T02:45:00+01:00
+Starting commit: 100e3f52f6f03b413b68f940ef8a31ac9439e775
+Task: Build organisation settings MVP.
+Why this task was chosen: Deep Research, feature contracts, multi-community requirements, and next-build priorities all identified editable organisation settings as the highest-value safe gap before demo.
+Files changed:
+- `src/app/admin/page.tsx`
+- `src/app/admin/settings/route.ts`
+- `src/app/o/[orgSlug]/page.tsx`
+- `src/app/o/[orgSlug]/give/page.tsx`
+- `src/app/o/[orgSlug]/success/page.tsx`
+- `src/components/auth/UnifiedSignInCard.tsx`
+- `src/components/giving/GuestGivingForm.tsx`
+- `src/lib/db/mutations/updateOrganisationSettings.ts`
+- `src/lib/organisationSettings.ts`
+- `src/lib/services/admin/getAdminDashboard.ts`
+- `src/lib/validators/organisationSettings.ts`
+- `src/types/api.ts`
+- `ai-context/database-map.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/known-issues.md`
+- `ai-context/multi-community-requirements.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Owners/admins can edit safe organisation identity and public wording fields; finance users remain read-only; public organisation/giving/success pages now use saved wording where available; payment secrets remain outside the UI.
+Blocked/risky items: Currency remains read-only because current Stripe checkout is GBP-only. Brand colour rendering, settings audit logging, fund/campaign publication controls, and payment setup health checks remain separate future tasks.
+Next task chosen: After commit/push, evaluate the next safe gap from reports/export or payment-status visibility.
