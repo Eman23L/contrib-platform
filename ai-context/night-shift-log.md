@@ -216,6 +216,27 @@ What improved: Reports now expose a real admin-only CSV download of organisation
 Blocked/risky items: Export is contribution-only. Supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
 Next task chosen: Pending after checks, commit, and push.
 
+## Night Shift Stop Point
+
+Date/time: 2026-07-02T04:10:00+01:00
+Starting commit: 100e3f52f6f03b413b68f940ef8a31ac9439e775
+Task: Stop after completing safe high-value app work.
+Why this task was chosen: The remaining highest-value work now needs external configuration, product/payment decisions, or schema/security design before implementation.
+Files changed:
+- `ai-context/night-shift-log.md`
+Checks run: Final `git status --short --branch` pending after this log commit.
+Commit hash: Pending.
+Push status: Pending.
+What improved: The run records completed work and why the loop stopped.
+Blocked/risky items:
+- Supabase custom SMTP still requires Supabase dashboard configuration.
+- Recurring gifts require Stripe subscription/product decisions.
+- Receipt PDFs/email sending require receipt artifact, delivery, and wording decisions.
+- Payout reconciliation needs Stripe payout/balance transaction modelling and dashboard access for production verification.
+- Brand colour rendering, settings audit logging, fund/campaign publication controls, and editable currency need follow-up product/schema/payment design.
+- Supporters with no giving history still need an organisation selector or invitation/context route before hard-coded fallback can be fully removed.
+Next task chosen: Morning review of the Night Shift commits and production manual QA.
+
 ## Task 4 - Respect Contribution Export Filters
 
 Date/time: 2026-07-02T03:55:00+01:00
