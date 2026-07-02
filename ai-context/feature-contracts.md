@@ -55,6 +55,7 @@ Current behavior:
 - `/admin/contributions?org=[slug]` exists inside admin chrome.
 - Shows contribution records and summary cards from contribution intent data.
 - Supports admin route protection and preserves deeper admin redirect paths.
+- Provides a CSV export that respects the current fund/status/date filters.
 
 Status: Partial.
 
@@ -166,7 +167,7 @@ User expectation:
 Current behavior:
 
 - Reports section shows paid total, all gift records, pending count, failed/cancelled/expired count, breakdown by fund, breakdown by status, and recent contributions.
-- Reports section links to an admin-only CSV export of scoped contribution records.
+- Reports section links to an admin-only CSV export of scoped contribution records; the detailed contribution ledger export respects existing filters.
 - No true report builder, date range controls, saved views, receipt/statement exports, or Stripe payout reconciliation report exists.
 
 Status: Partial.

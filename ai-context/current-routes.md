@@ -29,7 +29,7 @@ Routes are Next.js App Router routes under `src/app`.
 - `/admin?org=[slug]&section=giving|supporters|funds|campaigns|reports|team|settings` - section-specific admin dashboard content.
 - `/admin/contributions?org=[slug]` - contribution records page inside admin dashboard chrome.
 - `/admin/donations` - legacy route that redirects to `/admin/contributions`.
-- `/admin/reports/contributions?org=[slug]` - admin-only CSV export of scoped contribution records.
+- `/admin/reports/contributions?org=[slug]` - admin-only CSV export of scoped contribution records; supports `fund`, `status`, `start`, and `end` filters.
 
 ## Auth Routes
 

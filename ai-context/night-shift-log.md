@@ -213,7 +213,27 @@ Checks run: `tsc --noEmit` passed; `npm run lint` passed; escalated `npm run bui
 Commit hash: Pending.
 Push status: Pending.
 What improved: Reports now expose a real admin-only CSV download of organisation-scoped contribution records.
-Blocked/risky items: Export is currently unfiltered and contribution-only. Filtered exports, supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
+Blocked/risky items: Export is contribution-only. Supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
+Next task chosen: Pending after checks, commit, and push.
+
+## Task 4 - Respect Contribution Export Filters
+
+Date/time: 2026-07-02T03:55:00+01:00
+Starting commit: c6e56b467de7595a661b346cd2947badf8d82048
+Task: Make contribution CSV export respect ledger filters.
+Why this task was chosen: The CSV export existed, but the contribution ledger already has fund/status/date filters; exporting the same filtered view is a safe improvement aligned with reporting expectations.
+Files changed:
+- `src/app/admin/reports/contributions/route.ts`
+- `src/components/admin/AdminContributionFilters.tsx`
+- `ai-context/current-routes.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `tsc --noEmit` passed; `npm run lint` passed; escalated `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved: Admins can export either the full contribution list from Reports or a filtered contribution CSV from the contribution ledger.
+Blocked/risky items: Export remains contribution-only; supporter/fund/campaign exports, receipt/statement exports, and payout reconciliation need later workflows.
 Next task chosen: Pending after checks, commit, and push.
 
 ## Task 3 - Improve Supporter Organisation Links

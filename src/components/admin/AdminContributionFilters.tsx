@@ -14,9 +14,33 @@ const STATUS_OPTIONS = [
   { label: "Expired", value: "expired" },
 ];
 
+function buildExportHref(filters: AdminContributionFiltersData) {
+  const params = new URLSearchParams({ org: filters.organisationSlug });
+
+  if (filters.selectedFundId) {
+    params.set("fund", filters.selectedFundId);
+  }
+
+  if (filters.selectedStatus) {
+    params.set("status", filters.selectedStatus);
+  }
+
+  if (filters.startDate) {
+    params.set("start", filters.startDate);
+  }
+
+  if (filters.endDate) {
+    params.set("end", filters.endDate);
+  }
+
+  return `/admin/reports/contributions?${params.toString()}`;
+}
+
 export function AdminContributionFilters({
   filters,
 }: AdminContributionFiltersProps) {
+  const exportHref = buildExportHref(filters);
+
   return (
     <section className="gf-card p-5 sm:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -106,6 +130,12 @@ export function AdminContributionFilters({
             href={`/admin/contributions?org=${filters.organisationSlug}`}
           >
             Clear filters
+          </a>
+          <a
+            className="gf-button-secondary"
+            href={exportHref}
+          >
+            Download CSV
           </a>
         </div>
       </form>
