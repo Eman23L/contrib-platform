@@ -85,6 +85,7 @@ Requirement:
 Current status:
 
 - Current: `organisation_memberships` controls admin access.
+- Current: Team rows show best available Supabase Auth display name/email metadata with user ID as fallback.
 - Planned/not implemented: team management UI, invite flow, and role editing are not built.
 
 ## Roles
@@ -106,8 +107,8 @@ Requirement:
 
 Current status:
 
-- Partial: organisation name and initial letter are dynamic in some places.
-- Planned/not implemented: logo, colours, brand copy, and wording settings are not editable.
+- Current: organisation name, public/giving wording, thank-you message, support email, and logo URL can be edited through Settings.
+- Partial: logo URL is stored but not rendered as full public branding; colours/brand styling are not configurable.
 
 ## Settings Section Ownership
 
@@ -117,8 +118,9 @@ Requirement:
 
 Current status:
 
-- Partial: Settings section shows current organisation name, slug, legal name, currency, timezone, and stored settings data where present.
+- Partial: Settings section shows current organisation name, public URL slug, legal name, currency, timezone, public wording, support email, and logo URL.
 - Current: owners/admins can edit safe organisation identity and public wording fields with server-side validation; finance users can view but not edit.
+- Current: blank public wording fields use generated defaults from the current organisation display name instead of forcing admins to edit repeated names manually.
 - Partial: audit behavior, brand colour rendering, editable currency/multi-currency checkout, and payment configuration health checks are not implemented.
 
 ## Product Rule for Multi-Community Work

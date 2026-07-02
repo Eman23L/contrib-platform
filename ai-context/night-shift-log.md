@@ -274,3 +274,41 @@ Push status: Pending.
 What improved: Supporter account recent contribution links, support link, and give-again action now reuse the inferred organisation route when giving history exists.
 Blocked/risky items: Supporters with no giving history still have no organisation context, so the fallback remains a product decision until an organisation selector or invite/context route exists.
 Next task chosen: Pending after checks, commit, and push.
+
+## Day Shift Follow-Up / Night Shift Handoff
+
+Date/time: 2026-07-03T00:00:00+01:00
+Starting commit: 1652eabac3819a099e1faedc52089aa7b725bf63
+Task: Review and record post-Night-Shift UI/UX fixes before the next Night Shift.
+Why this task was chosen: The user reviewed the admin screens and identified settings/team/cursor UX issues that should be reflected in project context before autonomous work resumes.
+Files changed:
+- `src/app/admin/page.tsx`
+- `src/app/globals.css`
+- `src/lib/organisationSettings.ts`
+- `src/lib/services/admin/getAdminDashboard.ts`
+- `src/lib/validators/organisationSettings.ts`
+- `src/types/api.ts`
+- `ai-context/known-issues.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/multi-community-requirements.md`
+- `ai-context/night-shift-log.md`
+Checks run after app changes: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hashes:
+- `be26c5fa` - Simplify organisation settings defaults.
+- `508d30cc` - Show team member identity details.
+- `ddde6194` - Polish dashboard cursor behavior.
+Push status: All app commits pushed to `origin/main`; this context update pending commit/push.
+What improved:
+- Settings no longer shows the noisy Configuration Overview panel.
+- Public/giving wording fields can be left blank to follow generated defaults from the current organisation display name, so admins do not need to change the same organisation name in several places.
+- Slug input is normalized from ordinary text such as capitals/spaces into safe lowercase hyphenated slugs.
+- Team rows now show best available Supabase Auth display name/email with user ID as secondary fallback.
+- Dashboard/read-only text uses default cursor behavior instead of the text-entry cursor, while real inputs remain editable/selectable.
+Blocked/risky items:
+- Team identity still depends on Supabase Auth metadata/email; there is no app-owned member profile table yet.
+- Team invite/remove/role-edit flows are not implemented.
+- Settings audit logging, brand colour rendering, payment setup health, fund/campaign visibility controls, and editable currency still need product/schema/payment design.
+- Supporters with no giving history still need an organisation selector or context route before the `grace-community` fallback can be fully removed.
+Next task chosen:
+- Recommended next safe Night Shift loop: continue visible UX hardening without new schema where possible. Best candidates are a dead-action/link audit, mobile sidebar/navigation polish, or supporter/account support-context cleanup.
+- Higher-impact work that needs design first: app-owned team/profile identity schema, team invite workflow, receipt records/PDFs, recurring gifts, payout reconciliation, fund CRUD, and campaign management.

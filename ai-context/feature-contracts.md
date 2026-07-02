@@ -189,8 +189,8 @@ User expectation:
 Current behavior:
 
 - Access control uses `organisation_memberships`.
-- Team section lists visible organisation membership records with user ID, role, active status, and joined date.
-- Member email addresses are not available from the current app-owned membership schema.
+- Team section lists visible organisation membership records with best available Supabase Auth display name/email, user ID fallback, role, active status, and joined date.
+- Member identity still depends on Supabase Auth metadata/email because there is no app-owned member profile table yet.
 - No invite/remove/change role UI is implemented.
 
 Status: Partial.
@@ -211,8 +211,9 @@ User expectation:
 
 Current behavior:
 
-- Settings section shows organisation display name, public slug, legal name, currency, timezone, typed public wording fields, support email, logo URL, stored settings JSON where present, and a payment configuration overview.
+- Settings section shows organisation display name, public URL slug, legal name, currency, timezone, typed public wording fields, support email, and logo URL.
 - Owners/admins can edit safe organisation text/settings fields through a server-validated admin form: display name, legal name, slug, timezone, public page heading/intro, giving page heading/intro, giving action wording, thank-you message, support email, and logo URL.
+- Public wording fields can be left blank to follow generated defaults from the current organisation display name, so changing the display name updates default public/giving headings.
 - Finance users can view settings but cannot edit them.
 - Public organisation, guest giving, and successful gift pages use saved wording where available.
 - Currency is read-only because current Stripe checkout is GBP-only.
@@ -265,7 +266,7 @@ Current behavior:
 - Email is required before checkout.
 - Creates contribution intent and Stripe Checkout session.
 - Shows static helper/assurance content.
-- Public copy is not yet editable per organisation beyond organisation name and active funds.
+- Public/giving page heading, intro, action wording, support email, and thank-you wording are configurable through organisation Settings.
 
 Status: Working for one-time giving; partial for configurable public experience.
 
