@@ -21,7 +21,6 @@ type IconName =
   | "calendar"
   | "campaign"
   | "chart"
-  | "chevron"
   | "gift"
   | "home"
   | "settings"
@@ -59,7 +58,6 @@ function Icon({
         <path d="M17 15v-6" />
       </>
     ),
-    chevron: <path d="m9 18 6-6-6-6" />,
     gift: (
       <>
         <rect height="14" rx="2" width="18" x="3" y="8" />
@@ -173,11 +171,9 @@ export function AdminDashboardChrome({
             <div className="p-5">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-950">Need help?</p>
-                <p className="mt-2 text-xs leading-5 text-slate-500">Visit our help center for guides and support.</p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-xs font-semibold text-slate-700 shadow-sm" href="/account">
-                  View Help Center
-                  <Icon className="h-3.5 w-3.5" name="chevron" />
-                </Link>
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Support contact details are managed in organisation settings.
+                </p>
               </div>
             </div>
           </aside>
@@ -211,6 +207,23 @@ export function AdminDashboardChrome({
                 </form>
               </div>
             </header>
+
+            <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-5 py-3 lg:hidden">
+              {navItems.map((item) => {
+                const isActive = item.id === activeSection;
+
+                return (
+                  <Link
+                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${isActive ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                    href={item.href}
+                    key={item.id}
+                  >
+                    <Icon className="h-4 w-4" name={item.icon} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
             {children}
           </div>

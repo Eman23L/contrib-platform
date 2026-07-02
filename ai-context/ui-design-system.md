@@ -53,6 +53,7 @@ Current files:
 Admin uses a dashboard shell with:
 
 - Left nav.
+- Compact horizontal section nav on mobile.
 - Top toolbar.
 - Overview cards.
 - Giving trends/fund/status panels.
@@ -67,6 +68,7 @@ Current file:
 Supporter account uses a dashboard shell with:
 
 - Left nav sections.
+- Compact horizontal section nav on mobile.
 - Top organisation/search/profile bar.
 - Home/giving/receipts/profile/support content sections.
 - A direct recurring URL exists, but recurring navigation/actions are hidden until subscriptions exist.

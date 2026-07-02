@@ -706,6 +706,18 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   const latestGift = history[0] ?? null;
   const latestPaidGift = paidGifts[0] ?? latestGift;
   const firstName = getFirstName(authenticatedUser.user.email);
+  const accountNavItems: Array<{
+    href: string;
+    icon: IconName;
+    id: AccountSection;
+    label: string;
+  }> = [
+    { href: "/account", icon: "home", id: "home", label: "Home" },
+    { href: "/account?section=giving", icon: "heart", id: "giving", label: "My Giving" },
+    { href: "/account?section=receipts", icon: "receipt", id: "receipts", label: "Receipts" },
+    { href: "/account?section=profile", icon: "profile", id: "profile", label: "Profile" },
+    { href: "/account?section=support", icon: "support", id: "support", label: "Support" },
+  ];
 
   return (
     <main className="min-h-screen bg-[#f6f9fd] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
@@ -717,13 +729,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               <span className="text-xl font-semibold tracking-tight text-blue-600">GetFlow</span>
             </div>
             <nav className="flex-1 space-y-3 px-5 py-6">
-              {[
-                { href: "/account", icon: "home", id: "home", label: "Home" },
-                { href: "/account?section=giving", icon: "heart", id: "giving", label: "My Giving" },
-                { href: "/account?section=receipts", icon: "receipt", id: "receipts", label: "Receipts" },
-                { href: "/account?section=profile", icon: "profile", id: "profile", label: "Profile" },
-                { href: "/account?section=support", icon: "support", id: "support", label: "Support" },
-              ].map((item) => {
+              {accountNavItems.map((item) => {
                 const isActive = item.id === activeSection;
 
                 return (
@@ -776,6 +782,23 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 </form>
               </div>
             </header>
+
+            <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-5 py-3 lg:hidden">
+              {accountNavItems.map((item) => {
+                const isActive = item.id === activeSection;
+
+                return (
+                  <Link
+                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${isActive ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                    href={item.href}
+                    key={item.id}
+                  >
+                    <Icon className="h-4 w-4" name={item.icon} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
             <div className="space-y-5 p-5 xl:p-9">
               <SectionContent

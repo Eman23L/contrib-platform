@@ -116,7 +116,7 @@ Task: Stop after safe useful work was exhausted.
 Why this task was chosen: Remaining high-value work requires product/security/payment decisions or external production dashboard access.
 Files changed: `ai-context/night-shift-log.md`
 Checks run: `tsc --noEmit` passed; `npm run lint` passed with no warnings; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
-Commit hash: Pending.
+Commit hash: This commit (`Harden dashboard navigation UX`).
 Push status: Pending.
 What improved: The log now records completed Night Shift commits and the stopping rationale.
 Blocked/risky items:
@@ -312,3 +312,29 @@ Blocked/risky items:
 Next task chosen:
 - Recommended next safe Night Shift loop: continue visible UX hardening without new schema where possible. Best candidates are a dead-action/link audit, mobile sidebar/navigation polish, or supporter/account support-context cleanup.
 - Higher-impact work that needs design first: app-owned team/profile identity schema, team invite workflow, receipt records/PDFs, recurring gifts, payout reconciliation, fund CRUD, and campaign management.
+
+## Night Shift Task 1 - Admin Navigation UX Hardening
+
+Date/time: 2026-07-03T00:20:00+01:00
+Starting commit: c1db047154f7a58cc2d46db92fd67581e8e349c2
+Task: Remove dead admin help action and add mobile admin section navigation.
+Why this task was chosen: The handoff recommended safe visible UX hardening. The admin sidebar contained a `View Help Center` action even though no help-center route exists, and admin section navigation was hidden on mobile.
+Files changed:
+- `src/app/account/page.tsx`
+- `src/components/admin/AdminDashboardChrome.tsx`
+- `ai-context/known-issues.md`
+- `ai-context/ui-design-system.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; first `npm run build` attempt timed out at 120s without compiler output; rerun with longer timeout passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved:
+- Removed the fake Help Center link that routed admins to the supporter account.
+- Replaced it with static support guidance pointing admins to organisation settings.
+- Added compact horizontal mobile navigation for real admin sections using the same routes as desktop sidebar nav.
+- Added compact horizontal mobile navigation for supporter account sections using existing account routes.
+Blocked/risky items:
+- Guest dashboard mobile sidebar navigation still needs follow-up.
+- A real help/support workflow is still not implemented.
+Next task chosen: Pending after checks, commit, and push.
