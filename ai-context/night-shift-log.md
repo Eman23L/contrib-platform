@@ -116,8 +116,8 @@ Task: Stop after safe useful work was exhausted.
 Why this task was chosen: Remaining high-value work requires product/security/payment decisions or external production dashboard access.
 Files changed: `ai-context/night-shift-log.md`
 Checks run: `tsc --noEmit` passed; `npm run lint` passed with no warnings; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
-Commit hash: Pending.
-Push status: Pending.
+Commit hash: This commit (`Record final Night Shift handoff`).
+Push status: Will be pushed with this commit.
 What improved: The log now records completed Night Shift commits and the stopping rationale.
 Blocked/risky items:
 - Supabase custom SMTP setup requires Supabase dashboard configuration.
@@ -319,8 +319,8 @@ Files changed:
 - `ai-context/scaling-and-multi-community-notes.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
-Commit hash: This commit (`Neutralise settings organisation placeholders`).
-Push status: Will be pushed with this commit.
+Commit hash: c5c98ae3f96755de693f27b876896986beea7b28
+Push status: Pushed to origin/main.
 What improved:
 - Settings display-name placeholder now says `Your organisation`.
 - Settings slug placeholder now says `your-organisation`.
@@ -338,8 +338,8 @@ Why this task was chosen: The remaining highest-value work now needs external co
 Files changed:
 - `ai-context/night-shift-log.md`
 Checks run: Final `git status --short --branch` pending after this log commit.
-Commit hash: Pending.
-Push status: Pending.
+Commit hash: 44657eff3169176fc6fb2bbb15e5be67e2eda68f
+Push status: Pushed to origin/main.
 What improved: The run records completed work and why the loop stopped.
 Blocked/risky items:
 - Supabase custom SMTP still requires Supabase dashboard configuration.
@@ -368,7 +368,31 @@ Commit hash: Pending.
 Push status: Pending.
 What improved: Admins can export either the full contribution list from Reports or a filtered contribution CSV from the contribution ledger.
 Blocked/risky items: Export remains contribution-only; supporter/fund/campaign exports, receipt/statement exports, and payout reconciliation need later workflows.
-Next task chosen: Pending after checks, commit, and push.
+Next task chosen: Supporter account support-context cleanup.
+
+## Night Shift Stop Point - 2026-07-03
+
+Date/time: 2026-07-03T03:45:00+01:00
+Starting commit: c5c98ae3f96755de693f27b876896986beea7b28
+Task: Stop after completing the no-schema hard-coded organisation/dead-action cleanup loop.
+Why this task was chosen: Final scans found no `grace-community` references in `src`, no `href="#"`, and no obvious user-facing `Coming soon`/`TODO`/dummy text. The remaining high-impact work needs product, schema, payment, or production QA decisions.
+Files changed:
+- `ai-context/night-shift-log.md`
+Checks run before this handoff: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed after Task 7.
+Commit hash: This commit (`Record final Night Shift handoff`).
+Push status: Will be pushed with this commit.
+What improved this run:
+- Generic sign-in no longer shows a guest giving link without organisation context.
+- Supporter account no longer routes no-context giving/support actions to Grace Community.
+- Admin unauthorized states no longer route no-context users to Grace Community.
+- Settings placeholders no longer use Grace Community examples.
+- Source code now has no `grace-community` references.
+Blocked/risky items:
+- No-history supporter accounts still need an organisation selector, invite/context route, or product decision before first-gift CTAs can appear inside `/account`.
+- Team invite/remove/role-edit flows need product and security design.
+- App-owned member/profile identity schema is still needed for durable names/emails beyond Supabase Auth metadata.
+- Receipt PDFs/email receipts, recurring gifts, payout reconciliation, fund CRUD, campaign management, settings audit logs, brand colour rendering, payment setup health, and editable currency remain future product/schema/payment work.
+Next task chosen: Morning review or product/schema decision. If continuing without new decisions, start with production manual QA of sign-in, account, admin unauthorized, settings, giving, and CSV export flows.
 
 ## Task 3 - Improve Supporter Organisation Links
 
@@ -465,8 +489,8 @@ Files changed:
 - `ai-context/next-build-priorities.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
-Commit hash: Pending.
-Push status: Pending.
+Commit hash: 44657eff3169176fc6fb2bbb15e5be67e2eda68f
+Push status: Pushed to origin/main.
 What improved:
 - Guest giving now reuses the existing public navigation routes in a compact horizontal mobile nav.
 - The desktop sidebar and mobile nav share the same route definitions for Give, Sign in, My Receipts, and Organisation.
@@ -474,4 +498,28 @@ What improved:
 Blocked/risky items:
 - This does not add new guest workflows; it only exposes existing routes on mobile.
 - Broader public organisation page content and campaign/fund presentation remain future work.
-Next task chosen: Pending after checks, commit, and push.
+Next task chosen: Supporter account support-context cleanup.
+
+## Night Shift Stop Point - 2026-07-03
+
+Date/time: 2026-07-03T03:45:00+01:00
+Starting commit: c5c98ae3f96755de693f27b876896986beea7b28
+Task: Stop after completing the no-schema hard-coded organisation/dead-action cleanup loop.
+Why this task was chosen: Final scans found no `grace-community` references in `src`, no `href="#"`, and no obvious user-facing `Coming soon`/`TODO`/dummy text. The remaining high-impact work needs product, schema, payment, or production QA decisions.
+Files changed:
+- `ai-context/night-shift-log.md`
+Checks run before this handoff: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed after Task 7.
+Commit hash: This commit (`Record final Night Shift handoff`).
+Push status: Will be pushed with this commit.
+What improved this run:
+- Generic sign-in no longer shows a guest giving link without organisation context.
+- Supporter account no longer routes no-context giving/support actions to Grace Community.
+- Admin unauthorized states no longer route no-context users to Grace Community.
+- Settings placeholders no longer use Grace Community examples.
+- Source code now has no `grace-community` references.
+Blocked/risky items:
+- No-history supporter accounts still need an organisation selector, invite/context route, or product decision before first-gift CTAs can appear inside `/account`.
+- Team invite/remove/role-edit flows need product and security design.
+- App-owned member/profile identity schema is still needed for durable names/emails beyond Supabase Auth metadata.
+- Receipt PDFs/email receipts, recurring gifts, payout reconciliation, fund CRUD, campaign management, settings audit logs, brand colour rendering, payment setup health, and editable currency remain future product/schema/payment work.
+Next task chosen: Morning review or product/schema decision. If continuing without new decisions, start with production manual QA of sign-in, account, admin unauthorized, settings, giving, and CSV export flows.
