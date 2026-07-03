@@ -1,5 +1,52 @@
 # Night Shift Log
 
+## Night Shift Run Started - Real Admin Section Functionality
+
+Date/time: 2026-07-03T04:05:00+01:00
+Starting commit: c03fc17e724d29dccf31d9c7c471fd47bda4cd82
+Task: Build real, useful admin section functionality for GetFlow.
+Why this task was chosen: The product specification now requires each admin sidebar section to be distinct, necessary, valuable, functional, and backed by real organisation-scoped data or honest empty states.
+Files changed:
+- `ai-context/night-shift-log.md`
+Checks run: `git status --short --branch`; `git pull origin main`; required `/ai-context` product files read.
+Commit hash: Pending.
+Push status: Pending.
+What improved: The run has a recorded starting point before implementation.
+Blocked/risky items: None at start.
+Next task chosen: Audit current admin section output against the product specification and implement the highest-value safe real-data improvements.
+
+## Night Shift Task - Build Real Admin Section Functionality
+
+Date/time: 2026-07-03T04:35:00+01:00
+Starting commit: c03fc17e724d29dccf31d9c7c471fd47bda4cd82
+Task: Build real, useful admin section functionality without fake data.
+Why this task was chosen: The admin section audit found useful read-only MVPs, but Overview still used generated trend/relative activity/payout copy, Funds did not show configured zero-gift funds, Campaigns could substitute fund activity for campaigns, Supporters lacked first/average gift fields, and Reports had no real charting surface.
+Files changed:
+- `src/app/admin/page.tsx`
+- `src/lib/db/queries/admin.ts`
+- `src/lib/services/admin/getAdminDashboard.ts`
+- `src/types/api.ts`
+- `ai-context/feature-contracts.md`
+- `ai-context/known-issues.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `.\node_modules\.bin\tsc.cmd --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved:
+- Overview trend chart now uses real six-month succeeded contribution data and shows an empty chart state when no paid data exists.
+- Overview recent activity uses real contribution dates and payment health uses real pending/not-completed counts instead of generated payout status.
+- Supporters now shows first gift date and average gift from real contribution records.
+- Funds now shows configured funds even with zero gifts, plus description, active/default status, public giving visibility, paid totals, gift count, average gift, and latest activity.
+- Campaigns now shows only real campaign records with linked fund, description, active state, goal/progress, date window, paid totals, gift count, and latest activity; no fund-based campaign substitutes are shown.
+- Reports now includes real trend and fund charts with empty states, average paid gift, status/fund breakdowns, recent contributions, CSV export, and a clear path to the filtered ledger/export flow.
+Blocked/risky items:
+- Fund create/edit/archive/reorder was not implemented because it needs a safe write workflow, validation, UI decisions, and RLS/security review.
+- Campaign create/edit/archive/public pages were not implemented because public campaign attribution and management workflows need product/security decisions.
+- Reports still does not have an in-page report builder, campaign filter, receipt/statement reports, recurring reports, or payout reconciliation.
+- Supporter detail pages, receipt artifacts, recurring gifts, team invite/role edits, and app-owned member/supporter profiles remain future work.
+Next task chosen: If continuing this loop, build the next safe real-data improvement around contribution ledger filtering/search or lightweight report-filter integration without new schema.
+
 ## Run Started
 
 Date/time: 2026-07-01T00:08:10+01:00

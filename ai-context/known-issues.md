@@ -5,7 +5,7 @@
 - Supabase built-in email sender can hit strict magic-link rate limits. Custom SMTP should be configured in Supabase for real usage.
 - Supporter receipts link to existing success pages, but downloadable receipt PDFs and email receipt sending are not implemented.
 - Recurring gifts are not implemented; visible supporter recurring navigation/actions are hidden, and the direct recurring URL shows an honest no-recurring-records state.
-- Admin sections for supporters, funds, campaigns, reports, and team are now section-specific read-only MVPs, not full CRUD workflows.
+- Admin sections for supporters, funds, campaigns, reports, and team are now section-specific real-data read-only MVPs, not full CRUD workflows.
 - Admin Settings has a safe editable MVP for owner/admin organisation identity and public wording, but it does not yet cover brand colour rendering, editable currency, fund/campaign visibility controls, audit logs, or payment setup health checks.
 - Search boxes in admin/supporter/guest dashboard shells are visual only.
 - `/admin/donations`, `/me`, and `/me/giving` still exist as legacy redirect routes for compatibility.
@@ -17,7 +17,7 @@
 - Guest checkout API and UI validation both return receipt/history-focused email errors.
 - Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.
 - Admin Team rows now show the best available Supabase Auth email/name metadata with user ID as fallback, but the app still does not have an app-owned profile/member identity table.
-- Admin campaign, fund, team, and report write workflows still need product/security decisions before CRUD/export/invite/edit actions are added.
+- Admin campaign, fund, team, and richer report write/detail workflows still need product/security decisions before CRUD/invite/edit/detail actions are added.
 - Settings writes are implemented for safe text/profile fields only; broader settings such as payment configuration, multi-currency checkout, and publication controls need separate decisions.
 - Generic sign-in and supporter account no longer send users to a hard-coded Grace Community giving page when no organisation context exists.
 - Supporter account still needs an explicit organisation selector or invite/context route for supporters with no giving history.

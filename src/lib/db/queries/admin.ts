@@ -48,6 +48,15 @@ export type AdminFundTotalsRow = {
   } | null;
 };
 
+export type AdminFundRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  is_default: boolean;
+  display_order: number;
+};
+
 export type AdminStatusTotalsRow = {
   amount_minor: number;
   status: ContributionIntent["status"];
@@ -68,9 +77,13 @@ export type AdminSectionContributionRow = {
 
 export type AdminCampaignRow = {
   id: string;
+  description: string | null;
+  ends_at: string | null;
   fund_id: string;
+  goal_amount_minor: number | null;
   name: string;
   is_active: boolean;
+  starts_at: string | null;
   funds: {
     name: string;
   } | null;
@@ -193,6 +206,27 @@ export async function listAdminFundTotalsRows(
   return data;
 }
 
+export async function listAdminFundRows(
+  supabase: SupabaseClient,
+  organisationId: string,
+): Promise<AdminFundRow[]> {
+  const { data, error } = await supabase
+    .from("funds")
+    .select("id, name, description, is_active, is_default, display_order")
+    .eq("organisation_id", organisationId)
+    .order("is_default", { ascending: false })
+    .order("display_order", { ascending: true })
+    .order("name", { ascending: true })
+    .returns<AdminFundRow[]>();
+
+  if (error) {
+    throw new Error(`Failed to load admin fund rows: ${error.message}`);
+  }
+
+  return data;
+}
+
+
 export async function listAdminStatusTotalsRows(
   supabase: SupabaseClient,
   organisationId: string,
@@ -250,9 +284,13 @@ export async function listAdminCampaignRows(
     .select(
       `
         id,
+        description,
+        ends_at,
         fund_id,
+        goal_amount_minor,
         name,
         is_active,
+        starts_at,
         funds:funds (
           name
         )

@@ -28,10 +28,10 @@ User expectation:
 
 Current behavior:
 
-- Shows organisation name, summary cards, trend chart, fund breakdown, recent giving, recent activity, quick actions, and payout status using dashboard aggregates.
+- Shows organisation name, summary cards, a real six-month paid giving trend, fund breakdown, recent giving, recent activity, quick actions, and payment health using dashboard aggregates.
 - Total Raised and fund amount totals use succeeded gifts only.
 - Quick actions link to real admin sections or the contribution list.
-- Some trend percentages and payout presentation are derived/static rather than full workflows.
+- Payment health shows pending/not-completed contribution states; full Stripe payout reconciliation is not implemented.
 
 Status: Partial.
 
@@ -97,7 +97,7 @@ User expectation:
 Current behavior:
 
 - Visible admin nav section exists at `/admin?org=[slug]&section=supporters`.
-- Shows unique supporter emails from contribution records, supporter display names where captured, paid total, gift count, last gift date, and latest contribution status.
+- Shows unique supporter emails from contribution records, supporter display names where captured, paid total, gift count, average gift, first gift date, last gift date, and latest contribution status.
 - Active supporter count is based on unique `guest_email`, not a full supporter profile model.
 - No supporter detail page or communication/receipt status workflow is implemented.
 
@@ -120,7 +120,7 @@ User expectation:
 Current behavior:
 
 - Public giving lists active funds from database.
-- Admin funds section shows fund breakdown totals, paid totals, gift counts, and latest activity from contribution records.
+- Admin funds section shows configured funds from the database, description where present, active/default status, public giving visibility, paid totals, gift counts, average gift, and latest activity from contribution records.
 - No admin CRUD for funds is implemented.
 
 Status: Partial.
@@ -143,8 +143,8 @@ User expectation:
 Current behavior:
 
 - Campaign table exists and contribution intents can reference campaigns.
-- Admin campaign section shows campaign summaries where campaign records exist.
-- When no campaign records exist, it shows fund-based fundraising areas from contribution data rather than fake campaigns.
+- Admin campaign section shows only real campaign records, linked fund names, descriptions, active status, goal amount, progress, date windows, paid totals, gift count, and latest activity where campaign data exists.
+- When no campaign records exist, it shows an empty campaign state instead of fund-based substitutes.
 - No campaign CRUD or public campaign giving flow is implemented.
 
 Status: Partial.
@@ -166,9 +166,10 @@ User expectation:
 
 Current behavior:
 
-- Reports section shows paid total, all gift records, pending count, failed/cancelled/expired count, breakdown by fund, breakdown by status, and recent contributions.
+- Reports section shows paid total, all gift records, average paid gift, pending count, failed/cancelled/expired count, real six-month paid giving trend chart, real fund chart, breakdown by fund, breakdown by status, and recent contributions.
 - Reports section links to an admin-only CSV export of scoped contribution records; the detailed contribution ledger export respects existing filters.
-- No true report builder, date range controls, saved views, receipt/statement exports, or Stripe payout reconciliation report exists.
+- Reports links admins to the detailed ledger where date, fund, and status filters can be applied before exporting CSV.
+- No true in-page report builder, saved views, receipt/statement exports, or Stripe payout reconciliation report exists.
 
 Status: Partial.
 

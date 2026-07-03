@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getAdminOrganisationBySlug,
   listAdminCampaignRows,
+  listAdminFundRows,
   listAdminFundTotalsRows,
   listAdminRecentContributionRows,
   listAdminSectionContributionRows,
@@ -12,6 +13,7 @@ import {
   listAdminSummaryRows,
   listAdminTeamMemberRows,
   type AdminCampaignRow,
+  type AdminFundRow,
   type AdminFundTotalsRow,
   type AdminSectionContributionRow,
   type AdminStatusTotalsRow,
@@ -23,6 +25,7 @@ import type {
   AdminCampaignSummaryItem,
   AdminDashboardData,
   AdminFundBreakdownItem,
+  AdminGivingTrendItem,
   AdminOrganisationSettings,
   AdminRecentContribution,
   AdminStatusSummaryItem,
@@ -118,16 +121,36 @@ export function getAdminRecentContributions(
 }
 
 export function getAdminTotalsByFund(
+  fundRows: AdminFundRow[],
   rows: AdminFundTotalsRow[],
 ): AdminFundBreakdownItem[] {
   const fundMap = new Map<string, AdminFundBreakdownItem>();
+
+  for (const fund of fundRows) {
+    fundMap.set(fund.id, {
+      fundId: fund.id,
+      fundName: fund.name,
+      description: fund.description,
+      contributionsCount: 0,
+      displayOrder: fund.display_order,
+      isActive: fund.is_active,
+      isDefault: fund.is_default,
+      latestContributionAt: null,
+      totalAmountMinor: 0,
+      succeededAmountMinor: 0,
+    });
+  }
 
   for (const row of rows) {
     const fundId = row.fund_id ?? "unassigned";
     const current = fundMap.get(fundId) ?? {
       fundId: row.fund_id,
       fundName: row.funds?.name ?? "Unassigned fund",
+      description: null,
       contributionsCount: 0,
+      displayOrder: null,
+      isActive: null,
+      isDefault: null,
       latestContributionAt: null,
       totalAmountMinor: 0,
       succeededAmountMinor: 0,
@@ -150,7 +173,11 @@ export function getAdminTotalsByFund(
   }
 
   return Array.from(fundMap.values()).sort(
-    (left, right) => right.totalAmountMinor - left.totalAmountMinor,
+    (left, right) =>
+      right.totalAmountMinor - left.totalAmountMinor ||
+      Number(right.isDefault) - Number(left.isDefault) ||
+      (left.displayOrder ?? 9999) - (right.displayOrder ?? 9999) ||
+      left.fundName.localeCompare(right.fundName),
   );
 }
 
@@ -169,6 +196,8 @@ export function getAdminSupporterSummaries(
     const current = supporterMap.get(email) ?? {
       displayName: row.donor_name?.trim() || email,
       email,
+      averageGiftAmountMinor: 0,
+      firstGiftAt: row.created_at,
       giftsCount: 0,
       lastGiftAt: row.created_at,
       latestStatus: row.status,
@@ -179,6 +208,14 @@ export function getAdminSupporterSummaries(
 
     if (isPaidStatus(row.status)) {
       current.totalGivenAmountMinor += row.amount_minor;
+    }
+
+    current.averageGiftAmountMinor = Math.round(
+      current.totalGivenAmountMinor / Math.max(current.giftsCount, 1),
+    );
+
+    if (row.created_at < current.firstGiftAt) {
+      current.firstGiftAt = row.created_at;
     }
 
     if (row.created_at >= current.lastGiftAt) {
@@ -201,7 +238,6 @@ export function getAdminSupporterSummaries(
 export function getAdminCampaignSummaries(
   campaignRows: AdminCampaignRow[],
   contributionRows: AdminSectionContributionRow[],
-  fundRows: AdminFundTotalsRow[],
 ): AdminCampaignSummaryItem[] {
   const campaignMap = new Map<string, AdminCampaignSummaryItem>();
 
@@ -209,9 +245,14 @@ export function getAdminCampaignSummaries(
     campaignMap.set(campaign.id, {
       campaignId: campaign.id,
       campaignName: campaign.name,
+      description: campaign.description,
+      endsAt: campaign.ends_at,
       fundName: campaign.funds?.name ?? null,
       giftsCount: 0,
+      goalAmountMinor: campaign.goal_amount_minor,
+      isActive: campaign.is_active,
       latestContributionAt: null,
+      startsAt: campaign.starts_at,
       totalRaisedAmountMinor: 0,
     });
   }
@@ -241,44 +282,59 @@ export function getAdminCampaignSummaries(
     }
   }
 
-  if (campaignMap.size > 0) {
-    return Array.from(campaignMap.values()).sort(
-      (left, right) => right.totalRaisedAmountMinor - left.totalRaisedAmountMinor,
-    );
-  }
-
-  const fundMap = new Map<string, AdminCampaignSummaryItem>();
-
-  for (const row of fundRows) {
-    const key = row.fund_id ?? row.funds?.name ?? "unassigned";
-    const current = fundMap.get(key) ?? {
-      campaignId: row.fund_id,
-      campaignName: row.funds?.name ?? "Unassigned fund",
-      fundName: row.funds?.name ?? null,
-      giftsCount: 0,
-      latestContributionAt: null,
-      totalRaisedAmountMinor: 0,
-    };
-
-    current.giftsCount += 1;
-
-    if (isPaidStatus(row.status)) {
-      current.totalRaisedAmountMinor += row.amount_minor;
-    }
-
-    if (
-      !current.latestContributionAt ||
-      row.created_at > current.latestContributionAt
-    ) {
-      current.latestContributionAt = row.created_at;
-    }
-
-    fundMap.set(key, current);
-  }
-
-  return Array.from(fundMap.values()).sort(
+  return Array.from(campaignMap.values()).sort(
     (left, right) => right.totalRaisedAmountMinor - left.totalRaisedAmountMinor,
   );
+}
+
+function getMonthKey(date: Date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function getMonthLabel(date: Date) {
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    year: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+export function getAdminGivingTrend(
+  rows: AdminSectionContributionRow[],
+): AdminGivingTrendItem[] {
+  const now = new Date();
+  const months = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (5 - index), 1));
+
+    return {
+      date,
+      item: {
+        label: getMonthLabel(date),
+        monthKey: getMonthKey(date),
+        succeededAmountMinor: 0,
+        giftsCount: 0,
+      },
+    };
+  });
+  const monthMap = new Map(months.map(({ item }) => [item.monthKey, item]));
+
+  for (const row of rows) {
+    if (!isPaidStatus(row.status)) {
+      continue;
+    }
+
+    const rowDate = new Date(row.created_at);
+    const month = monthMap.get(getMonthKey(rowDate));
+
+    if (!month) {
+      continue;
+    }
+
+    month.succeededAmountMinor += row.amount_minor;
+    month.giftsCount += 1;
+  }
+
+  return months.map(({ item }) => item);
 }
 
 function getAuthDisplayName(metadata: Record<string, unknown> | undefined) {
@@ -391,6 +447,7 @@ export async function getAdminDashboard(
     statusRows,
     sectionContributionRows,
     campaignRows,
+    allFundRows,
     teamRows,
   ] = await Promise.all([
     listAdminSummaryRows(supabase, organisation.id),
@@ -399,6 +456,7 @@ export async function getAdminDashboard(
     listAdminStatusTotalsRows(supabase, organisation.id),
     listAdminSectionContributionRows(supabase, organisation.id),
     listAdminCampaignRows(supabase, organisation.id),
+    listAdminFundRows(supabase, organisation.id),
     listAdminTeamMemberRows(supabase, organisation.id),
   ]);
 
@@ -408,10 +466,11 @@ export async function getAdminDashboard(
     organisationSlug: organisation.slug,
     currencyCode: organisation.currencyCode,
     activeSupportersCount: getActiveSupportersCount(summaryRows),
-    campaignSummaries: getAdminCampaignSummaries(campaignRows, sectionContributionRows, fundRows),
+    campaignSummaries: getAdminCampaignSummaries(campaignRows, sectionContributionRows),
+    givingTrend: getAdminGivingTrend(sectionContributionRows),
     summary: getAdminOverallSummary(summaryRows),
     recentContributions: getAdminRecentContributions(recentRows),
-    fundBreakdown: getAdminTotalsByFund(fundRows),
+    fundBreakdown: getAdminTotalsByFund(allFundRows, fundRows),
     organisationSettings: getOrganisationSettings(organisation),
     statusSummary: getAdminTotalsByStatus(statusRows),
     supporterSummaries: getAdminSupporterSummaries(sectionContributionRows),

@@ -21,19 +21,19 @@ The four non-negotiable product capabilities are:
    - Planned: brand colour rendering, editable currency only after multi-currency checkout support, fund/campaign visibility controls, audit logging, and payment setup health checks.
 
 2. Strengthen money-flow visibility.
-   - Current: one-time Stripe Checkout, status webhooks, and paid-only admin totals exist.
-   - Planned: internal payment detail/status view, webhook delivery visibility, clearer failed/cancelled/expired reporting, and first payout/reconciliation model.
+   - Current: one-time Stripe Checkout, status webhooks, paid-only admin totals, real six-month paid giving trend, and payment health counts exist.
+   - Planned: internal payment detail/status view, webhook delivery visibility, and first payout/reconciliation model.
 
 3. Complete supporter profile basics.
-   - Current: supporters are grouped from contribution records by email/name where available.
-   - Planned: supporter detail page with giving history, first/last gift, average gift, receipt references, recurring state when implemented, and safe organisation scoping.
+   - Current: supporters are grouped from contribution records by email/name where available, with paid total, gift count, first gift, last gift, average gift, and latest status.
+   - Planned: supporter detail page with giving history, receipt references, recurring state when implemented, and safe organisation scoping.
 
 4. Improve public and guest organisation experience.
    - Current: public org and guest giving pages use organisation slug/name and active funds.
    - Planned: editable public page copy, visible funds/campaigns, support/contact details, legal/charity details where applicable, and stronger post-payment account claim path.
 
 5. Make reports exportable.
-   - Current: reports show paid totals, pending/not-completed counts, status/fund breakdowns, recent contributions, and an admin-only contribution CSV export that can respect contribution ledger filters.
+   - Current: reports show paid totals, average paid gift, pending/not-completed counts, real giving trend chart, real fund/status breakdowns, recent contributions, and an admin-only contribution CSV export that can respect contribution ledger filters.
    - Planned: supporter/fund/campaign exports, receipt status export when available, saved views, and payout/deposit detail.
 
 ## High Priority
@@ -66,21 +66,21 @@ The four non-negotiable product capabilities are:
    - Planned: add safe write workflows only after schema, RLS, and product decisions are clear.
 
 3. Build CRUD for funds.
-   - Current: funds exist in database, are displayed/selectable, and have admin read-only performance summaries.
+   - Current: funds exist in database, are displayed/selectable, and admin shows configured funds with active/default status, public giving visibility, descriptions, zero totals, paid totals, gift count, average gift, and latest activity.
    - Planned: admin create/edit/archive/reorder funds.
 
 4. Build campaign management.
-   - Current: campaigns table exists and admin campaign section shows campaign summaries or fund-based fundraising areas.
-   - Planned: campaign create/edit/archive, goal, story, visibility, linked funds, public page, progress, share link, and contribution attribution.
+   - Current: campaigns table exists and admin campaign section shows only real campaign records with linked funds, descriptions, status, date windows, goals, progress, paid totals, and latest activity.
+   - Planned: campaign create/edit/archive, public visibility controls, public page, share link, and contribution attribution from public giving.
 
 5. Build team management.
    - Current: memberships determine access and the team section lists visible membership role/status records.
    - Planned: invite/remove/change roles, invite status, last active where available, and audit trail.
 
 6. Improve reports.
-   - Current: reports show paid totals, pending/not-completed counts, fund/status breakdowns, and recent contributions.
+   - Current: reports show paid totals, average paid gift, pending/not-completed counts, real six-month paid giving trend, fund/status breakdowns, and recent contributions.
    - Current: contribution CSV export is available from Reports and from the filtered contribution ledger.
-   - Planned: charts, receipt/statement reports, recurring reports, and payout reconciliation reports.
+   - Planned: in-page report builder filters, campaign filters, receipt/statement reports, recurring reports, and payout reconciliation reports.
 
 ## Technical Priorities
 

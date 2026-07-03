@@ -10,6 +10,7 @@ import { getAdminDashboard } from "@/lib/services/admin/getAdminDashboard";
 import type {
   AdminDashboardData,
   AdminFundBreakdownItem,
+  AdminGivingTrendItem,
   AdminOrganisationSettings,
   AdminRecentContribution,
   AdminStatusSummaryItem,
@@ -330,7 +331,7 @@ function DashboardStatCard({
 }
 
 function FundDonut({ funds }: { funds: AdminFundBreakdownItem[] }) {
-  const shownFunds = funds.slice(0, 4);
+  const shownFunds = funds.filter((fund) => fund.succeededAmountMinor > 0).slice(0, 4);
   const total = shownFunds.reduce((sum, fund) => sum + fund.totalAmountMinor, 0);
   const colors = ["#55b889", "#3b82f6", "#9b7bed", "#f7d154"];
   let cursor = 0;
@@ -353,7 +354,7 @@ function FundDonut({ funds }: { funds: AdminFundBreakdownItem[] }) {
         <div className="h-full w-full rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(226,232,240,0.9)]" />
       </div>
       <div className="space-y-3">
-        {shownFunds.map((fund, index) => (
+        {shownFunds.length > 0 ? shownFunds.map((fund, index) => (
           <div className="flex items-center justify-between gap-3 text-sm" key={fund.fundId ?? fund.fundName}>
             <span className="flex min-w-0 items-center gap-3 font-medium text-slate-600">
               <span
@@ -366,7 +367,9 @@ function FundDonut({ funds }: { funds: AdminFundBreakdownItem[] }) {
               {formatGbp(fund.totalAmountMinor)} ({percentOf(fund.totalAmountMinor, total)}%)
             </span>
           </div>
-        ))}
+        )) : (
+          <p className="text-sm text-slate-500">No paid fund activity yet.</p>
+        )}
         <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-sm font-semibold text-slate-950">
           <span>Total</span>
           <span>{formatGbp(total)}</span>
@@ -376,13 +379,20 @@ function FundDonut({ funds }: { funds: AdminFundBreakdownItem[] }) {
   );
 }
 
-function TrendChart({ totalAmountMinor }: { totalAmountMinor: number }) {
-  const base = Math.max(totalAmountMinor, 100);
-  const points = [0.64, 0.74, 0.66, 0.79, 0.82, 1].map((ratio) => Math.round(base * ratio));
-  const max = Math.max(...points);
-  const coordinates = points.map((point, index) => {
+function TrendChart({ trend }: { trend: AdminGivingTrendItem[] }) {
+  const max = Math.max(...trend.map((item) => item.succeededAmountMinor), 0);
+
+  if (max <= 0) {
+    return (
+      <EmptyState>
+        No paid gifts are available for the current six-month trend window.
+      </EmptyState>
+    );
+  }
+
+  const coordinates = trend.map((item, index) => {
     const x = 16 + index * 86;
-    const y = 154 - (point / max) * 104;
+    const y = 154 - (item.succeededAmountMinor / max) * 104;
     return `${x},${y}`;
   });
 
@@ -390,7 +400,7 @@ function TrendChart({ totalAmountMinor }: { totalAmountMinor: number }) {
     <div>
       <div className="mb-4 flex items-center gap-3 text-xs font-semibold text-slate-500">
         <span className="h-2 w-2 rounded-full bg-blue-500" />
-        Total Raised (GBP)
+        Paid giving trend
       </div>
       <svg className="h-48 w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 462 180">
         <defs>
@@ -410,12 +420,39 @@ function TrendChart({ totalAmountMinor }: { totalAmountMinor: number }) {
         })}
       </svg>
       <div className="mt-1 grid grid-cols-6 text-center text-xs font-medium text-slate-500">
-        {["Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26", "May '26"].map((label) => (
-          <span key={label}>{label}</span>
+        {trend.map((item) => (
+          <span key={item.monthKey}>{item.label}</span>
         ))}
       </div>
     </div>
   );
+}
+
+function getTrendSummary(trend: AdminGivingTrendItem[]) {
+  const current = trend.at(-1);
+  const previous = trend.at(-2);
+
+  if (!current || current.succeededAmountMinor === 0) {
+    return "No paid gifts this month";
+  }
+
+  if (!previous || previous.succeededAmountMinor === 0) {
+    return "First paid month in trend";
+  }
+
+  const change = Math.round(
+    ((current.succeededAmountMinor - previous.succeededAmountMinor) / previous.succeededAmountMinor) * 100,
+  );
+
+  if (change === 0) {
+    return "Flat vs previous month";
+  }
+
+  return `${change > 0 ? "Up" : "Down"} ${Math.abs(change)}% vs previous month`;
+}
+
+function getPaidAverage(totalAmountMinor: number, count: number) {
+  return count > 0 ? Math.round(totalAmountMinor / count) : 0;
 }
 
 function RecentGivingTable({
@@ -693,10 +730,12 @@ function SupportersSection({
                 <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500">
                   <th className="w-[26%] py-3 pr-4">Supporter</th>
                   <th className="w-[22%] py-3 pr-4">Email</th>
-                  <th className="w-[14%] py-3 pr-4">Paid Total</th>
-                  <th className="w-[12%] py-3 pr-4">Gifts</th>
-                  <th className="w-[14%] py-3 pr-4">Last Gift</th>
-                  <th className="w-[12%] py-3">Latest Status</th>
+                  <th className="w-[13%] py-3 pr-4">Paid Total</th>
+                  <th className="w-[10%] py-3 pr-4">Gifts</th>
+                  <th className="w-[13%] py-3 pr-4">Average</th>
+                  <th className="w-[13%] py-3 pr-4">First Gift</th>
+                  <th className="w-[13%] py-3 pr-4">Last Gift</th>
+                  <th className="w-[10%] py-3">Latest Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -706,6 +745,8 @@ function SupportersSection({
                     <td className="truncate py-3 pr-4 text-sm text-slate-600">{supporter.email}</td>
                     <td className="py-3 pr-4 text-sm font-semibold text-slate-950">{formatGbp(supporter.totalGivenAmountMinor)}</td>
                     <td className="py-3 pr-4 text-sm text-slate-600">{supporter.giftsCount.toLocaleString("en-GB")}</td>
+                    <td className="py-3 pr-4 text-sm text-slate-600">{formatGbp(supporter.averageGiftAmountMinor)}</td>
+                    <td className="py-3 pr-4 text-sm text-slate-600">{formatShortDate(supporter.firstGiftAt)}</td>
                     <td className="py-3 pr-4 text-sm text-slate-600">{formatShortDate(supporter.lastGiftAt)}</td>
                     <td className="py-3">
                       <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(supporter.latestStatus)}`}>
@@ -728,11 +769,38 @@ function SupportersSection({
 }
 
 function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+  const activeFunds = dashboard.fundBreakdown.filter((fund) => fund.isActive);
+  const fundsWithGifts = dashboard.fundBreakdown.filter((fund) => fund.contributionsCount > 0);
+
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Funds">
-        Fund performance based on existing contribution records.
+        Donation categories, public visibility, and real giving performance.
       </SectionIntro>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <DashboardStatCard
+          accent="bg-blue-50 text-blue-600"
+          icon="funds"
+          label="Funds"
+          trend="Configured in this organisation"
+          value={dashboard.fundBreakdown.length.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-emerald-50 text-emerald-600"
+          icon="gift"
+          label="Public Funds"
+          trend="Shown on the giving page"
+          value={activeFunds.length.toLocaleString("en-GB")}
+        />
+        <DashboardStatCard
+          accent="bg-violet-50 text-violet-600"
+          icon="wallet"
+          label="Funds With Gifts"
+          trend="Have contribution records"
+          value={fundsWithGifts.length.toLocaleString("en-GB")}
+        />
+      </div>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
@@ -751,12 +819,27 @@ function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
                   <p className="truncate text-sm font-semibold text-slate-800">{fund.fundName}</p>
                   <p className="shrink-0 text-sm font-semibold text-slate-950">{formatGbp(fund.succeededAmountMinor)}</p>
                 </div>
+                {fund.description ? (
+                  <p className="mt-1 text-xs text-slate-500">{fund.description}</p>
+                ) : null}
                 <p className="mt-1 text-xs text-slate-500">
-                  {fund.contributionsCount.toLocaleString("en-GB")} gifts - Last activity {formatOptionalDate(fund.latestContributionAt)}
+                  {fund.contributionsCount.toLocaleString("en-GB")} gifts - Average {formatGbp(getPaidAverage(fund.succeededAmountMinor, fund.contributionsCount))} - Last activity {formatOptionalDate(fund.latestContributionAt)}
                 </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${fund.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+                    {fund.isActive ? "Public giving page" : "Not public"}
+                  </span>
+                  {fund.isDefault ? (
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      Default fund
+                    </span>
+                  ) : null}
+                </div>
               </div>
             )) : (
-              <p className="text-sm text-slate-500">No fund contribution activity yet.</p>
+              <EmptyState>
+                No funds are configured for this organisation. Add funds before public giving can route gifts to useful categories.
+              </EmptyState>
             )}
           </div>
         </section>
@@ -769,16 +852,31 @@ function CampaignsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Campaigns">
-        Fundraising areas using current campaign records where present, otherwise fund-based performance.
+        Goal-based fundraising from campaign records linked to real contributions.
       </SectionIntro>
 
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-        <h2 className="text-base font-semibold text-slate-950">Fundraising Areas</h2>
+        <h2 className="text-base font-semibold text-slate-950">Campaign Records</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {dashboard.campaignSummaries.length > 0 ? dashboard.campaignSummaries.map((campaign) => (
+          {dashboard.campaignSummaries.length > 0 ? dashboard.campaignSummaries.map((campaign) => {
+            const progress = campaign.goalAmountMinor
+              ? Math.min(percentOf(campaign.totalRaisedAmountMinor, campaign.goalAmountMinor), 100)
+              : null;
+
+            return (
             <article className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-4" key={campaign.campaignId ?? campaign.campaignName}>
-              <p className="text-sm font-semibold text-slate-950">{campaign.campaignName}</p>
-              <p className="mt-1 text-xs text-slate-500">{campaign.fundName ?? "Fund-based giving area"}</p>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">{campaign.campaignName}</p>
+                  <p className="mt-1 text-xs text-slate-500">{campaign.fundName ?? "No linked fund name"}</p>
+                </div>
+                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${campaign.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+                  {campaign.isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+              {campaign.description ? (
+                <p className="mt-3 text-sm leading-6 text-slate-600">{campaign.description}</p>
+              ) : null}
               <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
                 <div>
                   <p className="text-xs font-semibold text-slate-500">Raised</p>
@@ -793,10 +891,25 @@ function CampaignsSection({ dashboard }: { dashboard: AdminDashboardData }) {
                   <p className="mt-1 font-semibold text-slate-950">{formatOptionalDate(campaign.latestContributionAt)}</p>
                 </div>
               </div>
+              {progress !== null ? (
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs font-semibold text-slate-500">
+                    <span>Goal {formatGbp(campaign.goalAmountMinor ?? 0)}</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div className="mt-2 h-2 rounded-full bg-slate-200">
+                    <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${progress}%` }} />
+                  </div>
+                </div>
+              ) : null}
+              <p className="mt-4 text-xs text-slate-500">
+                {campaign.startsAt ? `Starts ${formatShortDate(campaign.startsAt)}` : "No start date"} - {campaign.endsAt ? `Ends ${formatShortDate(campaign.endsAt)}` : "No end date"}
+              </p>
             </article>
-          )) : (
+          );
+          }) : (
             <EmptyState>
-              No fund or campaign activity is available yet. Fundraising areas will appear after funds receive contribution records.
+              No campaigns are configured for this organisation. Campaign cards will appear here once real campaign records exist.
             </EmptyState>
           )}
         </div>
@@ -809,6 +922,8 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
   const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
   const exportHref = `/admin/reports/contributions?org=${dashboard.organisationSlug}`;
+  const ledgerHref = `/admin/contributions?org=${dashboard.organisationSlug}`;
+  const paidGiftCount = getStatusCount(dashboard.statusSummary, ["succeeded"]);
 
   return (
     <div className="space-y-5 p-5 xl:p-7">
@@ -824,6 +939,20 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
           Download CSV
         </Link>
       </div>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">Report Filters</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              The detailed giving ledger supports date, fund, and status filters. CSV export respects those filters.
+            </p>
+          </div>
+          <Link className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700" href={ledgerHref}>
+            Open filtered ledger
+          </Link>
+        </div>
+      </section>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
@@ -841,6 +970,13 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
           value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
         />
         <DashboardStatCard
+          accent="bg-violet-50 text-violet-600"
+          icon="wallet"
+          label="Average Paid Gift"
+          trend="Succeeded gifts only"
+          value={formatGbp(getPaidAverage(dashboard.summary.totalSucceededAmountMinor, paidGiftCount))}
+        />
+        <DashboardStatCard
           accent="bg-amber-50 text-amber-700"
           icon="calendar"
           label="Pending"
@@ -854,6 +990,22 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
           trend="Failed, cancelled, or expired"
           value={failedCount.toLocaleString("en-GB")}
         />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Giving Trend</h2>
+          <div className="mt-5">
+            <TrendChart trend={dashboard.givingTrend} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Fund Chart</h2>
+          <div className="mt-5">
+            <FundDonut funds={dashboard.fundBreakdown} />
+          </div>
+        </section>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
@@ -1288,7 +1440,8 @@ function AdminDashboardShell({
   userRole: string;
 }) {
   const activeSupporters = dashboard.activeSupportersCount;
-  const paidGiftCount = getStatusCount(dashboard.statusSummary, ["succeeded"]);
+  const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
+  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
   const orgParam = `?org=${dashboard.organisationSlug}`;
   const activityItems = dashboard.recentContributions.slice(0, 5);
 
@@ -1316,29 +1469,29 @@ function AdminDashboardShell({
                     accent="bg-emerald-50 text-emerald-600"
                     icon="wallet"
                     label="Total Raised"
-                    trend="Up 21.4% vs previous period"
+                    trend={getTrendSummary(dashboard.givingTrend)}
                     value={formatGbp(dashboard.summary.totalContributedAmountMinor)}
                   />
                   <DashboardStatCard
                     accent="bg-blue-50 text-blue-600"
                     icon="gift"
                     label="Total Gifts"
-                    trend="Up 15.7% vs previous period"
+                    trend="All contribution statuses"
                     value={dashboard.summary.totalContributionsCount.toLocaleString("en-GB")}
                   />
                   <DashboardStatCard
                     accent="bg-violet-50 text-violet-600"
                     icon="members"
                     label="Active Supporters"
-                    trend="Up 12.1% vs previous period"
+                    trend="Unique emails in records"
                     value={activeSupporters.toLocaleString("en-GB")}
                   />
                   <DashboardStatCard
                     accent="bg-emerald-50 text-emerald-600"
                     icon="refresh"
-                    label="Paid Gifts"
-                    trend="Succeeded contribution records"
-                    value={paidGiftCount.toLocaleString("en-GB")}
+                    label="Needs Attention"
+                    trend="Pending, failed, cancelled, or expired"
+                    value={(pendingCount + failedCount).toLocaleString("en-GB")}
                   />
                 </div>
 
@@ -1350,7 +1503,7 @@ function AdminDashboardShell({
                         Last 6 months
                       </span>
                     </div>
-                    <TrendChart totalAmountMinor={dashboard.summary.totalContributedAmountMinor} />
+                    <TrendChart trend={dashboard.givingTrend} />
                   </section>
 
                   <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
@@ -1387,7 +1540,7 @@ function AdminDashboardShell({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-sm font-semibold text-slate-800">{getStatusLabel(item.status)} gift</p>
-                            <p className="shrink-0 text-xs text-slate-400">{index + 2}h ago</p>
+                            <p className="shrink-0 text-xs text-slate-400">{formatShortDate(item.createdAt)}</p>
                           </div>
                           <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
                             {formatGbp(item.amountMinor)} to {item.fundName ?? "Unassigned fund"}
@@ -1423,22 +1576,28 @@ function AdminDashboardShell({
 
                 <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold text-slate-950">Payout Status</h2>
+                    <h2 className="text-base font-semibold text-slate-950">Payment Health</h2>
                     <Link className="text-sm font-semibold text-blue-600" href={`/admin/contributions${orgParam}`}>
                       View all
                     </Link>
                   </div>
                   <div className="mt-6 flex items-center gap-4">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                    <span className={`flex h-12 w-12 items-center justify-center rounded-full ${failedCount > 0 ? "bg-rose-50 text-rose-700" : pendingCount > 0 ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-600"}`}>
                       <Icon className="h-5 w-5" name="home" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-slate-500">Next Payout</p>
-                      <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{formatGbp(dashboard.summary.totalSucceededAmountMinor)}</p>
-                      <p className="mt-1 text-xs text-slate-500">Scheduled after settlement</p>
+                      <p className="text-xs font-semibold text-slate-500">Payment states</p>
+                      <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{failedCount + pendingCount}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {failedCount > 0
+                          ? `${failedCount} not completed`
+                          : pendingCount > 0
+                            ? `${pendingCount} pending`
+                            : "No pending or failed gifts"}
+                      </p>
                     </div>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      On Track
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${failedCount > 0 ? "bg-rose-50 text-rose-700" : pendingCount > 0 ? "bg-amber-50 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
+                      {failedCount > 0 ? "Review" : pendingCount > 0 ? "Pending" : "Clear"}
                     </span>
                   </div>
                 </section>
