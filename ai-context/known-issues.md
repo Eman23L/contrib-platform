@@ -19,7 +19,8 @@
 - Admin Team rows now show the best available Supabase Auth email/name metadata with user ID as fallback, but the app still does not have an app-owned profile/member identity table.
 - Admin campaign, fund, team, and report write workflows still need product/security decisions before CRUD/export/invite/edit actions are added.
 - Settings writes are implemented for safe text/profile fields only; broader settings such as payment configuration, multi-currency checkout, and publication controls need separate decisions.
-- Supporter/account fallback giving links still use `grace-community` only when the supporter has no giving history to infer an organisation; generic sign-in no longer shows a guest link without organisation context.
+- Generic sign-in and supporter account no longer send users to a hard-coded Grace Community giving page when no organisation context exists.
+- Supporter account still needs an explicit organisation selector or invite/context route for supporters with no giving history.
 
 ## Risk Areas
 

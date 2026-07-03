@@ -253,15 +253,38 @@ Files changed:
 - `ai-context/feature-contracts.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
-Commit hash: This commit (`Remove generic sign-in guest fallback`).
-Push status: Will be pushed with this commit.
+Commit hash: fc8e6388b54c7b61094c132ff2f08c7d217d8aca
+Push status: Pushed to origin/main.
 What improved:
 - Organisation-specific sign-in cards can still link guests directly to that organisation's giving page.
 - Generic `/sign-in` hides the guest link unless an organisation can be inferred from a safe admin `next` path.
 - This removes another Grace Community-only assumption from public sign-in UX.
 Blocked/risky items:
 - Supporter account still needs an organisation selector or invite/context route for no-history supporters.
-Next task chosen: Remove the remaining no-history supporter account Grace Community fallback or document why it must wait for an organisation selector.
+Next task chosen: Remove the remaining no-history supporter account Grace Community fallback.
+
+## Night Shift Task 5 - Remove Supporter Account Organisation Fallback
+
+Date/time: 2026-07-03T02:15:00+01:00
+Starting commit: fc8e6388b54c7b61094c132ff2f08c7d217d8aca
+Task: Stop supporter accounts from routing no-context giving actions to Grace Community.
+Why this task was chosen: Task 4 removed the generic sign-in fallback, leaving supporter account as the remaining user-facing hard-coded Grace Community giving route.
+Files changed:
+- `src/app/account/page.tsx`
+- `ai-context/known-issues.md`
+- `ai-context/scaling-and-multi-community-notes.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: This commit (`Remove supporter account organisation fallback`).
+Push status: Will be pushed with this commit.
+What improved:
+- Supporter account now uses the first real organisation slug found in giving history for give-again/support links.
+- Supporters with no organisation context no longer see CTAs that silently route them to Grace Community.
+- Older contribution rows without an organisation slug render as account history without inventing a giving link.
+Blocked/risky items:
+- Supporters with no giving history still need a future organisation picker, invite link, or organisation-scoped account entry route before the account can offer first-gift CTAs.
+Next task chosen: After checks/commit/push, audit admin dashboard/report giving links that still contain Grace Community fallbacks.
 
 ## Night Shift Stop Point
 

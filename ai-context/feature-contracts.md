@@ -242,6 +242,7 @@ Current behavior:
 - Receipts section links to existing success pages for paid gifts, but real receipt PDFs/email receipts are not implemented.
 - Recurring gift navigation/actions are hidden because subscriptions are not implemented; the direct recurring URL shows a factual no-records state.
 - Profile is read-only and side actions link to real account sections or giving pages.
+- Giving/support links use a real organisation slug from giving history; if none is available, the account hides giving CTAs instead of routing to a default organisation.
 
 Status: Partial.
 

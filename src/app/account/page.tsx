@@ -13,8 +13,6 @@ import {
   getAuthenticatedServerUser,
 } from "@/lib/supabase/server";
 
-const DEFAULT_GIVING_PATH = "/o/grace-community/give";
-
 type AccountSection =
   | "giving"
   | "home"
@@ -182,11 +180,39 @@ function getReceiptHref(item: SupporterGivingHistoryItem) {
 
 function getGivingHrefForHistoryItem(
   item: SupporterGivingHistoryItem,
-  fallbackHref: string,
+  fallbackHref: string | null,
 ) {
   return item.organisationSlug
     ? `/o/${item.organisationSlug}/give`
     : fallbackHref;
+}
+
+function OrganisationGivingLink({
+  fallbackHref,
+  item,
+}: {
+  fallbackHref: string | null;
+  item: SupporterGivingHistoryItem;
+}) {
+  const href = getGivingHrefForHistoryItem(item, fallbackHref);
+  const content = (
+    <>
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700 text-xs font-bold text-white">
+        {item.organisationName.slice(0, 1)}
+      </span>
+      {item.organisationName}
+    </>
+  );
+
+  if (!href) {
+    return <span className="flex items-center gap-3 text-sm font-semibold text-slate-700">{content}</span>;
+  }
+
+  return (
+    <Link className="flex items-center gap-3 text-sm font-semibold text-slate-700" href={href}>
+      {content}
+    </Link>
+  );
 }
 
 function getAccountSection(section?: string): AccountSection {
@@ -258,7 +284,7 @@ function RecentContributionsTable({
   giveAgainHref,
   history,
 }: {
-  giveAgainHref: string;
+  giveAgainHref: string | null;
   history: SupporterGivingHistoryItem[];
 }) {
   const rows = history.slice(0, 5);
@@ -274,10 +300,7 @@ function RecentContributionsTable({
       {rows.length === 0 ? (
         <div className="border-t border-slate-100 px-5 py-10">
           <h3 className="text-base font-semibold text-slate-950">No contributions yet</h3>
-          <p className="mt-2 text-sm text-slate-500">Start by choosing an organisation to support.</p>
-          <Link className="mt-5 inline-flex rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href={giveAgainHref}>
-            Give now
-          </Link>
+          <p className="mt-2 text-sm text-slate-500">Open an organisation public giving page to make your first gift.</p>
         </div>
       ) : (
         <>
@@ -296,12 +319,7 @@ function RecentContributionsTable({
                 {rows.map((item) => (
                   <tr key={item.id}>
                     <td className="px-5 py-4">
-                      <Link className="flex items-center gap-3 text-sm font-semibold text-slate-700" href={getGivingHrefForHistoryItem(item, giveAgainHref)}>
-                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700 text-xs font-bold text-white">
-                          {item.organisationName.slice(0, 1)}
-                        </span>
-                        {item.organisationName}
-                      </Link>
+                      <OrganisationGivingLink fallbackHref={giveAgainHref} item={item} />
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600">{item.fundName}</td>
                     <td className="px-5 py-4 text-sm font-semibold text-slate-950">
@@ -363,7 +381,7 @@ function SectionContent({
   currencyCode: string;
   email: string | null;
   firstName: string;
-  giveAgainHref: string;
+  giveAgainHref: string | null;
   history: SupporterGivingHistoryItem[];
   latestGift: SupporterGivingHistoryItem | null;
   latestPaidGift: SupporterGivingHistoryItem | null;
@@ -441,9 +459,11 @@ function SectionContent({
                     ? `Support ${latestGift.organisationName} again.`
                     : "Support the mission and ministry that matter most."}
                 </p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
-                  {latestGift?.fundName ? `Give to ${latestGift.fundName}` : "Give again"}
-                </Link>
+                {giveAgainHref ? (
+                  <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
+                    {latestGift?.fundName ? `Give to ${latestGift.fundName}` : "Give again"}
+                  </Link>
+                ) : null}
               </article>
               <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
@@ -453,9 +473,11 @@ function SectionContent({
                 <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
                   Choose a fund to make a one-time donation.
                 </p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={giveAgainHref}>
-                  Explore Funds
-                </Link>
+                {giveAgainHref ? (
+                  <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={giveAgainHref}>
+                    Explore Funds
+                  </Link>
+                ) : null}
               </article>
               <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -555,9 +577,11 @@ function SectionContent({
               </p>
             </div>
           </div>
-          <Link className="mt-5 inline-flex rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href={giveAgainHref}>
-            Make a one-time gift
-          </Link>
+          {giveAgainHref ? (
+            <Link className="mt-5 inline-flex rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href={giveAgainHref}>
+              Make a one-time gift
+            </Link>
+          ) : null}
         </section>
       ) : null}
 
@@ -593,9 +617,11 @@ function SectionContent({
                 Email {supportEmail}
               </a>
             ) : null}
-            <Link className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
-              Go to giving page
-            </Link>
+            {giveAgainHref ? (
+              <Link className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
+                Go to giving page
+              </Link>
+            ) : null}
           </div>
         </section>
       ) : null}
@@ -710,7 +736,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     email: authenticatedUser.user.email?.trim().toLowerCase() ?? null,
     userId: authenticatedUser.user.id,
   });
-  const inferredOrganisationSlug = history[0]?.organisationSlug || null;
+  const inferredOrganisationSlug = history.find((item) => item.organisationSlug)?.organisationSlug ?? null;
   const inferredOrganisation = inferredOrganisationSlug
     ? await getOrganisationBySlug(supabase, inferredOrganisationSlug)
     : null;
@@ -721,9 +747,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
       )
     : null;
 
-  const giveAgainHref = history[0]
-    ? `/o/${history[0].organisationSlug || "grace-community"}/give`
-    : DEFAULT_GIVING_PATH;
+  const giveAgainHref = inferredOrganisationSlug ? `/o/${inferredOrganisationSlug}/give` : null;
   const currencyCode = getCurrencyCode(history);
   const totalGiven = history.reduce((sum, item) => sum + item.amountMinor, 0);
   const paidGifts = history.filter((item) => item.paymentStatus === "succeeded");
