@@ -1477,7 +1477,7 @@ type UnauthorizedStateProps = {
 };
 
 function buildGivingPath(orgSlug?: string | null) {
-  return `/o/${orgSlug ?? "grace-community"}/give`;
+  return orgSlug ? `/o/${encodeURIComponent(orgSlug)}/give` : null;
 }
 
 function MissingOrganisationState({
@@ -1558,9 +1558,11 @@ function UnauthorizedState({
             <Link className="gf-button-primary" href={accountPath}>
               Go to my account
             </Link>
-            <Link className="gf-button-secondary" href={givingPath}>
-              Go to giving page
-            </Link>
+            {givingPath ? (
+              <Link className="gf-button-secondary" href={givingPath}>
+                Go to giving page
+              </Link>
+            ) : null}
             <form action="/auth/sign-out" method="post">
               <button className="gf-button-secondary w-full sm:w-auto" type="submit">
                 Sign in with a different account

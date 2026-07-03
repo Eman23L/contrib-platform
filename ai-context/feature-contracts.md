@@ -294,6 +294,7 @@ Current behavior:
 - External redirects are blocked by safe internal path handling.
 - Admin detection by email still depends on Supabase Auth admin lookup because member emails are not stored in app tables.
 - Generic sign-in hides the guest giving link unless a safe organisation context is present in the requested admin path.
+- Unauthorized admin states show giving links only when a real requested or authorised organisation slug is available.
 
 Status: Working with known performance/schema caveat.
 

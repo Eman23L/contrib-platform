@@ -60,7 +60,7 @@ function UnauthorizedState({
   requestedOrgSlug: string | null;
   userEmail: string | null;
 }) {
-  const givingPath = `/o/${requestedOrgSlug ?? "grace-community"}/give`;
+  const givingPath = requestedOrgSlug ? `/o/${encodeURIComponent(requestedOrgSlug)}/give` : null;
   const accountPath = "/account";
 
   return (
@@ -86,9 +86,11 @@ function UnauthorizedState({
             <Link className="gf-button-primary" href={accountPath}>
               Go to my account
             </Link>
-            <Link className="gf-button-secondary" href={givingPath}>
-              Go to giving page
-            </Link>
+            {givingPath ? (
+              <Link className="gf-button-secondary" href={givingPath}>
+                Go to giving page
+              </Link>
+            ) : null}
             <form action="/auth/sign-out" method="post">
               <button className="gf-button-secondary w-full sm:w-auto" type="submit">
                 Sign in with a different account

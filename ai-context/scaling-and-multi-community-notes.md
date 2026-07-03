@@ -21,6 +21,7 @@ GetFlow should support multiple churches, charities, and communities without cod
 - Public giving copy and support contact details are editable per organisation through Settings.
 - Team member display lacks email/profile fields in app-owned tables.
 - Admin write workflows for funds, campaigns, and team are not built; settings and contribution export have MVP write/export paths.
+- The only remaining `grace-community` reference in `src` is a settings form placeholder example, not a fallback route.
 
 ## Scaling Priorities
 

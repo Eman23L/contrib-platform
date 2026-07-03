@@ -276,15 +276,37 @@ Files changed:
 - `ai-context/feature-contracts.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
-Commit hash: This commit (`Remove supporter account organisation fallback`).
-Push status: Will be pushed with this commit.
+Commit hash: 3641a6d8678605cc6c14267619aa34fbbe6509e9
+Push status: Pushed to origin/main.
 What improved:
 - Supporter account now uses the first real organisation slug found in giving history for give-again/support links.
 - Supporters with no organisation context no longer see CTAs that silently route them to Grace Community.
 - Older contribution rows without an organisation slug render as account history without inventing a giving link.
 Blocked/risky items:
 - Supporters with no giving history still need a future organisation picker, invite link, or organisation-scoped account entry route before the account can offer first-gift CTAs.
-Next task chosen: After checks/commit/push, audit admin dashboard/report giving links that still contain Grace Community fallbacks.
+Next task chosen: Audit admin dashboard/report giving links that still contain Grace Community fallbacks.
+
+## Night Shift Task 6 - Remove Admin Unauthorized Giving Fallbacks
+
+Date/time: 2026-07-03T02:55:00+01:00
+Starting commit: 3641a6d8678605cc6c14267619aa34fbbe6509e9
+Task: Remove hard-coded Grace Community giving links from admin unauthorized states.
+Why this task was chosen: After supporter-account cleanup, the remaining route fallbacks were in admin unauthorized pages where no requested organisation could exist.
+Files changed:
+- `src/app/admin/page.tsx`
+- `src/app/admin/contributions/page.tsx`
+- `ai-context/scaling-and-multi-community-notes.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: This commit (`Remove admin unauthorized giving fallbacks`).
+Push status: Will be pushed with this commit.
+What improved:
+- Admin unauthorized states now only render a public giving-page link when a real requested or authorised organisation slug is available.
+- The last `grace-community` reference in `src` is now only a settings placeholder example, not a fallback route.
+Blocked/risky items:
+- Placeholder copy can be changed later if product wants no example organisation slug at all.
+Next task chosen: Re-scan source for user-facing hard-coded organisation assumptions and continue with the next safe no-schema cleanup.
 
 ## Night Shift Stop Point
 
