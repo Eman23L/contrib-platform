@@ -116,7 +116,7 @@ Task: Stop after safe useful work was exhausted.
 Why this task was chosen: Remaining high-value work requires product/security/payment decisions or external production dashboard access.
 Files changed: `ai-context/night-shift-log.md`
 Checks run: `tsc --noEmit` passed; `npm run lint` passed with no warnings; sandbox `npm run build` hit known `spawn EPERM`; escalated `npm run build` passed.
-Commit hash: This commit (`Harden dashboard navigation UX`).
+Commit hash: Pending.
 Push status: Pending.
 What improved: The log now records completed Night Shift commits and the stopping rationale.
 Blocked/risky items:
@@ -143,8 +143,8 @@ Files changed:
 - `ai-context/codex-loop-instructions.md`
 - `ai-context/night-shift-log.md`
 Checks run: `git status --short --branch` before edits; documentation-only update.
-Commit hash: This commit (`Guest giving mobile navigation`).
-Push status: Will be pushed with this commit.
+Commit hash: Pending.
+Push status: Pending.
 What improved: Future Codex and Night Shift sessions now have a stronger source of truth for feature intent, dependency order, and acceptance criteria.
 Blocked/risky items: No implementation was attempted. Auth, Stripe, Supabase, schema, routes, environment variables, and UI behavior were intentionally unchanged.
 Next task chosen: Compare current organisation settings and payment/reconciliation surfaces against `deep-research-feature-map.md`, then choose the highest-value safe build loop with explicit approval.
@@ -215,6 +215,29 @@ Push status: Pending.
 What improved: Reports now expose a real admin-only CSV download of organisation-scoped contribution records.
 Blocked/risky items: Export is contribution-only. Supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
 Next task chosen: Supporter account support-context cleanup.
+
+## Night Shift Task 3 - Supporter Support Context Cleanup
+
+Date/time: 2026-07-03T01:20:00+01:00
+Starting commit: 44657eff3169176fc6fb2bbb15e5be67e2eda68f
+Task: Make supporter account support copy use inferred organisation context.
+Why this task was chosen: The handoff recommended supporter/account support-context cleanup after mobile navigation polish. The support section was still generic even when giving history identified an organisation.
+Files changed:
+- `src/app/account/page.tsx`
+- `ai-context/known-issues.md`
+- `ai-context/multi-community-requirements.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: This commit (`Use organisation support context in account`).
+Push status: Will be pushed with this commit.
+What improved:
+- Supporter account now loads the inferred organisation from latest giving history and reads its public settings.
+- Support section names the inferred organisation and shows a `mailto:` action when that organisation has a saved support email.
+- No-history supporters still get a factual fallback because the app has no organisation context for them yet.
+Blocked/risky items:
+- Supporters with no giving history still need an organisation selector or invite/context route before the Grace Community fallback can be fully removed.
+- This does not implement editable supporter profile or real support ticket/help workflows.
+Next task chosen: Broader dead-action audit across public/supporter flows.
 
 ## Night Shift Stop Point
 

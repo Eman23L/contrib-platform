@@ -19,7 +19,7 @@
 - Admin Team rows now show the best available Supabase Auth email/name metadata with user ID as fallback, but the app still does not have an app-owned profile/member identity table.
 - Admin campaign, fund, team, and report write workflows still need product/security decisions before CRUD/export/invite/edit actions are added.
 - Settings writes are implemented for safe text/profile fields only; broader settings such as payment configuration, multi-currency checkout, and publication controls need separate decisions.
-- Supporter/account fallback giving links still use `grace-community` only when the supporter has no giving history to infer an organisation.
+- Supporter/account fallback giving links still use `grace-community` only when the supporter has no giving history to infer an organisation; support copy now uses inferred organisation support email when giving history exists.
 
 ## Risk Areas
 

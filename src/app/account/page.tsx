@@ -6,6 +6,8 @@ import {
   getSupporterGivingHistory,
   type SupporterGivingHistoryItem,
 } from "@/lib/services/account/getSupporterGivingHistory";
+import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
+import { getOrganisationBySlug } from "@/lib/db/queries/organisations";
 import {
   createServerSupabaseServiceClient,
   getAuthenticatedServerUser,
@@ -354,6 +356,8 @@ function SectionContent({
   latestPaidGift,
   receiptCount,
   section,
+  supportEmail,
+  supportOrganisationName,
   totalGiven,
 }: {
   currencyCode: string;
@@ -365,6 +369,8 @@ function SectionContent({
   latestPaidGift: SupporterGivingHistoryItem | null;
   receiptCount: number;
   section: AccountSection;
+  supportEmail: string;
+  supportOrganisationName: string | null;
   totalGiven: number;
 }) {
   if (section === "home") {
@@ -577,11 +583,20 @@ function SectionContent({
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
           <h2 className="text-base font-semibold text-slate-950">Support</h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            For help with gifts, receipts, or account access, contact your organisation support team.
+            {supportOrganisationName
+              ? `For help with gifts, receipts, or account access, contact ${supportOrganisationName}.`
+              : "Choose an organisation to see its giving and support details."}
           </p>
-          <Link className="mt-5 inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
-            Go to giving page
-          </Link>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            {supportEmail ? (
+              <a className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={`mailto:${supportEmail}`}>
+                Email {supportEmail}
+              </a>
+            ) : null}
+            <Link className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
+              Go to giving page
+            </Link>
+          </div>
         </section>
       ) : null}
     </>
@@ -695,6 +710,16 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     email: authenticatedUser.user.email?.trim().toLowerCase() ?? null,
     userId: authenticatedUser.user.id,
   });
+  const inferredOrganisationSlug = history[0]?.organisationSlug || null;
+  const inferredOrganisation = inferredOrganisationSlug
+    ? await getOrganisationBySlug(supabase, inferredOrganisationSlug)
+    : null;
+  const inferredPublicSettings = inferredOrganisation
+    ? getOrganisationPublicSettings(
+        inferredOrganisation.settings,
+        inferredOrganisation.name,
+      )
+    : null;
 
   const giveAgainHref = history[0]
     ? `/o/${history[0].organisationSlug || "grace-community"}/give`
@@ -811,6 +836,8 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 latestPaidGift={latestPaidGift}
                 receiptCount={receiptCount}
                 section={activeSection}
+                supportEmail={inferredPublicSettings?.supportEmail ?? ""}
+                supportOrganisationName={inferredOrganisation?.name ?? history[0]?.organisationName ?? null}
                 totalGiven={totalGiven}
               />
             </div>

@@ -17,7 +17,7 @@ Requirement:
 Current status:
 
 - Current: `organisations.name` is loaded by slug and used in admin dashboard and public giving.
-- Partial: supporter account falls back to the organisation name from giving history, not a chosen current organisation.
+- Partial: supporter account falls back to the organisation name and support contact from giving history, not a chosen current organisation.
 
 ## Organisation Slug
 
@@ -52,7 +52,8 @@ Current status:
 
 - Current: owners/admins can save a support/contact email in organisation Settings.
 - Current: the guest giving page shows the saved support email where available.
-- Partial: supporter account support still uses generic support copy unless it can infer an organisation from giving history.
+- Current: supporter account support uses the inferred organisation support email where giving history provides organisation context.
+- Partial: supporters with no giving history still need an organisation selector or invite/context route.
 
 ## Funds
 
