@@ -292,6 +292,7 @@ Current behavior:
 - Admin sessions and supporter sessions use separate cookies.
 - External redirects are blocked by safe internal path handling.
 - Admin detection by email still depends on Supabase Auth admin lookup because member emails are not stored in app tables.
+- Generic sign-in hides the guest giving link unless a safe organisation context is present in the requested admin path.
 
 Status: Working with known performance/schema caveat.
 

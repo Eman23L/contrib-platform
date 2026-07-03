@@ -24,7 +24,6 @@ function getSafeNextPath(next?: string) {
 }
 
 const DEFAULT_PUBLIC_PATH = "/account";
-const DEFAULT_GUEST_GIVING_PATH = "/o/grace-community/give";
 
 function getGuestGivingPath(nextPath: string) {
   try {
@@ -35,10 +34,10 @@ function getGuestGivingPath(nextPath: string) {
       return `/o/${encodeURIComponent(orgSlug)}/give`;
     }
   } catch {
-    return DEFAULT_GUEST_GIVING_PATH;
+    return null;
   }
 
-  return DEFAULT_GUEST_GIVING_PATH;
+  return null;
 }
 
 function getErrorMessage(error?: string) {

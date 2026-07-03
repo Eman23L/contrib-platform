@@ -228,8 +228,8 @@ Files changed:
 - `ai-context/multi-community-requirements.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
-Commit hash: This commit (`Use organisation support context in account`).
-Push status: Will be pushed with this commit.
+Commit hash: c242d32e5e5eca50275c0d0b53942e8609ff4411
+Push status: Pushed to origin/main.
 What improved:
 - Supporter account now loads the inferred organisation from latest giving history and reads its public settings.
 - Support section names the inferred organisation and shows a `mailto:` action when that organisation has a saved support email.
@@ -238,6 +238,30 @@ Blocked/risky items:
 - Supporters with no giving history still need an organisation selector or invite/context route before the Grace Community fallback can be fully removed.
 - This does not implement editable supporter profile or real support ticket/help workflows.
 Next task chosen: Broader dead-action audit across public/supporter flows.
+
+## Night Shift Task 4 - Remove Generic Sign-In Guest Fallback
+
+Date/time: 2026-07-03T01:40:00+01:00
+Starting commit: c242d32e5e5eca50275c0d0b53942e8609ff4411
+Task: Remove the hard-coded Grace Community guest link from generic sign-in.
+Why this task was chosen: The dead-action audit found that `/sign-in` showed `Continue as guest` even when no organisation context existed, sending users to Grace Community by default.
+Files changed:
+- `src/components/auth/UnifiedSignInCard.tsx`
+- `src/app/sign-in/page.tsx`
+- `ai-context/known-issues.md`
+- `ai-context/scaling-and-multi-community-notes.md`
+- `ai-context/feature-contracts.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: This commit (`Remove generic sign-in guest fallback`).
+Push status: Will be pushed with this commit.
+What improved:
+- Organisation-specific sign-in cards can still link guests directly to that organisation's giving page.
+- Generic `/sign-in` hides the guest link unless an organisation can be inferred from a safe admin `next` path.
+- This removes another Grace Community-only assumption from public sign-in UX.
+Blocked/risky items:
+- Supporter account still needs an organisation selector or invite/context route for no-history supporters.
+Next task chosen: Remove the remaining no-history supporter account Grace Community fallback or document why it must wait for an organisation selector.
 
 ## Night Shift Stop Point
 

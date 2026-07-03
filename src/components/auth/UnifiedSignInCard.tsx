@@ -5,7 +5,7 @@ import { useState } from "react";
 
 type UnifiedSignInCardProps = {
   adminNextPath: string;
-  guestHref: string;
+  guestHref?: string | null;
   initialError?: string | null;
   intro?: string;
   kicker?: string;
@@ -241,11 +241,13 @@ export function UnifiedSignInCard({
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <Link className="gf-link" href={guestHref}>
-            Continue as guest
-          </Link>
-        </div>
+        {guestHref ? (
+          <div className="mt-6 text-center">
+            <Link className="gf-link" href={guestHref}>
+              Continue as guest
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );
