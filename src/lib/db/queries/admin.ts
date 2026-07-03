@@ -83,6 +83,7 @@ export type AdminCampaignRow = {
   goal_amount_minor: number | null;
   name: string;
   is_active: boolean;
+  slug: string;
   starts_at: string | null;
   funds: {
     name: string;
@@ -290,6 +291,7 @@ export async function listAdminCampaignRows(
         goal_amount_minor,
         name,
         is_active,
+        slug,
         starts_at,
         funds:funds (
           name

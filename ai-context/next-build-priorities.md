@@ -71,7 +71,8 @@ The four non-negotiable product capabilities are:
 
 4. Build campaign management.
    - Current: campaigns table exists and admin campaign section shows only real campaign records with linked funds, descriptions, status, date windows, goals, progress, paid totals, and latest activity.
-   - Planned: campaign create/edit/archive, public visibility controls, public page, share link, and contribution attribution from public giving.
+   - Current: owner/admin/finance users can create and edit campaigns through server-validated forms.
+   - Planned: archive/delete policy, public campaign pages, share links, and contribution attribution from public giving.
 
 5. Build team management.
    - Current: memberships determine access and the team section lists visible membership role/status records.

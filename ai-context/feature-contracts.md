@@ -145,13 +145,15 @@ Current behavior:
 - Campaign table exists and contribution intents can reference campaigns.
 - Admin campaign section shows only real campaign records, linked fund names, descriptions, active status, goal amount, progress, date windows, paid totals, gift count, and latest activity where campaign data exists.
 - When no campaign records exist, it shows an empty campaign state instead of fund-based substitutes.
-- No campaign CRUD or public campaign giving flow is implemented.
+- Owner/admin/finance users can create and edit campaign records through server-validated admin forms using the existing campaign schema.
+- Campaign goals come from `campaigns.goal_amount_minor`; for example, a displayed £50,000 goal is stored as `5000000` minor units.
+- Public campaign giving flow is not implemented.
 
 Status: Partial.
 
 Acceptance criteria:
 
-- Admin can create/edit/archive campaigns.
+- Admin can create/edit campaigns.
 - Campaigns can be linked to funds and contribution intents.
 - Campaigns have goal amount, public story/description, status, start/end dates, visibility, progress, and share URL when campaign schema supports them.
 - Public campaign pages or campaign-selectable giving are supported.

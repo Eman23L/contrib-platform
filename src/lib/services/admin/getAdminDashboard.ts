@@ -247,11 +247,13 @@ export function getAdminCampaignSummaries(
       campaignName: campaign.name,
       description: campaign.description,
       endsAt: campaign.ends_at,
+      fundId: campaign.fund_id,
       fundName: campaign.funds?.name ?? null,
       giftsCount: 0,
       goalAmountMinor: campaign.goal_amount_minor,
       isActive: campaign.is_active,
       latestContributionAt: null,
+      slug: campaign.slug,
       startsAt: campaign.starts_at,
       totalRaisedAmountMinor: 0,
     });

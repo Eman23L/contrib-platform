@@ -9,6 +9,7 @@ import { createServerSupabaseUserClient } from "@/lib/supabase/server";
 import { getAdminDashboard } from "@/lib/services/admin/getAdminDashboard";
 import type {
   AdminDashboardData,
+  AdminCampaignSummaryItem,
   AdminFundBreakdownItem,
   AdminGivingTrendItem,
   AdminOrganisationSettings,
@@ -20,6 +21,8 @@ import type {
 type AdminPageProps = {
   searchParams: Promise<{
     org?: string;
+    campaignError?: string;
+    campaignSaved?: string;
     section?: string;
     settingsError?: string;
     settingsSaved?: string;
@@ -37,6 +40,11 @@ type AdminSection =
   | "team";
 
 type SettingsStatus = {
+  error: string | null;
+  saved: boolean;
+};
+
+type CampaignStatus = {
   error: string | null;
   saved: boolean;
 };
@@ -522,12 +530,14 @@ function RecentGivingTable({
 function SectionContent({
   activeSection,
   activeSupporters,
+  campaignStatus,
   dashboard,
   settingsStatus,
   userRole,
 }: {
   activeSection: AdminSection;
   activeSupporters: number;
+  campaignStatus: CampaignStatus;
   dashboard: AdminDashboardData;
   settingsStatus: SettingsStatus;
   userRole: string;
@@ -555,7 +565,13 @@ function SectionContent({
   }
 
   if (activeSection === "campaigns") {
-    return <CampaignsSection dashboard={dashboard} />;
+    return (
+      <CampaignsSection
+        canManageCampaigns={userRole === "owner" || userRole === "admin" || userRole === "finance"}
+        campaignStatus={campaignStatus}
+        dashboard={dashboard}
+      />
+    );
   }
 
   if (activeSection === "reports") {
@@ -848,12 +864,170 @@ function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   );
 }
 
-function CampaignsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+function formatDateInput(value: string | null) {
+  return value ? value.slice(0, 10) : "";
+}
+
+function formatAmountInput(amountMinor: number | null) {
+  return amountMinor ? (amountMinor / 100).toFixed(2) : "";
+}
+
+function CampaignForm({
+  campaign,
+  dashboard,
+  mode,
+}: {
+  campaign?: AdminCampaignSummaryItem;
+  dashboard: AdminDashboardData;
+  mode: "create" | "edit";
+}) {
+  const fundOptions = dashboard.fundBreakdown.filter((fund) =>
+    fund.fundId && (mode === "edit" || fund.isActive)
+  );
+  const defaultFundId =
+    campaign?.fundId ??
+    fundOptions.find((fund) => fund.isDefault)?.fundId ??
+    fundOptions[0]?.fundId ??
+    "";
+
+  return (
+    <form action="/admin/campaigns" className="mt-4 grid gap-4 md:grid-cols-2" method="post">
+      <input name="currentOrgSlug" type="hidden" value={dashboard.organisationSlug} />
+      {campaign?.campaignId ? (
+        <input name="campaignId" type="hidden" value={campaign.campaignId} />
+      ) : null}
+
+      <label className="block">
+        <span className="gf-label">Campaign name</span>
+        <input
+          className="gf-input"
+          defaultValue={campaign?.campaignName ?? ""}
+          maxLength={120}
+          name="name"
+          placeholder="Building fund appeal"
+          required
+        />
+      </label>
+
+      <label className="block">
+        <span className="gf-label">Linked fund</span>
+        <select className="gf-input" defaultValue={defaultFundId} name="fundId" required>
+          <option value="">Choose a fund</option>
+          {fundOptions.map((fund) => (
+            <option key={fund.fundId ?? fund.fundName} value={fund.fundId ?? ""}>
+              {fund.isActive ? fund.fundName : `${fund.fundName} (inactive)`}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="block md:col-span-2">
+        <span className="gf-label">Description</span>
+        <textarea
+          className="gf-input min-h-24"
+          defaultValue={campaign?.description ?? ""}
+          maxLength={500}
+          name="description"
+          placeholder="Describe what this campaign is raising money for."
+        />
+      </label>
+
+      <label className="block">
+        <span className="gf-label">Goal amount</span>
+        <input
+          className="gf-input"
+          defaultValue={formatAmountInput(campaign?.goalAmountMinor ?? null)}
+          min="0.01"
+          name="goalAmount"
+          placeholder="50000.00"
+          step="0.01"
+          type="number"
+        />
+      </label>
+
+      <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+        <input
+          className="h-4 w-4 rounded border-slate-300 text-blue-600"
+          defaultChecked={campaign?.isActive ?? true}
+          name="isActive"
+          type="checkbox"
+        />
+        Active
+      </label>
+
+      <label className="block">
+        <span className="gf-label">Start date</span>
+        <input
+          className="gf-input"
+          defaultValue={formatDateInput(campaign?.startsAt ?? null)}
+          name="startsAt"
+          type="date"
+        />
+      </label>
+
+      <label className="block">
+        <span className="gf-label">End date</span>
+        <input
+          className="gf-input"
+          defaultValue={formatDateInput(campaign?.endsAt ?? null)}
+          name="endsAt"
+          type="date"
+        />
+      </label>
+
+      <div className="md:col-span-2">
+        <button className="gf-button-primary" type="submit">
+          {mode === "create" ? "Add campaign" : "Save campaign"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function CampaignsSection({
+  canManageCampaigns,
+  campaignStatus,
+  dashboard,
+}: {
+  canManageCampaigns: boolean;
+  campaignStatus: CampaignStatus;
+  dashboard: AdminDashboardData;
+}) {
+  const activeFunds = dashboard.fundBreakdown.filter((fund) => fund.fundId && fund.isActive);
+
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Campaigns">
         Goal-based fundraising from campaign records linked to real contributions.
       </SectionIntro>
+
+      {campaignStatus.error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">
+          {campaignStatus.error}
+        </div>
+      ) : null}
+
+      {campaignStatus.saved ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+          Campaign saved.
+        </div>
+      ) : null}
+
+      {canManageCampaigns ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Add Campaign</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Create a real campaign linked to an existing public fund.
+          </p>
+          {activeFunds.length > 0 ? (
+            <CampaignForm dashboard={dashboard} mode="create" />
+          ) : (
+            <EmptyState>
+              Add an active fund before creating a campaign.
+            </EmptyState>
+          )}
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <h2 className="text-base font-semibold text-slate-950">Campaign Records</h2>
@@ -905,6 +1079,14 @@ function CampaignsSection({ dashboard }: { dashboard: AdminDashboardData }) {
               <p className="mt-4 text-xs text-slate-500">
                 {campaign.startsAt ? `Starts ${formatShortDate(campaign.startsAt)}` : "No start date"} - {campaign.endsAt ? `Ends ${formatShortDate(campaign.endsAt)}` : "No end date"}
               </p>
+              {canManageCampaigns ? (
+                <details className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                  <summary className="cursor-pointer text-sm font-semibold text-blue-600">
+                    Edit campaign
+                  </summary>
+                  <CampaignForm campaign={campaign} dashboard={dashboard} mode="edit" />
+                </details>
+              ) : null}
             </article>
           );
           }) : (
@@ -1428,12 +1610,14 @@ function SettingsSection({
 
 function AdminDashboardShell({
   activeSection,
+  campaignStatus,
   dashboard,
   settingsStatus,
   userEmail,
   userRole,
 }: {
   activeSection: AdminSection;
+  campaignStatus: CampaignStatus;
   dashboard: AdminDashboardData;
   settingsStatus: SettingsStatus;
   userEmail: string | null;
@@ -1607,6 +1791,7 @@ function AdminDashboardShell({
         <SectionContent
           activeSection={activeSection}
           activeSupporters={activeSupporters}
+          campaignStatus={campaignStatus}
           dashboard={dashboard}
           settingsStatus={settingsStatus}
           userRole={userRole}
@@ -1759,8 +1944,12 @@ function UnauthorizedState({
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { org, section, settingsError, settingsSaved } = await searchParams;
+  const { campaignError, campaignSaved, org, section, settingsError, settingsSaved } = await searchParams;
   const activeSection = getAdminSection(section);
+  const campaignStatus: CampaignStatus = {
+    error: campaignError ?? null,
+    saved: campaignSaved === "1",
+  };
   const settingsStatus: SettingsStatus = {
     error: settingsError ?? null,
     saved: settingsSaved === "1",
@@ -1822,6 +2011,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   return (
     <AdminDashboardShell
       activeSection={activeSection}
+      campaignStatus={campaignStatus}
       dashboard={dashboard}
       settingsStatus={settingsStatus}
       userEmail={access.value.user.email ?? null}

@@ -47,6 +47,37 @@ Blocked/risky items:
 - Supporter detail pages, receipt artifacts, recurring gifts, team invite/role edits, and app-owned member/supporter profiles remain future work.
 Next task chosen: If continuing this loop, build the next safe real-data improvement around contribution ledger filtering/search or lightweight report-filter integration without new schema.
 
+## Night Shift Task - Add Campaign Create Edit MVP
+
+Date/time: 2026-07-03T23:55:00+01:00
+Starting commit: bd48b539d6ed97c1723d8e8084f368e510b041b8
+Task: Add real campaign create/edit controls to the Campaigns admin section.
+Why this task was chosen: User identified that the displayed campaign goal was not editable and campaigns needed add/edit options. The goal comes from real `campaigns.goal_amount_minor` data; the existing schema and RLS safely support a server-side Campaigns MVP without a migration.
+Files changed:
+- `src/app/admin/page.tsx`
+- `src/app/admin/campaigns/route.ts`
+- `src/lib/db/mutations/upsertCampaign.ts`
+- `src/lib/validators/campaign.ts`
+- `src/lib/db/queries/admin.ts`
+- `src/lib/services/admin/getAdminDashboard.ts`
+- `src/types/api.ts`
+- `ai-context/feature-contracts.md`
+- `ai-context/known-issues.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `.\node_modules\.bin\tsc.cmd --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: This commit (`Build real campaign management`).
+Push status: Will be pushed with this commit.
+What improved:
+- Campaigns now has an Add Campaign form for users with owner/admin/finance roles.
+- Each real campaign card now has an Edit Campaign form for name, linked fund, description, goal amount, active status, start date, and end date.
+- Campaign saves are authenticated, organisation-scoped, server-validated, and written to the real `campaigns` table.
+- Existing campaign goals remain real database values, not UI placeholders.
+Blocked/risky items:
+- Campaign deletion/archive policy is not designed; inactive status is available through the edit form.
+- Public campaign pages/share links and campaign attribution from public giving are still not implemented.
+Next task chosen: Build public campaign attribution or fund CRUD only after product rules for public campaign routing and archive/delete behavior are confirmed.
+
 ## Run Started
 
 Date/time: 2026-07-01T00:08:10+01:00

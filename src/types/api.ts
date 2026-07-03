@@ -95,11 +95,13 @@ export type AdminCampaignSummaryItem = {
   campaignName: string;
   description: string | null;
   endsAt: string | null;
+  fundId: string | null;
   fundName: string | null;
   giftsCount: number;
   goalAmountMinor: number | null;
   isActive: boolean;
   latestContributionAt: string | null;
+  slug: string | null;
   startsAt: string | null;
   totalRaisedAmountMinor: number;
 };
