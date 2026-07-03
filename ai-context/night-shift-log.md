@@ -299,14 +299,35 @@ Files changed:
 - `ai-context/feature-contracts.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
-Commit hash: This commit (`Remove admin unauthorized giving fallbacks`).
-Push status: Will be pushed with this commit.
+Commit hash: 570799c334ad179eff3f38ea31867b90b03b2cb0
+Push status: Pushed to origin/main.
 What improved:
 - Admin unauthorized states now only render a public giving-page link when a real requested or authorised organisation slug is available.
 - The last `grace-community` reference in `src` is now only a settings placeholder example, not a fallback route.
 Blocked/risky items:
-- Placeholder copy can be changed later if product wants no example organisation slug at all.
-Next task chosen: Re-scan source for user-facing hard-coded organisation assumptions and continue with the next safe no-schema cleanup.
+- Placeholder copy still used Grace Community examples until the next cleanup.
+Next task chosen: Replace Grace Community settings placeholders with neutral organisation examples.
+
+## Night Shift Task 7 - Neutralise Settings Organisation Placeholders
+
+Date/time: 2026-07-03T03:20:00+01:00
+Starting commit: 570799c334ad179eff3f38ea31867b90b03b2cb0
+Task: Replace Grace Community examples in settings fields with neutral placeholders.
+Why this task was chosen: After route fallbacks were removed, the settings form still visually suggested one hard-coded church in display-name and slug placeholders.
+Files changed:
+- `src/app/admin/page.tsx`
+- `ai-context/scaling-and-multi-community-notes.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: This commit (`Neutralise settings organisation placeholders`).
+Push status: Will be pushed with this commit.
+What improved:
+- Settings display-name placeholder now says `Your organisation`.
+- Settings slug placeholder now says `your-organisation`.
+- `src` no longer contains `grace-community`.
+Blocked/risky items:
+- This is text-only UX polish; no schema or route behavior changed.
+Next task chosen: Re-scan for remaining no-schema UX cleanup; otherwise stop at documented product/schema blockers.
 
 ## Night Shift Stop Point
 

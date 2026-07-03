@@ -1139,7 +1139,7 @@ function SettingsSection({
                   disabled={!canEditSettings}
                   maxLength={120}
                   name="name"
-                  placeholder="Grace Community Church"
+                  placeholder="Your organisation"
                   required
                 />
               </SettingsField>
@@ -1149,7 +1149,7 @@ function SettingsSection({
                   disabled={!canEditSettings}
                   maxLength={80}
                   name="slug"
-                  placeholder="grace-community"
+                  placeholder="your-organisation"
                   required
                 />
               </SettingsField>
