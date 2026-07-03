@@ -12,7 +12,7 @@
 - Supporter profile editing is not implemented.
 - Payout status in admin dashboard is derived/displayed at a high level, not a full Stripe payout reconciliation workflow.
 - Custom SMTP is not represented as code; it must be configured in Supabase.
-- Admin and supporter dashboards have compact mobile section navigation; guest dashboard sidebar mobile navigation is still deferred.
+- Admin, supporter, and guest giving dashboards have compact mobile navigation.
 - Guest checkout now requires email to satisfy contribution intent constraints and support giving history.
 - Guest checkout API and UI validation both return receipt/history-focused email errors.
 - Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.

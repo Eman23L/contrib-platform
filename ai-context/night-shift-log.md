@@ -143,8 +143,8 @@ Files changed:
 - `ai-context/codex-loop-instructions.md`
 - `ai-context/night-shift-log.md`
 Checks run: `git status --short --branch` before edits; documentation-only update.
-Commit hash: Pending.
-Push status: Pending.
+Commit hash: This commit (`Guest giving mobile navigation`).
+Push status: Will be pushed with this commit.
 What improved: Future Codex and Night Shift sessions now have a stronger source of truth for feature intent, dependency order, and acceptance criteria.
 Blocked/risky items: No implementation was attempted. Auth, Stripe, Supabase, schema, routes, environment variables, and UI behavior were intentionally unchanged.
 Next task chosen: Compare current organisation settings and payment/reconciliation surfaces against `deep-research-feature-map.md`, then choose the highest-value safe build loop with explicit approval.
@@ -214,7 +214,7 @@ Commit hash: Pending.
 Push status: Pending.
 What improved: Reports now expose a real admin-only CSV download of organisation-scoped contribution records.
 Blocked/risky items: Export is contribution-only. Supporter/fund/campaign exports, receipts/statements, and payout/deposit reconciliation remain future tasks.
-Next task chosen: Pending after checks, commit, and push.
+Next task chosen: Supporter account support-context cleanup.
 
 ## Night Shift Stop Point
 
@@ -327,8 +327,8 @@ Files changed:
 - `ai-context/next-build-priorities.md`
 - `ai-context/night-shift-log.md`
 Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; first `npm run build` attempt timed out at 120s without compiler output; rerun with longer timeout passed.
-Commit hash: Pending.
-Push status: Pending.
+Commit hash: 7959fcd274b0699d0bfcf4d40f1696c3ef3fdff0
+Push status: Pushed to `origin/main`.
 What improved:
 - Removed the fake Help Center link that routed admins to the supporter account.
 - Replaced it with static support guidance pointing admins to organisation settings.
@@ -337,4 +337,28 @@ What improved:
 Blocked/risky items:
 - Guest dashboard mobile sidebar navigation still needs follow-up.
 - A real help/support workflow is still not implemented.
+Next task chosen: Complete guest giving mobile navigation polish.
+
+## Night Shift Task 2 - Guest Giving Mobile Navigation
+
+Date/time: 2026-07-03T01:05:00+01:00
+Starting commit: 7959fcd274b0699d0bfcf4d40f1696c3ef3fdff0
+Task: Add compact mobile navigation to the guest giving shell.
+Why this task was chosen: Task 1 left guest dashboard mobile navigation as the remaining safe navigation polish item.
+Files changed:
+- `src/app/o/[orgSlug]/give/page.tsx`
+- `ai-context/known-issues.md`
+- `ai-context/ui-design-system.md`
+- `ai-context/next-build-priorities.md`
+- `ai-context/night-shift-log.md`
+Checks run: `npx tsc --noEmit` passed; `npm run lint` passed; `npm run build` passed.
+Commit hash: Pending.
+Push status: Pending.
+What improved:
+- Guest giving now reuses the existing public navigation routes in a compact horizontal mobile nav.
+- The desktop sidebar and mobile nav share the same route definitions for Give, Sign in, My Receipts, and Organisation.
+- Project context now records that admin, supporter, and guest giving shells have mobile navigation.
+Blocked/risky items:
+- This does not add new guest workflows; it only exposes existing routes on mobile.
+- Broader public organisation page content and campaign/fund presentation remain future work.
 Next task chosen: Pending after checks, commit, and push.

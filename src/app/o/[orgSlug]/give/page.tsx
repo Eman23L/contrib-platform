@@ -113,6 +113,16 @@ export default async function GivePage({ params }: GivePageProps) {
     organisation.settings,
     organisation.name,
   );
+  const guestNavItems: Array<{
+    href: string;
+    icon: IconName;
+    label: string;
+  }> = [
+    { href: `/o/${organisation.slug}/give`, icon: "gift", label: "Give" },
+    { href: "/sign-in", icon: "profile", label: "Sign in" },
+    { href: "/account", icon: "receipt", label: "My Receipts" },
+    { href: `/o/${organisation.slug}`, icon: "home", label: "Organisation" },
+  ];
 
   return (
     <main className="min-h-screen bg-[#f6f9fd] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
@@ -124,12 +134,7 @@ export default async function GivePage({ params }: GivePageProps) {
               <span className="text-xl font-semibold tracking-tight text-blue-600">GetFlow</span>
             </div>
             <nav className="flex-1 space-y-3 px-5 py-6">
-              {[
-                { href: `/o/${organisation.slug}/give`, icon: "gift", label: "Give" },
-                { href: "/sign-in", icon: "profile", label: "Sign in" },
-                { href: "/account", icon: "receipt", label: "My Receipts" },
-                { href: `/o/${organisation.slug}`, icon: "home", label: "Organisation" },
-              ].map((item, index) => (
+              {guestNavItems.map((item, index) => (
                 <Link
                   className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                   href={item.href}
@@ -173,6 +178,19 @@ export default async function GivePage({ params }: GivePageProps) {
                 </Link>
               </div>
             </header>
+
+            <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-5 py-3 lg:hidden">
+              {guestNavItems.map((item, index) => (
+                <Link
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                  href={item.href}
+                  key={item.label}
+                >
+                  <Icon className="h-4 w-4" name={item.icon} />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
             <div className="space-y-5 p-5 xl:p-9">
               <div className="grid gap-5 xl:grid-cols-[1fr_350px] xl:items-start">

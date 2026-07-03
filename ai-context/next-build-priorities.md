@@ -102,7 +102,7 @@ The four non-negotiable product capabilities are:
 
 ## Deferred by Product Decision
 
-- Partial: admin and supporter dashboards have compact mobile section navigation; guest dashboard mobile navigation still needs improvement.
+- Current: admin, supporter, and guest giving dashboards have compact mobile navigation for their existing sections/routes.
 - Planned: deeper button/action audit as new workflows are added.
 - Planned: Supabase custom SMTP setup outside app code.
 - Planned: Gift Aid/tax workflows, receipt wording semantics, and retention/communication-preference policy need product/compliance decisions before pilot.

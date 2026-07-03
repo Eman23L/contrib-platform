@@ -93,6 +93,7 @@ Guest giving uses a dashboard-like shell but remains focused on public checkout:
 
 - Organisation context.
 - Public navigation.
+- Compact horizontal navigation on mobile.
 - Assurance cards.
 - Giving form panels.
 - Right-side helper rail.
