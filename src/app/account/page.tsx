@@ -713,7 +713,10 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     ? org
     : null;
   const inferredOrganisationSlug = history.find((item) => item.organisationSlug)?.organisationSlug ?? null;
-  const organisationSlug = requestedOrganisationSlug ?? inferredOrganisationSlug;
+  const defaultOrganisationSlug = process.env.DEFAULT_ORGANISATION_SLUG?.trim()
+    || process.env.NEXT_PUBLIC_DEFAULT_ORGANISATION_SLUG?.trim()
+    || "grace-community";
+  const organisationSlug = requestedOrganisationSlug ?? inferredOrganisationSlug ?? defaultOrganisationSlug;
   const inferredOrganisation = organisationSlug
     ? await getOrganisationBySlug(supabase, organisationSlug)
     : null;
