@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { GuestGivingForm } from "@/components/giving/GuestGivingForm";
 import {
   getSupporterGivingHistory,
   type SupporterGivingHistoryItem,
@@ -9,6 +10,7 @@ import {
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getOrganisationBySlug } from "@/lib/db/queries/organisations";
 import { listPublicFunds } from "@/lib/services/public/listPublicFunds";
+import type { PublicGivingPageData } from "@/types/api";
 import {
   createServerSupabaseServiceClient,
   getAuthenticatedServerUser,
@@ -23,7 +25,7 @@ type AccountSection =
   | "support";
 
 type AccountPageProps = {
-  searchParams: Promise<{ org?: string; section?: string }>;
+  searchParams: Promise<{ org?: string; period?: string; section?: string }>;
 };
 
 type IconName =
@@ -377,28 +379,30 @@ function RecentContributionsTable({
 function SectionContent({
   currencyCode,
   email,
-  funds,
   firstName,
   giveAgainHref,
+  givingPageData,
   history,
   latestGift,
   section,
   supportEmail,
   supportOrganisationName,
   totalGiven,
+  period,
   yearGiftCount,
 }: {
   currencyCode: string;
   email: string | null;
-  funds: Awaited<ReturnType<typeof listPublicFunds>>;
   firstName: string;
   giveAgainHref: string | null;
+  givingPageData: PublicGivingPageData | null;
   history: SupporterGivingHistoryItem[];
   latestGift: SupporterGivingHistoryItem | null;
   section: AccountSection;
   supportEmail: string;
   supportOrganisationName: string | null;
   totalGiven: number;
+  period: "month" | "year";
   yearGiftCount: number;
 }) {
   if (section === "home") {
@@ -452,22 +456,9 @@ function SectionContent({
             <h2 className="text-base font-semibold text-slate-950">Ways to give</h2>
             <p className="mt-1 text-sm text-slate-500">Choose a fund for your next contribution.</p>
           </div>
-          {funds.length > 0 ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {funds.map((fund) => (
-                <Link
-                  className="rounded-xl border border-slate-200 p-4 transition hover:border-emerald-300 hover:bg-emerald-50"
-                  href={giveAgainHref ?? "#"}
-                  key={fund.id}
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                    <Icon className="h-5 w-5" name="gift" />
-                  </span>
-                  <h3 className="mt-4 text-sm font-semibold text-slate-950">{fund.name}</h3>
-                  {fund.description ? <p className="mt-1 text-xs leading-5 text-slate-500">{fund.description}</p> : null}
-                  <span className="mt-4 inline-flex text-sm font-semibold text-emerald-700">Give to this fund →</span>
-                </Link>
-              ))}
+          {givingPageData ? (
+            <div className="mt-5">
+              <GuestGivingForm organisation={givingPageData} />
             </div>
           ) : (
             <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
@@ -544,9 +535,18 @@ function SectionContent({
 
       {section === "giving" ? (
         <>
+          <form className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)] sm:flex-row sm:items-center sm:justify-between" method="get">
+            <input name="section" type="hidden" value="giving" />
+            {givingPageData ? <input name="org" type="hidden" value={givingPageData.organisationSlug} /> : null}
+            <label className="text-sm font-semibold text-slate-700" htmlFor="giving-period">View giving by</label>
+            <select className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700" defaultValue={period} id="giving-period" name="period">
+              <option value="year">This year</option>
+              <option value="month">This month</option>
+            </select>
+          </form>
           <div className="grid gap-4 md:grid-cols-3">
-            <StatCard detail="Across all funds" icon="gift" label="Total Given This Year" value={formatAmount(totalGiven, currencyCode)} variant="emerald" />
-            <StatCard detail="This year" icon="heart" label="Gifts Made" value={yearGiftCount.toLocaleString("en-GB")} variant="blue" />
+            <StatCard detail={`Across all funds, ${period === "month" ? "this month" : "this year"}`} icon="gift" label={`Total Given ${period === "month" ? "This Month" : "This Year"}`} value={formatAmount(totalGiven, currencyCode)} variant="emerald" />
+            <StatCard detail={period === "month" ? "This month" : "This year"} icon="heart" label="Gifts Made" value={yearGiftCount.toLocaleString("en-GB")} variant="blue" />
             <StatCard detail={latestGift ? `${latestGift.dateLabel} - ${getStatusLabel(latestGift.paymentStatus)}` : "No gifts recorded yet"} icon="refresh" label="Latest Gift" value={latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : "None"} variant="emerald" />
           </div>
           <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
@@ -695,8 +695,9 @@ function AccountAside({
 }
 
 export default async function AccountPage({ searchParams }: AccountPageProps) {
-  const { org, section } = await searchParams;
+  const { org, period: requestedPeriod, section } = await searchParams;
   const activeSection = getAccountSection(section);
+  const period: "month" | "year" = requestedPeriod === "month" ? "month" : "year";
   const authenticatedUser = await getAuthenticatedServerUser();
 
   if (!authenticatedUser) {
@@ -726,26 +727,48 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   const giveAgainHref = inferredOrganisationSlug ? `/o/${inferredOrganisationSlug}/give` : null;
   const organisationGiveHref = organisationSlug ? `/o/${organisationSlug}/give` : null;
   const funds = inferredOrganisation ? await listPublicFunds(inferredOrganisation.id) : [];
+  const givingPageData: PublicGivingPageData | null = inferredOrganisation && inferredPublicSettings
+    ? {
+        organisationName: inferredOrganisation.name,
+        organisationSlug: inferredOrganisation.slug,
+        currencyCode: inferredOrganisation.currencyCode,
+        funds,
+        publicSettings: inferredPublicSettings,
+      }
+    : null;
   const currencyCode = getCurrencyCode(history);
   const currentYear = new Date().getUTCFullYear();
   const paidHistory = history.filter((item) => item.paymentStatus === "succeeded");
+  const now = new Date();
+  const periodHistory = history.filter((item) => {
+    const createdAt = new Date(item.createdAt);
+
+    return period === "month"
+      ? createdAt.getUTCFullYear() === now.getUTCFullYear() && createdAt.getUTCMonth() === now.getUTCMonth()
+      : createdAt.getUTCFullYear() === currentYear;
+  });
+  const periodPaidHistory = periodHistory.filter((item) => item.paymentStatus === "succeeded");
   const totalGiven = paidHistory
-    .filter((item) => new Date(item.createdAt).getUTCFullYear() === currentYear)
+    .filter((item) => periodPaidHistory.some((periodItem) => periodItem.id === item.id))
     .reduce((sum, item) => sum + item.amountMinor, 0);
-  const latestGift = history[0] ?? null;
+  const latestGift = activeSection === "giving" ? periodHistory[0] ?? null : history[0] ?? null;
   const firstName = getFirstName(
     authenticatedUser.user.email,
     authenticatedUser.user.user_metadata,
   );
-  const yearGiftCount = paidHistory.filter((item) => new Date(item.createdAt).getUTCFullYear() === currentYear).length;
+  const yearGiftCount = periodPaidHistory.length;
+  const accountHomeHref = organisationSlug ? `/account?org=${encodeURIComponent(organisationSlug)}` : "/account";
+  const accountGivingHref = organisationSlug
+    ? `/account?org=${encodeURIComponent(organisationSlug)}&section=giving`
+    : "/account?section=giving";
   const accountNavItems: Array<{
     href: string;
     icon: IconName;
     id: AccountSection;
     label: string;
   }> = [
-    { href: "/account", icon: "home", id: "home", label: "Home" },
-    { href: "/account?section=giving", icon: "heart", id: "giving", label: "My Giving" },
+    { href: accountHomeHref, icon: "home", id: "home", label: "Home" },
+    { href: accountGivingHref, icon: "heart", id: "giving", label: "My Giving" },
   ];
 
   return (
@@ -829,11 +852,12 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               <SectionContent
                 currencyCode={currencyCode}
                 email={authenticatedUser.user.email ?? null}
-                funds={funds}
                 firstName={firstName}
                 giveAgainHref={giveAgainHref ?? organisationGiveHref}
-                history={history}
+                givingPageData={givingPageData}
+                history={activeSection === "giving" ? periodHistory : history}
                 latestGift={latestGift}
+                period={period}
                 section={activeSection}
                 supportEmail={inferredPublicSettings?.supportEmail ?? ""}
                 supportOrganisationName={inferredOrganisation?.name ?? history[0]?.organisationName ?? null}
