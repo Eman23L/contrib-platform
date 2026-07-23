@@ -379,7 +379,6 @@ function RecentContributionsTable({
 function SectionContent({
   currencyCode,
   email,
-  firstName,
   giveAgainHref,
   givingPageData,
   history,
@@ -393,7 +392,6 @@ function SectionContent({
 }: {
   currencyCode: string;
   email: string | null;
-  firstName: string;
   giveAgainHref: string | null;
   givingPageData: PublicGivingPageData | null;
   history: SupporterGivingHistoryItem[];
@@ -407,110 +405,22 @@ function SectionContent({
 }) {
   if (section === "home") {
     return (
-      <>
-        <div className="grid gap-5 xl:grid-cols-[1fr_350px] xl:items-start">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-              Hi, {firstName}
-            </h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Choose where you would like to give, then review your giving below.
-            </p>
-          </div>
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
-            <div className="flex gap-3">
-              <Icon className="h-5 w-5 shrink-0 text-emerald-500" name="heart" />
-              <p className="text-sm font-medium leading-6 text-slate-700">
-                Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion.
-              </p>
-            </div>
-          </div>
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)] sm:p-7">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">Give securely</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Ways to give</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            Choose where your contribution should go, select an amount, and continue to secure payment.
+          </p>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-          <StatCard
-            detail="Across all funds, this year"
-            icon="gift"
-            label="Total Given This Year"
-            value={formatAmount(totalGiven, currencyCode)}
-            variant="emerald"
-          />
-          <StatCard
-            detail="This year"
-            icon="heart"
-            label="Gifts Made"
-            value={yearGiftCount.toLocaleString("en-GB")}
-            variant="blue"
-          />
-          <StatCard
-            detail={latestGift ? `${latestGift.dateLabel} - ${getStatusLabel(latestGift.paymentStatus)}` : "No gifts recorded yet"}
-            icon="refresh"
-            label="Latest Gift"
-            value={latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : "None"}
-            variant="emerald"
-          />
-        </div>
-
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-          <div>
-            <h2 className="text-base font-semibold text-slate-950">Ways to give</h2>
-            <p className="mt-1 text-sm text-slate-500">Choose a fund for your next contribution.</p>
-          </div>
-          {givingPageData ? (
-            <div className="mt-5">
-              <GuestGivingForm organisation={givingPageData} />
-            </div>
-          ) : (
-            <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
-              Giving options will appear here when an organisation is connected to your account.
-            </p>
-          )}
-        </section>
-
-        <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-          <div className="space-y-5">
-            <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
-
-            <div className="grid gap-4 lg:grid-cols-3">
-              <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                  <Icon className="h-6 w-6" name="heart" />
-                </span>
-                <h2 className="mt-4 text-sm font-semibold text-slate-950">Give Again</h2>
-                <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                  {latestGift
-                    ? `Support ${latestGift.organisationName} again.`
-                    : "Support the mission and ministry that matter most."}
-                </p>
-                {giveAgainHref ? (
-                  <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
-                    {latestGift?.fundName ? `Give to ${latestGift.fundName}` : "Give again"}
-                  </Link>
-                ) : null}
-              </article>
-              <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                  <Icon className="h-6 w-6" name="gift" />
-                </span>
-                <h2 className="mt-4 text-sm font-semibold text-slate-950">Support Another Fund</h2>
-                <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                  Choose a fund to make a one-time donation.
-                </p>
-                {giveAgainHref ? (
-                  <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={giveAgainHref}>
-                    Explore Funds
-                  </Link>
-                ) : null}
-              </article>
-            </div>
-          </div>
-
-          <AccountAside
-            currencyCode={currencyCode}
-            latestGift={latestGift}
-          />
-        </div>
-      </>
+        {givingPageData ? (
+          <GuestGivingForm organisation={givingPageData} />
+        ) : (
+          <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+            Giving options will appear here when an organisation is connected to your account.
+          </p>
+        )}
+      </section>
     );
   }
 
@@ -651,46 +561,6 @@ function SectionContent({
         </section>
       ) : null}
     </>
-  );
-}
-
-function AccountAside({
-  currencyCode,
-  latestGift,
-}: {
-  currencyCode: string;
-  latestGift: SupporterGivingHistoryItem | null;
-}) {
-  return (
-    <aside className="space-y-5">
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-        <div className="flex items-center gap-4">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-            <Icon className="h-7 w-7" name="gift" />
-          </span>
-          <div>
-            <h2 className="text-sm font-semibold text-slate-950">Latest Contribution</h2>
-            <p className="mt-1 text-2xl font-semibold text-slate-950">
-              {latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : formatAmount(0, currencyCode)}
-            </p>
-          </div>
-        </div>
-        <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <dt className="text-slate-500">Date</dt>
-            <dd className="mt-1 font-semibold text-slate-800">{latestGift ? latestGift.dateLabel : "No gifts yet"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Status</dt>
-            <dd className="mt-1 font-semibold text-slate-800">{latestGift ? getStatusLabel(latestGift.paymentStatus) : "None"}</dd>
-          </div>
-        </dl>
-        <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href="/account?section=giving">
-          View Giving History
-        </Link>
-      </section>
-
-    </aside>
   );
 }
 
@@ -855,7 +725,6 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               <SectionContent
                 currencyCode={currencyCode}
                 email={authenticatedUser.user.email ?? null}
-                firstName={firstName}
                 giveAgainHref={giveAgainHref ?? organisationGiveHref}
                 givingPageData={givingPageData}
                 history={activeSection === "giving" ? periodHistory : history}
