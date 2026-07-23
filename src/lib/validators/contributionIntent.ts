@@ -51,6 +51,7 @@ function normalizeName(value: unknown, label: string): string | undefined {
 
 export function validateContributionIntentPayload(
   payload: unknown,
+  fallbackEmail?: string | null,
 ): ValidatedContributionIntentInput {
   if (!payload || typeof payload !== "object") {
     throw new Error("Invalid request payload.");
@@ -103,7 +104,7 @@ export function validateContributionIntentPayload(
     fundId,
     amount: roundedAmount,
     amountMinor,
-    guestEmail: normalizeGuestEmail(candidate.guestEmail),
+    guestEmail: normalizeGuestEmail(candidate.guestEmail ?? fallbackEmail),
     guestFirstName,
     guestLastName,
     donorName,

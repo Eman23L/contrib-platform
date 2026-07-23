@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type UnifiedSignInCardProps = {
   adminNextPath: string;
@@ -61,17 +61,34 @@ export function UnifiedSignInCard({
   title = "Sign in to your account",
 }: UnifiedSignInCardProps) {
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [showCreateAccountPrompt, setShowCreateAccountPrompt] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(initialError);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setCooldownSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownSeconds]);
 
   async function startSignIn() {
     const response = await fetch("/auth/start", {
       body: JSON.stringify({
         email,
+        firstName,
+        lastName,
         createAccount: showCreateAccountPrompt,
         next: showCreateAccountPrompt ? publicNextPath : startNextPath,
       }),
@@ -106,6 +123,7 @@ export function UnifiedSignInCard({
     }
 
     setSuccessMessage(SUCCESS_MESSAGE);
+    setCooldownSeconds(60);
   }
 
   async function signInWithPassword() {
@@ -133,6 +151,10 @@ export function UnifiedSignInCard({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (cooldownSeconds > 0) {
+      return;
+    }
+
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsSubmitting(true);
@@ -164,6 +186,16 @@ export function UnifiedSignInCard({
         ) : null}
 
         <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="gf-label">First name</span>
+              <input autoComplete="given-name" className="gf-input" onChange={(event) => setFirstName(event.target.value)} placeholder="Sarah" required type="text" value={firstName} />
+            </label>
+            <label className="block">
+              <span className="gf-label">Last name</span>
+              <input autoComplete="family-name" className="gf-input" onChange={(event) => setLastName(event.target.value)} placeholder="Smith" required type="text" value={lastName} />
+            </label>
+          </div>
           <label className="block">
             <span className="gf-label">Email address</span>
             <input
@@ -228,11 +260,13 @@ export function UnifiedSignInCard({
 
           <button
             className="gf-button-primary w-full"
-            disabled={isSubmitting}
+            disabled={isSubmitting || cooldownSeconds > 0}
             type="submit"
           >
             {isSubmitting
               ? "Please wait..."
+              : cooldownSeconds > 0
+                ? `Link sent - try again in ${cooldownSeconds}s`
               : showPasswordField
                 ? "Sign in securely"
                 : showCreateAccountPrompt

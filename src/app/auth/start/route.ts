@@ -13,11 +13,15 @@ import {
 type StartSignInRequest = {
   createAccount?: boolean;
   email?: string;
+  firstName?: string;
+  lastName?: string;
   next?: string;
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_PUBLIC_PATH = "/account";
+const PENDING_FIRST_NAME_COOKIE = "contrib-pending-first-name";
+const PENDING_LAST_NAME_COOKIE = "contrib-pending-last-name";
 
 function getSafeNextPath(next?: string) {
   const safePath = getSafeInternalPath(next);
@@ -27,6 +31,12 @@ function getSafeNextPath(next?: string) {
 
 function normalizeEmail(email?: string) {
   return email?.trim().toLowerCase() ?? "";
+}
+
+function normalizeName(value?: string) {
+  const normalized = value?.trim().replace(/\s+/g, " ") ?? "";
+
+  return normalized.length <= 80 ? normalized : "";
 }
 
 function isAdminPath(path: string) {
@@ -59,26 +69,53 @@ function getMagicLinkErrorMessage(message?: string) {
   return "We could not send a sign-in link. Please try again.";
 }
 
-async function sendMagicLink(request: Request, email: string, nextPath: string) {
+async function sendMagicLink(
+  request: Request,
+  email: string,
+  firstName: string,
+  lastName: string,
+  nextPath: string,
+) {
   const cookieStore = await cookies();
   const supabase = createServerSupabaseAuthClient(cookieStore);
   const redirectTo = buildRequestUrl(request, "/auth/callback");
 
   redirectTo.searchParams.set("next", nextPath);
 
-  return supabase.auth.signInWithOtp({
+  const result = await supabase.auth.signInWithOtp({
     email,
     options: {
       emailRedirectTo: redirectTo.toString(),
       shouldCreateUser: true,
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+      },
     },
   });
+
+  if (!result.error) {
+    const cookieOptions = {
+      httpOnly: true,
+      maxAge: 15 * 60,
+      path: "/",
+      sameSite: "lax" as const,
+      secure: process.env.NODE_ENV === "production",
+    };
+
+    cookieStore.set(PENDING_FIRST_NAME_COOKIE, encodeURIComponent(firstName), cookieOptions);
+    cookieStore.set(PENDING_LAST_NAME_COOKIE, encodeURIComponent(lastName), cookieOptions);
+  }
+
+  return result;
 }
 
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as StartSignInRequest;
     const email = normalizeEmail(payload.email);
+    const firstName = normalizeName(payload.firstName);
+    const lastName = normalizeName(payload.lastName);
     const nextPath = getSafeNextPath(payload.next);
 
     if (!email || !EMAIL_PATTERN.test(email)) {
@@ -149,7 +186,20 @@ export async function POST(request: Request) {
       });
     }
 
-    const { error } = await sendMagicLink(request, email, accountNextPath);
+    if (!firstName || !lastName) {
+      return NextResponse.json(
+        { error: "Enter your first and last name to continue.", ok: false },
+        { status: 400 },
+      );
+    }
+
+    const { error } = await sendMagicLink(
+      request,
+      email,
+      firstName,
+      lastName,
+      accountNextPath,
+    );
 
     if (error) {
       console.error("[auth/start] Magic-link sign-in failed", {

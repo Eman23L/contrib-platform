@@ -31,7 +31,7 @@ export function getDefaultOrganisationPublicSettings(
     givingPageIntro: "Choose a fund, select an amount, and continue to secure checkout.",
     logoUrl: "",
     publicPageHeading: `Welcome to ${organisationName}`,
-    publicPageIntro: "Sign in to view your giving history or continue as a guest.",
+    publicPageIntro: "Sign in securely to give and view your contribution history.",
     supportEmail: "",
     thankYouMessage:
       "Your payment was completed successfully and recorded for the fund you selected.",

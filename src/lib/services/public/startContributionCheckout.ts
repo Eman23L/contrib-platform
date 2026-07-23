@@ -16,7 +16,19 @@ export async function startContributionCheckout(
   payload: CreateContributionIntentRequest,
   siteUrl: string,
 ) {
-  const validated = validateContributionIntentPayload(payload);
+  const authenticatedUser = await getAuthenticatedServerUser();
+
+  if (!authenticatedUser) {
+    throw new Error("Please sign in before starting checkout.");
+  }
+
+  const metadata = authenticatedUser.user.user_metadata;
+  const firstName = typeof metadata.first_name === "string" ? metadata.first_name.trim() : "";
+  const lastName = typeof metadata.last_name === "string" ? metadata.last_name.trim() : "";
+  const validated = validateContributionIntentPayload(
+    payload,
+    authenticatedUser.user.email,
+  );
   const supabase = createServerSupabaseServiceClient();
   const stripe = getStripeServerClient();
 
@@ -43,14 +55,12 @@ export async function startContributionCheckout(
     throw new Error("Stripe Checkout is currently configured only for GBP.");
   }
 
-  const authenticatedUser = await getAuthenticatedServerUser();
-
   const intent = await createContributionIntent(supabase, {
     organisationId: organisation.id,
     fundId: fund.id,
     amountMinor: validated.amountMinor,
     currencyCode: organisation.currencyCode,
-    donorName: validated.donorName,
+    donorName: [firstName, lastName].filter(Boolean).join(" ") || validated.donorName,
     guestEmail: validated.guestEmail,
     userId: authenticatedUser?.user.id,
   });

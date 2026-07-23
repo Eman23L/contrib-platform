@@ -97,7 +97,6 @@ export async function getSupporterGivingHistory(
     .select(baseSelect)
     .eq("user_id", input.userId)
     .order("created_at", { ascending: false })
-    .limit(20)
     .returns<SupporterContributionRow[]>();
 
   const emailQuery = input.email
@@ -106,7 +105,6 @@ export async function getSupporterGivingHistory(
         .select(baseSelect)
         .eq("guest_email", input.email)
         .order("created_at", { ascending: false })
-        .limit(20)
         .returns<SupporterContributionRow[]>()
     : Promise.resolve({
         data: [] as SupporterContributionRow[],
@@ -135,8 +133,7 @@ export async function getSupporterGivingHistory(
   }
 
   const data = [...mergedRows.values()]
-    .sort((left, right) => right.created_at.localeCompare(left.created_at))
-    .slice(0, 20);
+    .sort((left, right) => right.created_at.localeCompare(left.created_at));
 
   if (!data.length) {
     return [];

@@ -6,10 +6,13 @@ import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
 import {
   clearAuthFlowCookies,
   createServerSupabaseAuthClient,
+  createServerSupabaseUserClient,
   setSupporterSessionCookies,
 } from "@/lib/supabase/server";
 
 const DEFAULT_PUBLIC_PATH = "/account";
+const PENDING_FIRST_NAME_COOKIE = "contrib-pending-first-name";
+const PENDING_LAST_NAME_COOKIE = "contrib-pending-last-name";
 const EMAIL_OTP_TYPES = new Set([
   "email",
   "email_change",
@@ -126,6 +129,30 @@ export async function GET(request: Request) {
   }
 
   setSupporterSessionCookies(cookieStore, session);
+
+  const firstName = decodeURIComponent(
+    cookieStore.get(PENDING_FIRST_NAME_COOKIE)?.value ?? "",
+  ).trim();
+  const lastName = decodeURIComponent(
+    cookieStore.get(PENDING_LAST_NAME_COOKIE)?.value ?? "",
+  ).trim();
+
+  if (firstName || lastName) {
+    try {
+      const profileSupabase = createServerSupabaseUserClient(session.access_token);
+      await profileSupabase.auth.updateUser({
+        data: {
+          first_name: firstName || undefined,
+          last_name: lastName || undefined,
+        },
+      });
+    } catch {
+      // A successful login must not be blocked by a non-essential profile update.
+    }
+  }
+
+  cookieStore.delete(PENDING_FIRST_NAME_COOKIE);
+  cookieStore.delete(PENDING_LAST_NAME_COOKIE);
   clearAuthFlowCookies(cookieStore);
 
   if (isAdminPath(nextPath)) {

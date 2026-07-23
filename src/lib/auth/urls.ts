@@ -50,14 +50,13 @@ export function getSafeInternalPath(path?: string | null) {
 }
 
 export function getRequestOrigin(request: Request) {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-
-  if (forwardedHost) {
-    return `${forwardedProto ?? "https"}://${forwardedHost}`;
-  }
-
-  return normalizeOrigin(request.url) ?? getConfiguredAppOrigin() ?? "http://localhost:3000";
+  // Checkout return URLs must use an operator-controlled origin. Do not build
+  // payment URLs from forwarded headers supplied by the incoming request.
+  return (
+    getConfiguredAppOrigin() ??
+    normalizeOrigin(request.url) ??
+    "http://localhost:3000"
+  );
 }
 
 export function buildRequestUrl(request: Request, path: string) {

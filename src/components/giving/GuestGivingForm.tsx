@@ -47,9 +47,6 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
   );
   const [customAmount, setCustomAmount] = useState("");
   const [fundSearch, setFundSearch] = useState("");
-  const [guestFirstName, setGuestFirstName] = useState("");
-  const [guestLastName, setGuestLastName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -109,11 +106,6 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
       return;
     }
 
-    if (!guestEmail.trim()) {
-      setErrorMessage("Enter your email address to receive receipts and view this gift later.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -126,9 +118,6 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
           organisationSlug: organisation.organisationSlug,
           fundId: selectedFundId,
           amount,
-          guestFirstName,
-          guestLastName,
-          guestEmail,
         }),
       });
 
@@ -215,60 +204,6 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
           quickAmounts={QUICK_AMOUNTS}
           selectedAmount={selectedAmount}
         />
-      </section>
-
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-        <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">Step 3</p>
-          <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
-            Send me a receipt
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Add your email address so we can send receipts and link this gift to your giving history.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="gf-label">
-              First name
-            </span>
-            <input
-              autoComplete="given-name"
-              className="gf-input"
-              onChange={(event) => setGuestFirstName(event.target.value)}
-              placeholder="Jane"
-              type="text"
-              value={guestFirstName}
-            />
-          </label>
-          <label className="block">
-            <span className="gf-label">
-              Last name
-            </span>
-            <input
-              autoComplete="family-name"
-              className="gf-input"
-              onChange={(event) => setGuestLastName(event.target.value)}
-              placeholder="Smith"
-              type="text"
-              value={guestLastName}
-            />
-          </label>
-        </div>
-        <label className="block">
-          <span className="gf-label">
-            Email address
-          </span>
-          <input
-            autoComplete="email"
-            className="gf-input"
-            onChange={(event) => setGuestEmail(event.target.value)}
-            placeholder="name@example.com"
-            required
-            type="email"
-            value={guestEmail}
-          />
-        </label>
       </section>
 
       <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 shadow-sm">

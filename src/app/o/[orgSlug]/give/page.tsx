@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { GuestGivingForm } from "@/components/giving/GuestGivingForm";
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getPublicOrganisation } from "@/lib/services/public/getPublicOrganisation";
 import { listPublicFunds } from "@/lib/services/public/listPublicFunds";
+import { getAuthenticatedServerUser } from "@/lib/supabase/server";
 
 type GivePageProps = {
   params: Promise<{ orgSlug: string }>;
@@ -107,20 +108,23 @@ export default async function GivePage({ params }: GivePageProps) {
     notFound();
   }
 
+  if (!(await getAuthenticatedServerUser())) {
+    redirect(`/sign-in?next=${encodeURIComponent(`/o/${organisation.slug}/give`)}`);
+  }
+
   const funds = await listPublicFunds(organisation.id);
   const defaultFund = funds.find((fund) => fund.isDefault) ?? funds[0] ?? null;
   const publicSettings = getOrganisationPublicSettings(
     organisation.settings,
     organisation.name,
   );
-  const guestNavItems: Array<{
+  const givingNavItems: Array<{
     href: string;
     icon: IconName;
     label: string;
   }> = [
     { href: `/o/${organisation.slug}/give`, icon: "gift", label: "Give" },
-    { href: "/sign-in", icon: "profile", label: "Sign in" },
-    { href: "/account", icon: "receipt", label: "My Receipts" },
+    { href: "/account", icon: "profile", label: "My account" },
     { href: `/o/${organisation.slug}`, icon: "home", label: "Organisation" },
   ];
 
@@ -134,7 +138,7 @@ export default async function GivePage({ params }: GivePageProps) {
               <span className="text-xl font-semibold tracking-tight text-blue-600">GetFlow</span>
             </div>
             <nav className="flex-1 space-y-3 px-5 py-6">
-              {guestNavItems.map((item, index) => (
+              {givingNavItems.map((item, index) => (
                 <Link
                   className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                   href={item.href}
@@ -173,14 +177,14 @@ export default async function GivePage({ params }: GivePageProps) {
                   <Icon className="h-4 w-4" name="receipt" />
                   My receipts
                 </Link>
-                <Link className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/sign-in">
-                  Sign in
+                <Link className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account">
+                  My account
                 </Link>
               </div>
             </header>
 
             <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-5 py-3 lg:hidden">
-              {guestNavItems.map((item, index) => (
+              {givingNavItems.map((item, index) => (
                 <Link
                   className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                   href={item.href}
@@ -271,12 +275,12 @@ export default async function GivePage({ params }: GivePageProps) {
                   </section>
 
                   <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                    <h2 className="text-sm font-semibold text-slate-950">Why create an account?</h2>
+                    <h2 className="text-sm font-semibold text-slate-950">Your account</h2>
                     <p className="mt-2 text-sm leading-6 text-slate-500">
-                      Use the same email when giving, then sign in later to see receipts and past contributions.
+                      Your verified account keeps your contributions and receipts together.
                     </p>
-                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/sign-in">
-                      Sign in to view giving
+                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account">
+                      View my account
                     </Link>
                   </section>
 

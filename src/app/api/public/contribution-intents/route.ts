@@ -40,6 +40,7 @@ function getPublicCheckoutErrorMessage(message: string) {
     "Minimum contribution amount is 1.00.",
     "Organisation not found.",
     "Organisation slug is required.",
+    "Please sign in before starting checkout.",
     "Selected fund was not found.",
     "Stripe Checkout is currently configured only for GBP.",
   ]);

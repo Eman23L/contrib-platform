@@ -20,7 +20,20 @@ function getSafeNextPath(next?: string) {
     return safePath;
   }
 
+  if (safePath.startsWith("/o/")) {
+    return safePath;
+  }
+
   return DEFAULT_PUBLIC_PATH;
+}
+
+function isAdminPath(path: string) {
+  return (
+    path === "/admin" ||
+    path.startsWith("/admin/") ||
+    path.startsWith("/admin?") ||
+    path.startsWith("/admin#")
+  );
 }
 
 const DEFAULT_PUBLIC_PATH = "/account";
@@ -58,7 +71,7 @@ function getErrorMessage(error?: string) {
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
-  const publicNextPath = DEFAULT_PUBLIC_PATH;
+  const publicNextPath = isAdminPath(nextPath) ? DEFAULT_PUBLIC_PATH : nextPath;
   const guestGivingPath = getGuestGivingPath(nextPath);
 
   const errorMessage = getErrorMessage(params.error);

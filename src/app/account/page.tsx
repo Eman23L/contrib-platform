@@ -159,7 +159,16 @@ function getStatusClass(status: string) {
   }
 }
 
-function getFirstName(email: string | null | undefined) {
+function getFirstName(
+  email: string | null | undefined,
+  metadata?: Record<string, unknown>,
+) {
+  const metadataFirstName = metadata?.first_name;
+
+  if (typeof metadataFirstName === "string" && metadataFirstName.trim()) {
+    return metadataFirstName.trim();
+  }
+
   const localPart = email?.split("@")[0] ?? "there";
   const firstSegment = localPart.split(/[._-]/)[0] || localPart;
 
@@ -397,7 +406,7 @@ function SectionContent({
         <div className="grid gap-5 xl:grid-cols-[1fr_350px] xl:items-start">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-              Welcome back, {firstName}
+              Hi, {firstName}
             </h1>
             <p className="mt-2 text-sm text-slate-500">
               Here is a simple view of your giving and receipts.
@@ -415,7 +424,7 @@ function SectionContent({
 
         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
           <StatCard
-            detail="Across all funds"
+            detail="Across all funds, this year"
             icon="gift"
             label="Total Given This Year"
             value={formatAmount(totalGiven, currencyCode)}
@@ -749,12 +758,19 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
 
   const giveAgainHref = inferredOrganisationSlug ? `/o/${inferredOrganisationSlug}/give` : null;
   const currencyCode = getCurrencyCode(history);
-  const totalGiven = history.reduce((sum, item) => sum + item.amountMinor, 0);
-  const paidGifts = history.filter((item) => item.paymentStatus === "succeeded");
+  const currentYear = new Date().getUTCFullYear();
+  const paidHistory = history.filter((item) => item.paymentStatus === "succeeded");
+  const totalGiven = paidHistory
+    .filter((item) => new Date(item.createdAt).getUTCFullYear() === currentYear)
+    .reduce((sum, item) => sum + item.amountMinor, 0);
+  const paidGifts = paidHistory;
   const receiptCount = paidGifts.length;
   const latestGift = history[0] ?? null;
   const latestPaidGift = paidGifts[0] ?? latestGift;
-  const firstName = getFirstName(authenticatedUser.user.email);
+  const firstName = getFirstName(
+    authenticatedUser.user.email,
+    authenticatedUser.user.user_metadata,
+  );
   const accountNavItems: Array<{
     href: string;
     icon: IconName;
@@ -763,9 +779,6 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   }> = [
     { href: "/account", icon: "home", id: "home", label: "Home" },
     { href: "/account?section=giving", icon: "heart", id: "giving", label: "My Giving" },
-    { href: "/account?section=receipts", icon: "receipt", id: "receipts", label: "Receipts" },
-    { href: "/account?section=profile", icon: "profile", id: "profile", label: "Profile" },
-    { href: "/account?section=support", icon: "support", id: "support", label: "Support" },
   ];
 
   return (
