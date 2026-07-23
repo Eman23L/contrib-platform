@@ -6,7 +6,7 @@ import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
 import {
   clearAuthFlowCookies,
   createServerSupabaseAuthClient,
-  createServerSupabaseUserClient,
+  createServerSupabaseServiceClient,
   setSupporterSessionCookies,
 } from "@/lib/supabase/server";
 
@@ -139,11 +139,12 @@ export async function GET(request: Request) {
 
   if (firstName || lastName) {
     try {
-      const profileSupabase = createServerSupabaseUserClient(session.access_token);
-      await profileSupabase.auth.updateUser({
-        data: {
-          first_name: firstName || undefined,
-          last_name: lastName || undefined,
+      const serviceSupabase = createServerSupabaseServiceClient();
+      await serviceSupabase.auth.admin.updateUserById(session.user.id, {
+        user_metadata: {
+          ...session.user.user_metadata,
+          first_name: firstName || session.user.user_metadata.first_name,
+          last_name: lastName || session.user.user_metadata.last_name,
         },
       });
     } catch {

@@ -8,6 +8,7 @@ import {
 } from "@/lib/services/account/getSupporterGivingHistory";
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getOrganisationBySlug } from "@/lib/db/queries/organisations";
+import { listPublicFunds } from "@/lib/services/public/listPublicFunds";
 import {
   createServerSupabaseServiceClient,
   getAuthenticatedServerUser,
@@ -22,7 +23,7 @@ type AccountSection =
   | "support";
 
 type AccountPageProps = {
-  searchParams: Promise<{ section?: string }>;
+  searchParams: Promise<{ org?: string; section?: string }>;
 };
 
 type IconName =
@@ -376,29 +377,29 @@ function RecentContributionsTable({
 function SectionContent({
   currencyCode,
   email,
+  funds,
   firstName,
   giveAgainHref,
   history,
   latestGift,
-  latestPaidGift,
-  receiptCount,
   section,
   supportEmail,
   supportOrganisationName,
   totalGiven,
+  yearGiftCount,
 }: {
   currencyCode: string;
   email: string | null;
+  funds: Awaited<ReturnType<typeof listPublicFunds>>;
   firstName: string;
   giveAgainHref: string | null;
   history: SupporterGivingHistoryItem[];
   latestGift: SupporterGivingHistoryItem | null;
-  latestPaidGift: SupporterGivingHistoryItem | null;
-  receiptCount: number;
   section: AccountSection;
   supportEmail: string;
   supportOrganisationName: string | null;
   totalGiven: number;
+  yearGiftCount: number;
 }) {
   if (section === "home") {
     return (
@@ -409,7 +410,7 @@ function SectionContent({
               Hi, {firstName}
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              Here is a simple view of your giving and receipts.
+              Choose where you would like to give, then review your giving below.
             </p>
           </div>
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
@@ -422,7 +423,7 @@ function SectionContent({
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
           <StatCard
             detail="Across all funds, this year"
             icon="gift"
@@ -434,7 +435,7 @@ function SectionContent({
             detail="This year"
             icon="heart"
             label="Gifts Made"
-            value={history.length.toLocaleString("en-GB")}
+            value={yearGiftCount.toLocaleString("en-GB")}
             variant="blue"
           />
           <StatCard
@@ -444,14 +445,36 @@ function SectionContent({
             value={latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : "None"}
             variant="emerald"
           />
-          <StatCard
-            detail="View paid gift receipts"
-            icon="document"
-            label="Receipts Available"
-            value={receiptCount.toLocaleString("en-GB")}
-            variant="blue"
-          />
         </div>
+
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">Ways to give</h2>
+            <p className="mt-1 text-sm text-slate-500">Choose a fund for your next contribution.</p>
+          </div>
+          {funds.length > 0 ? (
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {funds.map((fund) => (
+                <Link
+                  className="rounded-xl border border-slate-200 p-4 transition hover:border-emerald-300 hover:bg-emerald-50"
+                  href={giveAgainHref ?? "#"}
+                  key={fund.id}
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    <Icon className="h-5 w-5" name="gift" />
+                  </span>
+                  <h3 className="mt-4 text-sm font-semibold text-slate-950">{fund.name}</h3>
+                  {fund.description ? <p className="mt-1 text-xs leading-5 text-slate-500">{fund.description}</p> : null}
+                  <span className="mt-4 inline-flex text-sm font-semibold text-emerald-700">Give to this fund →</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+              Giving options will appear here when an organisation is connected to your account.
+            </p>
+          )}
+        </section>
 
         <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
           <div className="space-y-5">
@@ -488,26 +511,12 @@ function SectionContent({
                   </Link>
                 ) : null}
               </article>
-              <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                  <Icon className="h-6 w-6" name="document" />
-                </span>
-                <h2 className="mt-4 text-sm font-semibold text-slate-950">View Receipts</h2>
-                <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">
-                  Review receipt pages for completed gifts.
-                </p>
-                <Link className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account?section=receipts">
-                  View Receipts
-                </Link>
-              </article>
             </div>
           </div>
 
           <AccountAside
             currencyCode={currencyCode}
-            email={email}
             latestGift={latestGift}
-            latestPaidGift={latestPaidGift}
           />
         </div>
       </>
@@ -534,7 +543,14 @@ function SectionContent({
       </div>
 
       {section === "giving" ? (
-        <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
+        <>
+          <div className="grid gap-4 md:grid-cols-3">
+            <StatCard detail="Across all funds" icon="gift" label="Total Given This Year" value={formatAmount(totalGiven, currencyCode)} variant="emerald" />
+            <StatCard detail="This year" icon="heart" label="Gifts Made" value={yearGiftCount.toLocaleString("en-GB")} variant="blue" />
+            <StatCard detail={latestGift ? `${latestGift.dateLabel} - ${getStatusLabel(latestGift.paymentStatus)}` : "No gifts recorded yet"} icon="refresh" label="Latest Gift" value={latestGift ? formatAmount(latestGift.amountMinor, latestGift.currencyCode) : "None"} variant="emerald" />
+          </div>
+          <RecentContributionsTable giveAgainHref={giveAgainHref} history={history} />
+        </>
       ) : null}
 
       {section === "receipts" ? (
@@ -640,46 +656,13 @@ function SectionContent({
 
 function AccountAside({
   currencyCode,
-  email,
   latestGift,
-  latestPaidGift,
 }: {
   currencyCode: string;
-  email: string | null;
   latestGift: SupporterGivingHistoryItem | null;
-  latestPaidGift: SupporterGivingHistoryItem | null;
 }) {
-  const latestReceiptHref = latestPaidGift ? getReceiptHref(latestPaidGift) : null;
-
   return (
     <aside className="space-y-5">
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-        <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-            <Icon className="h-6 w-6" name="receipt" />
-          </span>
-          <div>
-            <h2 className="text-sm font-semibold text-slate-950">Receipt for Latest Gift</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              {latestPaidGift
-                ? `${latestPaidGift.fundName} - ${latestPaidGift.dateLabel} - ${formatAmount(latestPaidGift.amountMinor, latestPaidGift.currencyCode)}`
-                : "No receipt is available yet."}
-            </p>
-          </div>
-        </div>
-        {latestReceiptHref ? (
-          <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" href={latestReceiptHref}>
-            <Icon className="h-4 w-4" name="receipt" />
-            View latest receipt
-          </Link>
-        ) : (
-          <Link className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-sm font-semibold text-blue-600" href="/account?section=receipts">
-            <Icon className="h-4 w-4" name="receipt" />
-            View receipts
-          </Link>
-        )}
-      </section>
-
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
         <div className="flex items-center gap-4">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
@@ -707,32 +690,12 @@ function AccountAside({
         </Link>
       </section>
 
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
-        <div className="flex items-center gap-4">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-            <Icon className="h-6 w-6" name="profile" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-slate-950">Your Profile</h2>
-            <p className="mt-1 truncate text-sm text-slate-500">
-              {email ?? "your account"}
-            </p>
-          </div>
-        </div>
-        <p className="mt-5 text-sm font-semibold text-slate-700">Communication preferences</p>
-        <p className="mt-1 text-sm leading-6 text-slate-500">
-          Receipts, updates, and reminders by email
-        </p>
-        <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account?section=profile">
-          View Profile
-        </Link>
-      </section>
     </aside>
   );
 }
 
 export default async function AccountPage({ searchParams }: AccountPageProps) {
-  const { section } = await searchParams;
+  const { org, section } = await searchParams;
   const activeSection = getAccountSection(section);
   const authenticatedUser = await getAuthenticatedServerUser();
 
@@ -745,9 +708,13 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     email: authenticatedUser.user.email?.trim().toLowerCase() ?? null,
     userId: authenticatedUser.user.id,
   });
+  const requestedOrganisationSlug = typeof org === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(org)
+    ? org
+    : null;
   const inferredOrganisationSlug = history.find((item) => item.organisationSlug)?.organisationSlug ?? null;
-  const inferredOrganisation = inferredOrganisationSlug
-    ? await getOrganisationBySlug(supabase, inferredOrganisationSlug)
+  const organisationSlug = requestedOrganisationSlug ?? inferredOrganisationSlug;
+  const inferredOrganisation = organisationSlug
+    ? await getOrganisationBySlug(supabase, organisationSlug)
     : null;
   const inferredPublicSettings = inferredOrganisation
     ? getOrganisationPublicSettings(
@@ -757,20 +724,20 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     : null;
 
   const giveAgainHref = inferredOrganisationSlug ? `/o/${inferredOrganisationSlug}/give` : null;
+  const organisationGiveHref = organisationSlug ? `/o/${organisationSlug}/give` : null;
+  const funds = inferredOrganisation ? await listPublicFunds(inferredOrganisation.id) : [];
   const currencyCode = getCurrencyCode(history);
   const currentYear = new Date().getUTCFullYear();
   const paidHistory = history.filter((item) => item.paymentStatus === "succeeded");
   const totalGiven = paidHistory
     .filter((item) => new Date(item.createdAt).getUTCFullYear() === currentYear)
     .reduce((sum, item) => sum + item.amountMinor, 0);
-  const paidGifts = paidHistory;
-  const receiptCount = paidGifts.length;
   const latestGift = history[0] ?? null;
-  const latestPaidGift = paidGifts[0] ?? latestGift;
   const firstName = getFirstName(
     authenticatedUser.user.email,
     authenticatedUser.user.user_metadata,
   );
+  const yearGiftCount = paidHistory.filter((item) => new Date(item.createdAt).getUTCFullYear() === currentYear).length;
   const accountNavItems: Array<{
     href: string;
     icon: IconName;
@@ -826,14 +793,10 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                   G
                 </span>
                 <span className="truncate text-sm font-semibold text-slate-700">
-                  {history[0]?.organisationName ?? "Supporter account"}
+                  {history[0]?.organisationName ?? "Your account"}
                 </span>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm" href="/account?section=receipts">
-                  <Icon className="h-4 w-4" name="receipt" />
-                  {receiptCount.toLocaleString("en-GB")} receipts
-                </Link>
                 <form action="/auth/sign-out" method="post">
                   <button className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" type="submit">
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-slate-700">
@@ -866,16 +829,16 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               <SectionContent
                 currencyCode={currencyCode}
                 email={authenticatedUser.user.email ?? null}
+                funds={funds}
                 firstName={firstName}
-                giveAgainHref={giveAgainHref}
+                giveAgainHref={giveAgainHref ?? organisationGiveHref}
                 history={history}
                 latestGift={latestGift}
-                latestPaidGift={latestPaidGift}
-                receiptCount={receiptCount}
                 section={activeSection}
                 supportEmail={inferredPublicSettings?.supportEmail ?? ""}
                 supportOrganisationName={inferredOrganisation?.name ?? history[0]?.organisationName ?? null}
                 totalGiven={totalGiven}
+                yearGiftCount={yearGiftCount}
               />
             </div>
           </div>
