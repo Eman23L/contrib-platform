@@ -28,7 +28,6 @@ export default async function OrganisationLandingPage({
       <div className="gf-shell max-w-lg">
         <UnifiedSignInCard
           adminNextPath={`/admin?org=${organisation.slug}`}
-          guestHref={`/o/${organisation.slug}/give`}
           intro={publicSettings.publicPageIntro}
           kicker={organisation.name}
           publicNextPath={`/account?org=${encodeURIComponent(organisation.slug)}`}
