@@ -427,6 +427,7 @@ export async function processStripeWebhook(
 
     switch (event.type) {
       case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded":
         result = await processCompletedCheckout(event);
         break;
       case "checkout.session.expired":
