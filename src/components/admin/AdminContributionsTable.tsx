@@ -86,7 +86,7 @@ export function AdminContributionsTable({
                       {formatAmount(contribution.amountMinor, contribution.currencyCode)}
                     </p>
                     <p className="mt-1 font-mono text-xs text-slate-500">
-                      {contribution.shortId}
+                      ID: {contribution.shortId}
                     </p>
                   </div>
                   <span
@@ -113,7 +113,6 @@ export function AdminContributionsTable({
               <thead>
                 <tr className="text-left text-xs font-semibold text-slate-500">
                   <th className="pb-1 pr-4">Created</th>
-                  <th className="pb-1 pr-4">Gift</th>
                   <th className="pb-1 pr-4">Organisation</th>
                   <th className="pb-1 pr-4">Fund</th>
                   <th className="pb-1 pr-4">Amount</th>
@@ -121,6 +120,7 @@ export function AdminContributionsTable({
                   <th className="pb-1 pr-4">Supporter</th>
                   <th className="pb-1 pr-4">Email</th>
                   <th className="pb-1">Paid At</th>
+                  <th className="pb-1">ID</th>
                 </tr>
               </thead>
               <tbody>
@@ -128,12 +128,6 @@ export function AdminContributionsTable({
                   <tr className="bg-black/[0.025]" key={contribution.id}>
                     <td className="rounded-l-2xl px-4 py-4 text-sm text-black/70">
                       {formatDateTime(contribution.createdAt)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-sm font-medium text-ink">{contribution.shortId}</div>
-                      <div className="mt-1 font-mono text-xs text-black/55">
-                        {contribution.id}
-                      </div>
                     </td>
                     <td className="px-4 py-4 text-sm text-ink">
                       {contribution.organisationName}
@@ -157,8 +151,14 @@ export function AdminContributionsTable({
                     <td className="px-4 py-4 text-sm text-black/70">
                       {contribution.guestEmail ?? "No email recorded"}
                     </td>
-                    <td className="rounded-r-2xl px-4 py-4 text-sm text-black/70">
+                    <td className="px-4 py-4 text-sm text-black/70">
                       {formatDateTime(contribution.paidAt)}
+                    </td>
+                    <td className="rounded-r-2xl px-4 py-4">
+                      <div className="text-sm font-medium text-ink">{contribution.shortId}</div>
+                      <div className="mt-1 font-mono text-xs text-black/55">
+                        {contribution.id}
+                      </div>
                     </td>
                   </tr>
                 ))}
