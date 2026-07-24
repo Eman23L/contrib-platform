@@ -31,6 +31,21 @@ function getStatusClasses(status: string) {
   }
 }
 
+function getStatusLabel(status: string) {
+  switch (status) {
+    case "succeeded":
+      return "Completed";
+    case "failed":
+      return "Failed";
+    case "checkout_created":
+      return "Pending payment";
+    case "created":
+      return "Started";
+    default:
+      return "Cancelled";
+  }
+}
+
 function getSupporterDisplayName(contribution: AdminContributionListItem) {
   return contribution.donorName || contribution.guestEmail || "No name recorded";
 }
@@ -77,7 +92,7 @@ export function AdminContributionsTable({
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(contribution.status)}`}
                   >
-                    {contribution.status}
+                    {getStatusLabel(contribution.status)}
                   </span>
                 </div>
 
@@ -87,10 +102,6 @@ export function AdminContributionsTable({
                   <p>{contribution.fundName ?? "Unassigned fund"}</p>
                   <p>{getSupporterDisplayName(contribution)}</p>
                   <p>{contribution.guestEmail ?? "No email recorded"}</p>
-                  <p>Provider: {contribution.paymentProvider}</p>
-                  <p>
-                    Checkout session: {contribution.stripeCheckoutSessionId ?? "Not recorded"}
-                  </p>
                   <p>Paid at: {formatDateTime(contribution.paidAt)}</p>
                 </div>
               </article>
@@ -109,8 +120,6 @@ export function AdminContributionsTable({
                   <th className="pb-1 pr-4">Status</th>
                   <th className="pb-1 pr-4">Supporter</th>
                   <th className="pb-1 pr-4">Email</th>
-                  <th className="pb-1 pr-4">Provider</th>
-                  <th className="pb-1 pr-4">Checkout Session</th>
                   <th className="pb-1">Paid At</th>
                 </tr>
               </thead>
@@ -139,7 +148,7 @@ export function AdminContributionsTable({
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClasses(contribution.status)}`}
                       >
-                        {contribution.status}
+                        {getStatusLabel(contribution.status)}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm text-black/70">
@@ -147,12 +156,6 @@ export function AdminContributionsTable({
                     </td>
                     <td className="px-4 py-4 text-sm text-black/70">
                       {contribution.guestEmail ?? "No email recorded"}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-black/70">
-                      {contribution.paymentProvider}
-                    </td>
-                    <td className="px-4 py-4 font-mono text-xs text-black/55">
-                      {contribution.stripeCheckoutSessionId ?? "Not recorded"}
                     </td>
                     <td className="rounded-r-2xl px-4 py-4 text-sm text-black/70">
                       {formatDateTime(contribution.paidAt)}
