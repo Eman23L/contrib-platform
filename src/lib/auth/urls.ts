@@ -8,7 +8,7 @@ function normalizeOrigin(value: string) {
   }
 }
 
-function getConfiguredAppOrigin() {
+export function getConfiguredAppOrigin() {
   const explicitOrigin =
     normalizeOrigin(process.env.APP_URL ?? "") ??
     normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL ?? "");
