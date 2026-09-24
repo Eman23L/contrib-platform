@@ -74,6 +74,7 @@ export async function startContributionCheckout(
       org_slug: organisation.slug,
     },
     payment_intent_data: {
+      receipt_email: validated.guestEmail,
       metadata: {
         intent_id: intent.id,
         organisation_id: organisation.id,

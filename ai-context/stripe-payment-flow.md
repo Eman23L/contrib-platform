@@ -73,11 +73,13 @@ Implemented:
 - Stripe webhook processing updates succeeded, expired, failed, cancelled, refunded, and disputed contribution intent states for supported events.
 - Full-refund and dispute (created/closed) webhook handling, matched via `stripe_payment_intent_id`.
 
+- The PaymentIntent's `receipt_email` is set to the giver's email, so Stripe sends its own automatic receipt email after a successful payment (no app-side email provider needed).
+- `payments.stripe_charge_id` is populated from the PaymentIntent's `latest_charge` on `checkout.session.completed`, so a payment row can be matched to a Stripe payout via balance transactions.
+
 Not implemented yet:
 
 - Stripe subscriptions/recurring donations.
-- Receipt PDF generation.
-- Email receipt sending from app code.
+- A downloadable receipt PDF or an in-app "resend receipt" action (Stripe's automatic email covers the common case; the app itself does not generate or store a receipt document).
 - Partial refund amounts (a partial refund does not change status; only a full refund does).
 - Payout reconciliation beyond dashboard placeholder/status display.
 

@@ -367,6 +367,7 @@ async function insertOrUpdatePayment(input: {
   currencyCode: string;
   sessionId: string;
   paymentIntentId: string | null;
+  chargeId: string | null;
   paidAt: string;
   eventId: string;
 }) {
@@ -381,6 +382,7 @@ async function insertOrUpdatePayment(input: {
       currency_code: input.currencyCode,
       stripe_checkout_session_id: input.sessionId,
       stripe_payment_intent_id: input.paymentIntentId,
+      stripe_charge_id: input.chargeId,
       paid_at: input.paidAt,
       metadata: {
         stripe_event_id: input.eventId,
@@ -394,6 +396,19 @@ async function insertOrUpdatePayment(input: {
   if (error) {
     throw new Error(`Failed to upsert payment: ${error.message}`);
   }
+}
+
+async function getPaymentIntentChargeId(paymentIntentId: string): Promise<string | null> {
+  const stripe = getStripeServerClient();
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+  if (!paymentIntent.latest_charge) {
+    return null;
+  }
+
+  return typeof paymentIntent.latest_charge === "string"
+    ? paymentIntent.latest_charge
+    : paymentIntent.latest_charge.id;
 }
 
 async function loadContributionIntent(
@@ -448,6 +463,8 @@ async function processCompletedCheckout(event: Stripe.Event) {
   }
 
   const paidAt = new Date(event.created * 1000).toISOString();
+  const paymentIntentId = getSessionPaymentIntentId(session);
+  const chargeId = paymentIntentId ? await getPaymentIntentChargeId(paymentIntentId) : null;
 
   await markIntentSucceeded({
     intentId: contributionIntent.id,
@@ -461,7 +478,8 @@ async function processCompletedCheckout(event: Stripe.Event) {
     amountMinor: contributionIntent.amount_minor,
     currencyCode: contributionIntent.currency_code,
     sessionId: session.id,
-    paymentIntentId: getSessionPaymentIntentId(session),
+    paymentIntentId,
+    chargeId,
     paidAt,
     eventId: event.id,
   });

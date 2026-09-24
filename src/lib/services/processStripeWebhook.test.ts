@@ -4,10 +4,12 @@ import type Stripe from "stripe";
 import { FakeSupabase } from "@/lib/services/testUtils/fakeSupabase";
 
 const constructEvent = vi.fn();
+const retrievePaymentIntent = vi.fn().mockResolvedValue({ latest_charge: "ch_test_1" });
 
 vi.mock("@/lib/stripe/server", () => ({
   getStripeServerClient: () => ({
     webhooks: { constructEvent },
+    paymentIntents: { retrieve: retrievePaymentIntent },
   }),
   getStripeWebhookSecret: () => "whsec_test",
 }));
@@ -121,6 +123,7 @@ describe("processStripeWebhook", () => {
       status: "succeeded",
       amount_minor: 1000,
       stripe_payment_intent_id: "pi_test_1",
+      stripe_charge_id: "ch_test_1",
     });
   });
 
