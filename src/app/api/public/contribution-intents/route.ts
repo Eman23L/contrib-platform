@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getRequestOrigin } from "@/lib/auth/urls";
+import { checkCheckoutRateLimit, getClientIp } from "@/lib/rateLimit/checkoutRateLimit";
 import { startContributionCheckout } from "@/lib/services/public/startContributionCheckout";
 
 export const runtime = "nodejs";
@@ -8,6 +9,25 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
+
+    const rateLimit = await checkCheckoutRateLimit({
+      ip: getClientIp(request),
+      guestEmail:
+        payload && typeof payload === "object" && typeof payload.guestEmail === "string"
+          ? payload.guestEmail
+          : null,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Too many checkout attempts. Please wait a few minutes and try again.",
+        },
+        { status: 429 },
+      );
+    }
+
     const result = await startContributionCheckout(
       payload,
       getRequestOrigin(request),

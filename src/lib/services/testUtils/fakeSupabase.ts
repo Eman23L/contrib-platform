@@ -32,6 +32,18 @@ class FakeQueryBuilder implements PromiseLike<{ data: unknown; error: unknown }>
     return this;
   }
 
+  gte(column: string, value: unknown) {
+    this.filters.push((row) => {
+      const rowValue = row[column];
+      return (
+        typeof rowValue === "string" &&
+        typeof value === "string" &&
+        rowValue >= value
+      );
+    });
+    return this;
+  }
+
   insert(values: Row) {
     this.op = { type: "insert", values };
     return this;
@@ -120,7 +132,11 @@ class FakeQueryBuilder implements PromiseLike<{ data: unknown; error: unknown }>
         };
       }
 
-      const newRow: Row = { id: nextId(), ...op.values };
+      const newRow: Row = {
+        id: nextId(),
+        created_at: new Date().toISOString(),
+        ...op.values,
+      };
       rows.push(newRow);
       this.db.set(this.table, rows);
       return { data: [newRow], error: null };

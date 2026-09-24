@@ -27,6 +27,14 @@ Key files:
 - `src/lib/db/mutations/createContributionIntent.ts`
 - `src/lib/stripe/server.ts`
 
+Before validation, the route checks `src/lib/rateLimit/checkoutRateLimit.ts`:
+a per-IP ceiling (30 / 10 min, generous enough for many concurrent
+in-person QR givers on one shared network) and a tighter per-IP+email
+ceiling (5 / 10 min, aimed at repeated-attempt/card-testing patterns).
+Either limit returns HTTP 429 before a Stripe Checkout session is
+created. Backed by the `checkout_rate_limit_events` table (service-role
+only).
+
 ## Current Webhook Flow
 
 1. Stripe sends event to `POST /api/webhooks/stripe`.
