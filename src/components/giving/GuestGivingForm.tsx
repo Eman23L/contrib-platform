@@ -12,7 +12,10 @@ import type {
 
 type GuestGivingFormProps = {
   organisation: PublicGivingPageData;
+  signedInEmail?: string | null;
 };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const QUICK_AMOUNTS = [10, 20, 50, 100];
 
@@ -33,7 +36,8 @@ function getCheckoutErrorMessage(error?: string) {
   return error;
 }
 
-export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
+export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingFormProps) {
+  const isSignedIn = Boolean(signedInEmail);
   const defaultFundId =
     organisation.funds.find((fund) => fund.isDefault)?.id ??
     organisation.funds[0]?.id ??
@@ -46,6 +50,7 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
     QUICK_AMOUNTS[1] ?? null,
   );
   const [customAmount, setCustomAmount] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
   const [fundSearch, setFundSearch] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -106,6 +111,20 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
       return;
     }
 
+    const trimmedEmail = guestEmail.trim();
+
+    if (!isSignedIn) {
+      if (!trimmedEmail) {
+        setErrorMessage("Enter your email to continue.");
+        return;
+      }
+
+      if (!EMAIL_PATTERN.test(trimmedEmail)) {
+        setErrorMessage("Enter a valid email address.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -118,6 +137,7 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
           organisationSlug: organisation.organisationSlug,
           fundId: selectedFundId,
           amount,
+          ...(isSignedIn ? {} : { guestEmail: trimmedEmail }),
         }),
       });
 
@@ -206,6 +226,32 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         />
       </section>
 
+      {isSignedIn ? null : (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">Step 3</p>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+              Your email
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              We use this to send your receipt and match this gift to your giving history.
+            </p>
+          </div>
+          <label className="block">
+            <span className="gf-label">Email address</span>
+            <input
+              autoComplete="email"
+              className="gf-input"
+              onChange={(event) => setGuestEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+              type="email"
+              value={guestEmail}
+            />
+          </label>
+        </section>
+      )}
+
       <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -243,7 +289,14 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         </div>
       ) : null}
 
-      <CheckoutRedirectButton disabled={!selectedFundId || amount <= 0} isLoading={isSubmitting} />
+      <CheckoutRedirectButton
+        disabled={
+          !selectedFundId ||
+          amount <= 0 ||
+          (!isSignedIn && !EMAIL_PATTERN.test(guestEmail.trim()))
+        }
+        isLoading={isSubmitting}
+      />
     </form>
   );
 }

@@ -414,7 +414,10 @@ function SectionContent({
           </p>
         </div>
         {givingPageData ? (
-          <GuestGivingForm organisation={givingPageData} />
+          <GuestGivingForm
+            organisation={givingPageData}
+            signedInEmail={email}
+          />
         ) : (
           <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
             Giving options will appear here when an organisation is connected to your account.

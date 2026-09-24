@@ -18,16 +18,12 @@ export async function startContributionCheckout(
 ) {
   const authenticatedUser = await getAuthenticatedServerUser();
 
-  if (!authenticatedUser) {
-    throw new Error("Please sign in before starting checkout.");
-  }
-
-  const metadata = authenticatedUser.user.user_metadata;
+  const metadata = authenticatedUser?.user.user_metadata ?? {};
   const firstName = typeof metadata.first_name === "string" ? metadata.first_name.trim() : "";
   const lastName = typeof metadata.last_name === "string" ? metadata.last_name.trim() : "";
   const validated = validateContributionIntentPayload(
     payload,
-    authenticatedUser.user.email,
+    authenticatedUser?.user.email,
   );
   const supabase = createServerSupabaseServiceClient();
   const stripe = getStripeServerClient();
