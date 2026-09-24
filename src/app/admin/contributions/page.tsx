@@ -35,7 +35,9 @@ function getValidatedStatus(value?: string): ContributionIntent["status"] | unde
     value === "succeeded" ||
     value === "failed" ||
     value === "cancelled" ||
-    value === "expired"
+    value === "expired" ||
+    value === "refunded" ||
+    value === "disputed"
   ) {
     return value;
   }

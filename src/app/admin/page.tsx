@@ -73,6 +73,10 @@ function getStatusLabel(status: string) {
       return "Pending";
     case "failed":
       return "Failed";
+    case "refunded":
+      return "Refunded";
+    case "disputed":
+      return "Disputed";
     default:
       return status.replaceAll("_", " ");
   }
@@ -87,6 +91,10 @@ function getStatusClasses(status: string) {
     case "checkout_created":
     case "pending_payment":
       return "bg-amber-50 text-amber-700";
+    case "refunded":
+      return "bg-purple-50 text-purple-700";
+    case "disputed":
+      return "bg-orange-50 text-orange-700";
     default:
       return "bg-slate-100 text-slate-600";
   }
@@ -1102,7 +1110,7 @@ function CampaignsSection({
 
 function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
-  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
+  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired", "disputed"]);
   const exportHref = `/admin/reports/contributions?org=${dashboard.organisationSlug}`;
   const ledgerHref = `/admin/contributions?org=${dashboard.organisationSlug}`;
   const paidGiftCount = getStatusCount(dashboard.statusSummary, ["succeeded"]);
@@ -1625,7 +1633,7 @@ function AdminDashboardShell({
 }) {
   const activeSupporters = dashboard.activeSupportersCount;
   const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
-  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
+  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired", "disputed"]);
   const orgParam = `?org=${dashboard.organisationSlug}`;
   const activityItems = dashboard.recentContributions.slice(0, 5);
 
