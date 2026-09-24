@@ -7,6 +7,7 @@ type AdminDashboardChromeProps = {
     | "funds"
     | "giving"
     | "overview"
+    | "payouts"
     | "reports"
     | "settings"
     | "supporters"
@@ -18,6 +19,7 @@ type AdminDashboardChromeProps = {
 };
 
 type IconName =
+  | "bank"
   | "calendar"
   | "campaign"
   | "chart"
@@ -36,6 +38,16 @@ function Icon({
   name: IconName;
 }) {
   const paths: Record<IconName, ReactNode> = {
+    bank: (
+      <>
+        <path d="m3 10 9-6 9 6" />
+        <path d="M5 10v9" />
+        <path d="M9 10v9" />
+        <path d="M15 10v9" />
+        <path d="M19 10v9" />
+        <path d="M3 21h18" />
+      </>
+    ),
     calendar: (
       <>
         <path d="M8 2v4" />
@@ -139,6 +151,7 @@ export function AdminDashboardChrome({
     { href: `/admin${orgParam}&section=funds`, icon: "wallet", id: "funds", label: "Funds" },
     { href: `/admin${orgParam}&section=campaigns`, icon: "campaign", id: "campaigns", label: "Campaigns" },
     { href: `/admin${orgParam}&section=reports`, icon: "chart", id: "reports", label: "Reports" },
+    { href: `/admin/payouts${orgParam}`, icon: "bank", id: "payouts", label: "Payouts" },
     { href: `/admin${orgParam}&section=team`, icon: "team", id: "team", label: "Team" },
     { href: `/admin${orgParam}&section=settings`, icon: "settings", id: "settings", label: "Settings" },
   ];

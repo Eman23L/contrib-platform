@@ -44,6 +44,16 @@ class FakeQueryBuilder implements PromiseLike<{ data: unknown; error: unknown }>
     return this;
   }
 
+  in(column: string, values: unknown[]) {
+    this.filters.push((row) => values.includes(row[column]));
+    return this;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- matches supabase-js's type-only .returns<T>() signature
+  returns<T>() {
+    return this;
+  }
+
   insert(values: Row) {
     this.op = { type: "insert", values };
     return this;

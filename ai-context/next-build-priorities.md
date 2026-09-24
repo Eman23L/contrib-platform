@@ -22,7 +22,8 @@ The four non-negotiable product capabilities are:
 
 2. Strengthen money-flow visibility.
    - Current: one-time Stripe Checkout, status webhooks, paid-only admin totals, real six-month paid giving trend, and payment health counts exist.
-   - Planned: internal payment detail/status view, webhook delivery visibility, and first payout/reconciliation model.
+   - Current: refund and dispute webhook handling (`charge.refunded`, `charge.dispute.created`/`.closed`), and an Admin -> Payouts page showing real Stripe balance/payout data reconciled against local payment records.
+   - Planned: internal payment detail/status view and webhook delivery visibility. Payout reconciliation is platform-wide only (single shared Stripe account); per-organisation payouts need a Stripe Connect decision before a second real organisation goes live.
 
 3. Complete supporter profile basics.
    - Current: supporters are grouped from contribution records by email/name where available, with paid total, gift count, first gift, last gift, average gift, and latest status.

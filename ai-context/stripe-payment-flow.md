@@ -76,12 +76,14 @@ Implemented:
 - The PaymentIntent's `receipt_email` is set to the giver's email, so Stripe sends its own automatic receipt email after a successful payment (no app-side email provider needed).
 - `payments.stripe_charge_id` is populated from the PaymentIntent's `latest_charge` on `checkout.session.completed`, so a payment row can be matched to a Stripe payout via balance transactions.
 
+- Admin -> Payouts (`/admin/payouts`, owner/admin/finance roles only) shows the platform's real Stripe available/pending balance and recent payouts, with the 5 most recent payouts reconciled against local `payments` rows via `stripe_charge_id` (flags any Stripe charge in a payout with no matching local record).
+
 Not implemented yet:
 
 - Stripe subscriptions/recurring donations.
 - A downloadable receipt PDF or an in-app "resend receipt" action (Stripe's automatic email covers the common case; the app itself does not generate or store a receipt document).
 - Partial refund amounts (a partial refund does not change status; only a full refund does).
-- Payout reconciliation beyond dashboard placeholder/status display.
+- Per-organisation payouts. There is one Stripe account and one bank payout schedule for the whole platform (no Stripe Connect); this was an explicit decision to defer multi-tenant payout routing until a second real organisation is onboarded. If/when that happens, this needs revisiting before it goes live with more than one org.
 
 ## Environment Variables
 
