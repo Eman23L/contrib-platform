@@ -201,11 +201,18 @@ function getCurrencyCode(history: SupporterGivingHistoryItem[]) {
 }
 
 function getReceiptHref(item: SupporterGivingHistoryItem) {
-  if (!item.checkoutSessionId || !item.organisationSlug) {
+  if (!item.organisationSlug) {
     return null;
   }
 
-  return `/o/${item.organisationSlug}/success?session_id=${encodeURIComponent(item.checkoutSessionId)}`;
+  if (item.checkoutSessionId) {
+    return `/o/${item.organisationSlug}/success?session_id=${encodeURIComponent(item.checkoutSessionId)}`;
+  }
+
+  // Recurring gift cycles after the first have no Stripe Checkout session
+  // (they're billed automatically via the subscription), so look the
+  // receipt up by the contribution record itself instead.
+  return `/o/${item.organisationSlug}/success?contribution_id=${encodeURIComponent(item.id)}`;
 }
 
 function getGivingHrefForHistoryItem(

@@ -8,7 +8,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseServiceClient: () => fakeSupabase,
 }));
 
-const { getContributionBySessionId } = await import(
+const { getContributionById, getContributionBySessionId } = await import(
   "@/lib/services/public/getContributionBySessionId"
 );
 
@@ -94,5 +94,52 @@ describe("getContributionBySessionId", () => {
   it("returns null when neither a contribution intent nor a recurring plan matches", async () => {
     const result = await getContributionBySessionId("cs_unknown");
     expect(result).toBeNull();
+  });
+});
+
+describe("getContributionById", () => {
+  it("returns null for a non-UUID id without querying the database", async () => {
+    const result = await getContributionById("not-a-uuid");
+    expect(result).toBeNull();
+  });
+
+  it("returns a contribution intent by id (used for recurring cycles with no checkout session)", async () => {
+    const id = "11111111-1111-1111-1111-111111111111";
+    fakeSupabase.seed("contribution_intents", [
+      {
+        id,
+        organisation_id: "org-1",
+        fund_id: "fund-1",
+        campaign_id: null,
+        user_id: "user-1",
+        amount_minor: 2000,
+        currency_code: "GBP",
+        status: "succeeded",
+        payment_provider: "stripe",
+        guest_email: null,
+        donor_name: "Ada Lovelace",
+        donor_note: null,
+        is_anonymous: false,
+        source: "recurring",
+        stripe_checkout_session_id: null,
+        checkout_url: null,
+        expires_at: null,
+        paid_at: "2024-02-01T00:00:00.000Z",
+        recurring_plan_id: "plan-1",
+        created_at: "2024-02-01T00:00:00.000Z",
+        updated_at: "2024-02-01T00:00:00.000Z",
+        organisations: { name: "Grace Community", slug: "grace-community" },
+        funds: { name: "Tithe" },
+      },
+    ]);
+
+    const result = await getContributionById(id);
+
+    expect(result).toMatchObject({
+      id,
+      amountMinor: 2000,
+      source: "recurring",
+      organisationName: "Grace Community",
+    });
   });
 });

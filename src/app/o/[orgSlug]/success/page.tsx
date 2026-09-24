@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
 
+import { PrintReceiptButton } from "@/components/giving/PrintReceiptButton";
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getPublicOrganisation } from "@/lib/services/public/getPublicOrganisation";
-import { getContributionBySessionId } from "@/lib/services/public/getContributionBySessionId";
+import {
+  getContributionById,
+  getContributionBySessionId,
+} from "@/lib/services/public/getContributionBySessionId";
 
 type SuccessPageProps = {
   params: Promise<{ orgSlug: string }>;
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ contribution_id?: string; session_id?: string }>;
 };
 
 function formatAmount(amountMinor: number, currencyCode: string) {
@@ -51,16 +55,16 @@ export default async function SuccessPage({
   params,
   searchParams,
 }: SuccessPageProps) {
-  const [{ orgSlug }, { session_id: sessionId }] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const [{ orgSlug }, { contribution_id: contributionId, session_id: sessionId }] =
+    await Promise.all([params, searchParams]);
 
-  if (!sessionId) {
+  if (!sessionId && !contributionId) {
     notFound();
   }
 
-  const contribution = await getContributionBySessionId(sessionId);
+  const contribution = sessionId
+    ? await getContributionBySessionId(sessionId)
+    : await getContributionById(contributionId!);
 
   if (!contribution || contribution.organisationSlug !== orgSlug) {
     notFound();
@@ -132,6 +136,10 @@ export default async function SuccessPage({
                 </dd>
               </div>
             </dl>
+          </div>
+
+          <div className="mt-6 flex justify-center print:hidden">
+            <PrintReceiptButton />
           </div>
         </section>
       </div>

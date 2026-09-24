@@ -184,6 +184,32 @@ async function getRecurringPlanBySessionId(
   return data ? mapRecurringPlanAsContribution(data) : null;
 }
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function getContributionById(
+  contributionId: string,
+): Promise<PublicContributionDetails | null> {
+  const id = contributionId.trim();
+
+  if (!UUID_PATTERN.test(id)) {
+    return null;
+  }
+
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("contribution_intents")
+    .select(publicContributionSelect)
+    .eq("id", id)
+    .maybeSingle<PublicContributionDetailsRow>();
+
+  if (error) {
+    throw new Error(`Failed to load contribution intent: ${error.message}`);
+  }
+
+  return data ? mapContribution(data) : null;
+}
+
 export async function getContributionBySessionId(
   stripeCheckoutSessionId: string,
 ): Promise<PublicContributionDetails | null> {
