@@ -35,6 +35,45 @@ Either limit returns HTTP 429 before a Stripe Checkout session is
 created. Backed by the `checkout_rate_limit_events` table (service-role
 only).
 
+## Recurring (Monthly) Gifts
+
+Requires sign-in (no guest recurring gifts). One interval only: monthly.
+
+1. `GuestGivingForm` shows a One-time/Monthly toggle only when the giver is
+   signed in; guests only ever get `frequency: "one_time"`.
+2. `POST /api/public/contribution-intents` dispatches to
+   `startRecurringCheckout` when `frequency === "monthly"`, instead of
+   `startContributionCheckout`.
+3. `startRecurringCheckout` creates a Stripe Checkout Session with
+   `mode: "subscription"` and a `recurring: { interval: "month" }` price.
+   Unlike the one-time flow, no `contribution_intents` row is pre-created
+   here — there is nothing to attach per-cycle billing to yet.
+4. On `checkout.session.completed` with `session.mode === "subscription"`,
+   the webhook upserts a `recurring_plans` row (keyed by
+   `stripe_subscription_id`), keyed also by `stripe_checkout_session_id` so
+   the success page can find it.
+5. Each `invoice.payment_succeeded` event creates a **new**
+   `contribution_intents` row (`source: "recurring"`, `recurring_plan_id`
+   set, status `succeeded`) plus its `payments` row — one per billing
+   cycle, so existing "succeeded"-only aggregation (admin totals, fund
+   totals, supporter history) picks up recurring gifts automatically with
+   no special-casing.
+6. `invoice.payment_failed` marks the plan `past_due`.
+   `customer.subscription.deleted` marks it `canceled`.
+7. Supporters cancel from `/account?section=recurring`, which posts to
+   `POST /api/account/recurring-plans/[id]/cancel` (ownership-checked
+   against the signed-in user, then calls `stripe.subscriptions.cancel`).
+   The plan's status is only ever set to `canceled` by the
+   `customer.subscription.deleted` webhook, not by the cancel route itself
+   (same "webhook is the source of truth" rule as the rest of this file).
+
+Key files:
+
+- `src/lib/services/public/startRecurringCheckout.ts`
+- `src/app/api/account/recurring-plans/[id]/cancel/route.ts`
+- `src/lib/services/account/getSupporterRecurringPlans.ts`
+- `supabase/migrations/012_recurring_plans.sql`
+
 ## Current Webhook Flow
 
 1. Stripe sends event to `POST /api/webhooks/stripe`.
@@ -47,10 +86,17 @@ only).
    - `checkout.session.async_payment_failed` -> `failed`
    - `payment_intent.payment_failed` -> `failed`
    - `payment_intent.canceled` -> `cancelled`
+   - A `checkout.session.expired`/`.async_payment_failed` event for a
+     `mode: "subscription"` session is a no-op (nothing was pre-created to
+     mark failed).
 7. Refund/dispute events are matched by `stripe_payment_intent_id` on the `payments` row (not by Checkout metadata) and update both `payments.status` and `contribution_intents.status` together:
    - `charge.refunded` (full refund only; `charge.refunded === true`) -> `refunded`. A partial refund is intentionally left as `succeeded` since the schema has no partial-refund amount field.
    - `charge.dispute.created` -> `disputed`.
    - `charge.dispute.closed` -> `succeeded` if `dispute.status === "won"`, otherwise `refunded`.
+8. Recurring lifecycle events (`checkout.session.completed` in subscription
+   mode, `invoice.payment_succeeded`, `invoice.payment_failed`,
+   `customer.subscription.deleted`) are handled separately — see
+   "Recurring (Monthly) Gifts" above.
 
 Key files:
 
@@ -77,10 +123,11 @@ Implemented:
 - `payments.stripe_charge_id` is populated from the PaymentIntent's `latest_charge` on `checkout.session.completed`, so a payment row can be matched to a Stripe payout via balance transactions.
 
 - Admin -> Payouts (`/admin/payouts`, owner/admin/finance roles only) shows the platform's real Stripe available/pending balance and recent payouts, with the 5 most recent payouts reconciled against local `payments` rows via `stripe_charge_id` (flags any Stripe charge in a payout with no matching local record).
+- Recurring (monthly) donations via Stripe Subscriptions, sign-in required. See "Recurring (Monthly) Gifts" above.
 
 Not implemented yet:
 
-- Stripe subscriptions/recurring donations.
+- Any interval other than monthly (weekly/quarterly/annual), and guest (no-account) recurring gifts.
 - A downloadable receipt PDF or an in-app "resend receipt" action (Stripe's automatic email covers the common case; the app itself does not generate or store a receipt document).
 - Partial refund amounts (a partial refund does not change status; only a full refund does).
 - Per-organisation payouts. There is one Stripe account and one bank payout schedule for the whole platform (no Stripe Connect); this was an explicit decision to defer multi-tenant payout routing until a second real organisation is onboarded. If/when that happens, this needs revisiting before it goes live with more than one org.

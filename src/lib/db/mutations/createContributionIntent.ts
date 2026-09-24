@@ -38,6 +38,7 @@ type ContributionIntentRow = {
   checkout_url: string | null;
   expires_at: string | null;
   paid_at: string | null;
+  recurring_plan_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -62,6 +63,7 @@ function mapContributionIntent(row: ContributionIntentRow): ContributionIntent {
     checkoutUrl: row.checkout_url,
     expiresAt: row.expires_at,
     paidAt: row.paid_at,
+    recurringPlanId: row.recurring_plan_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -86,6 +88,7 @@ const contributionIntentSelect = [
   "checkout_url",
   "expires_at",
   "paid_at",
+  "recurring_plan_id",
   "created_at",
   "updated_at",
 ].join(", ");

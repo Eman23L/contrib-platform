@@ -7,6 +7,10 @@ import {
   getSupporterGivingHistory,
   type SupporterGivingHistoryItem,
 } from "@/lib/services/account/getSupporterGivingHistory";
+import {
+  getSupporterRecurringPlans,
+  type SupporterRecurringPlan,
+} from "@/lib/services/account/getSupporterRecurringPlans";
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
 import { getOrganisationBySlug } from "@/lib/db/queries/organisations";
 import { listPublicFunds } from "@/lib/services/public/listPublicFunds";
@@ -25,7 +29,13 @@ type AccountSection =
   | "support";
 
 type AccountPageProps = {
-  searchParams: Promise<{ org?: string; period?: string; section?: string }>;
+  searchParams: Promise<{
+    org?: string;
+    period?: string;
+    recurringCanceled?: string;
+    recurringError?: string;
+    section?: string;
+  }>;
 };
 
 type IconName =
@@ -391,6 +401,9 @@ function SectionContent({
   givingPageData,
   history,
   latestGift,
+  recurringCanceled,
+  recurringError,
+  recurringPlans,
   section,
   supportEmail,
   supportOrganisationName,
@@ -404,6 +417,9 @@ function SectionContent({
   givingPageData: PublicGivingPageData | null;
   history: SupporterGivingHistoryItem[];
   latestGift: SupporterGivingHistoryItem | null;
+  recurringCanceled: boolean;
+  recurringError: string | null;
+  recurringPlans: SupporterRecurringPlan[];
   section: AccountSection;
   supportEmail: string;
   supportOrganisationName: string | null;
@@ -517,15 +533,66 @@ function SectionContent({
               <Icon className="h-7 w-7" name="refresh" />
             </span>
             <div>
-              <h2 className="text-base font-semibold text-slate-950">Recurring Gift</h2>
+              <h2 className="text-base font-semibold text-slate-950">Recurring Gifts</h2>
               <p className="mt-1 text-sm text-slate-500">
-                No recurring gifts are recorded for this account. Current giving history contains one-time contribution records.
+                {recurringPlans.length > 0
+                  ? "Monthly gifts connected to this account."
+                  : "No recurring gifts are set up on this account yet. Choose \"Monthly\" when giving to set one up."}
               </p>
             </div>
           </div>
+
+          {recurringCanceled ? (
+            <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              Your recurring gift has been canceled.
+            </p>
+          ) : null}
+          {recurringError ? (
+            <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {recurringError}
+            </p>
+          ) : null}
+
+          {recurringPlans.length > 0 ? (
+            <div className="mt-5 space-y-3">
+              {recurringPlans.map((plan) => (
+                <div
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+                  key={plan.id}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">
+                      {formatAmount(plan.amountMinor, plan.currencyCode)} / month
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {plan.fundName ?? "General giving"} to {plan.organisationName}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      {plan.status === "active"
+                        ? "Active"
+                        : plan.status === "past_due"
+                          ? "Payment failed — will retry"
+                          : "Canceled"}
+                    </p>
+                  </div>
+                  {plan.status !== "canceled" ? (
+                    <form action={`/api/account/recurring-plans/${plan.id}/cancel`} method="post">
+                      <button
+                        className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+                        type="submit"
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {giveAgainHref ? (
             <Link className="mt-5 inline-flex rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white" href={giveAgainHref}>
-              Make a one-time gift
+              Set up a monthly gift
             </Link>
           ) : null}
         </section>
@@ -576,7 +643,13 @@ function SectionContent({
 }
 
 export default async function AccountPage({ searchParams }: AccountPageProps) {
-  const { org, period: requestedPeriod, section } = await searchParams;
+  const {
+    org,
+    period: requestedPeriod,
+    recurringCanceled,
+    recurringError,
+    section,
+  } = await searchParams;
   const activeSection = getAccountSection(section);
   const period: "month" | "year" = requestedPeriod === "month" ? "month" : "year";
   const authenticatedUser = await getAuthenticatedServerUser();
@@ -586,10 +659,13 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   }
 
   const supabase = createServerSupabaseServiceClient();
-  const history = await getSupporterGivingHistory(supabase, {
-    email: authenticatedUser.user.email?.trim().toLowerCase() ?? null,
-    userId: authenticatedUser.user.id,
-  });
+  const [history, recurringPlans] = await Promise.all([
+    getSupporterGivingHistory(supabase, {
+      email: authenticatedUser.user.email?.trim().toLowerCase() ?? null,
+      userId: authenticatedUser.user.id,
+    }),
+    getSupporterRecurringPlans(supabase, authenticatedUser.user.id),
+  ]);
   const requestedOrganisationSlug = typeof org === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(org)
     ? org
     : null;
@@ -741,6 +817,9 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 history={activeSection === "giving" ? periodHistory : history}
                 latestGift={latestGift}
                 period={period}
+                recurringCanceled={recurringCanceled === "1"}
+                recurringError={recurringError ?? null}
+                recurringPlans={recurringPlans}
                 section={activeSection}
                 supportEmail={inferredPublicSettings?.supportEmail ?? ""}
                 supportOrganisationName={inferredOrganisation?.name ?? history[0]?.organisationName ?? null}

@@ -123,4 +123,33 @@ describe("validateContributionIntentPayload", () => {
       "Invalid request payload.",
     );
   });
+
+  it("defaults frequency to one_time when not provided", () => {
+    const result = validateContributionIntentPayload({
+      ...basePayload,
+      guestEmail: "giver@example.com",
+    });
+
+    expect(result.frequency).toBe("one_time");
+  });
+
+  it("accepts a monthly frequency", () => {
+    const result = validateContributionIntentPayload({
+      ...basePayload,
+      guestEmail: "giver@example.com",
+      frequency: "monthly",
+    });
+
+    expect(result.frequency).toBe("monthly");
+  });
+
+  it("treats an unrecognized frequency value as one_time", () => {
+    const result = validateContributionIntentPayload({
+      ...basePayload,
+      guestEmail: "giver@example.com",
+      frequency: "weekly",
+    });
+
+    expect(result.frequency).toBe("one_time");
+  });
 });

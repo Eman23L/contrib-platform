@@ -231,6 +231,9 @@ Steps:
    - `charge.refunded`
    - `charge.dispute.created`
    - `charge.dispute.closed`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+   - `customer.subscription.deleted`
 
 Expected result:
 

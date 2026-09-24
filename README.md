@@ -21,8 +21,8 @@ This platform enables users to quickly give via QR code, track their contributio
 
 * View personal giving history
 * Filter contributions by time (month, year, etc.)
-* Download receipts
-* (Future) Manage recurring donations
+* Automatic Stripe receipt emails
+* Set up and cancel monthly recurring gifts (sign-in required)
 
 ### Admin Portal
 
@@ -181,9 +181,9 @@ Confirmed donation via Stripe webhook
 
 ## Roadmap
 
-* [ ] Recurring donations
+* [x] Recurring (monthly) donations
 * [ ] Presentation mode (projector-friendly progress view)
-* [ ] Multi-organisation onboarding
+* [ ] Multi-organisation onboarding (per-organisation Stripe payouts / Stripe Connect)
 * [ ] Gift Aid support (UK)
 * [ ] Email notifications and reporting
 * [ ] Mobile app wrapper

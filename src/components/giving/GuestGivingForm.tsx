@@ -50,6 +50,7 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
     QUICK_AMOUNTS[1] ?? null,
   );
   const [customAmount, setCustomAmount] = useState("");
+  const [frequency, setFrequency] = useState<"one_time" | "monthly">("one_time");
   const [guestEmail, setGuestEmail] = useState("");
   const [fundSearch, setFundSearch] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,6 +138,7 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
           organisationSlug: organisation.organisationSlug,
           fundId: selectedFundId,
           amount,
+          frequency: isSignedIn ? frequency : "one_time",
           ...(isSignedIn ? {} : { guestEmail: trimmedEmail }),
         }),
       });
@@ -153,8 +155,12 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
         return;
       }
 
-      setIntentId(data.intentId);
-      setSuccessMessage("Taking you to secure checkout...");
+      setIntentId(data.intentId ?? null);
+      setSuccessMessage(
+        isSignedIn && frequency === "monthly"
+          ? "Taking you to secure checkout for your monthly gift..."
+          : "Taking you to secure checkout...",
+      );
       window.location.assign(data.checkoutUrl);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
@@ -210,6 +216,28 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
             Choose a quick amount or enter another amount that feels right.
           </p>
         </div>
+        {isSignedIn ? (
+          <div className="mb-5 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <button
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${frequency === "one_time" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}
+              onClick={() => setFrequency("one_time")}
+              type="button"
+            >
+              One-time
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${frequency === "monthly" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}
+              onClick={() => setFrequency("monthly")}
+              type="button"
+            >
+              Monthly
+            </button>
+          </div>
+        ) : (
+          <p className="mb-5 text-xs text-slate-500">
+            Sign in to set up a monthly gift instead of a one-time gift.
+          </p>
+        )}
         <AmountPicker
           currencyCode={organisation.currencyCode}
           customAmount={customAmount}
@@ -265,7 +293,9 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
             </p>
           </div>
           <div className="text-left sm:text-right">
-            <p className="text-sm text-slate-500">Amount</p>
+            <p className="text-sm text-slate-500">
+              {isSignedIn && frequency === "monthly" ? "Amount / month" : "Amount"}
+            </p>
             <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
               {formattedAmount ?? "Not set"}
             </p>

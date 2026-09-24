@@ -47,14 +47,13 @@ The four non-negotiable product capabilities are:
    - Current: payments and contribution history exist.
    - Planned: downloadable receipt PDFs and email receipt action.
 
-3. Decide and build recurring gifts.
-   - Current: one-time Stripe Checkout only.
-   - Current: visible supporter recurring navigation/actions are hidden; the direct recurring URL shows no recurring records instead of presenting one-time gifts as recurring gifts.
-   - Planned: decide whether recurring gifts use Stripe subscriptions and implement end-to-end flow.
+3. Recurring gifts.
+   - Current: monthly Stripe Subscriptions, sign-in required, end-to-end (checkout, webhook lifecycle, per-cycle contribution/payment records, cancellation from the account page).
+   - Planned: other intervals, guest recurring gifts (would need a different ownership/cancellation model since there's no account to authenticate against), and a Stripe customer portal link for self-service payment method updates.
 
 4. Complete supporter dashboard actions.
-   - Current: profile is read-only, receipts link to success pages, recurring shows no connected recurring records, support uses generic organisation support copy.
-   - Planned: functional profile editing, receipt PDF/email actions, recurring management, and configurable support/contact flows.
+   - Current: profile is read-only, receipts link to success pages, recurring shows real connected recurring gifts with cancellation, support uses generic organisation support copy.
+   - Planned: functional profile editing, receipt PDF/email actions, and configurable support/contact flows.
 
 ## Admin Priorities
 

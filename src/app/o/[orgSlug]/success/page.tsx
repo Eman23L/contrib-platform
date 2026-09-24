@@ -16,7 +16,17 @@ function formatAmount(amountMinor: number, currencyCode: string) {
   }).format(amountMinor / 100);
 }
 
-function getSuccessPageCopy(status: string) {
+function getSuccessPageCopy(status: string, source: string) {
+  if (status === "succeeded" && source === "recurring") {
+    return {
+      heading: "Your monthly gift is set up",
+      intro: "Your first payment was completed successfully. You'll be charged automatically each month until you cancel from your account.",
+      kicker: "Monthly gift confirmed",
+      statusClass: "bg-emerald-100 text-emerald-800",
+      statusLabel: "succeeded",
+    };
+  }
+
   if (status === "succeeded") {
     return {
       heading: "Thank you for your gift",
@@ -60,7 +70,7 @@ export default async function SuccessPage({
   const publicSettings = organisation
     ? getOrganisationPublicSettings(organisation.settings, organisation.name)
     : null;
-  const pageCopy = getSuccessPageCopy(contribution.status);
+  const pageCopy = getSuccessPageCopy(contribution.status, contribution.source);
   const successIntro =
     contribution.status === "succeeded" && publicSettings?.thankYouMessage
       ? publicSettings.thankYouMessage
