@@ -39,6 +39,10 @@ Key files:
    - `checkout.session.async_payment_failed` -> `failed`
    - `payment_intent.payment_failed` -> `failed`
    - `payment_intent.canceled` -> `cancelled`
+7. Refund/dispute events are matched by `stripe_payment_intent_id` on the `payments` row (not by Checkout metadata) and update both `payments.status` and `contribution_intents.status` together:
+   - `charge.refunded` (full refund only; `charge.refunded === true`) -> `refunded`. A partial refund is intentionally left as `succeeded` since the schema has no partial-refund amount field.
+   - `charge.dispute.created` -> `disputed`.
+   - `charge.dispute.closed` -> `succeeded` if `dispute.status === "won"`, otherwise `refunded`.
 
 Key files:
 
@@ -58,14 +62,15 @@ Implemented:
 - One-time Stripe Checkout payments.
 - GBP-only guard in public checkout service.
 - Stripe metadata includes intent/org/fund identifiers.
-- Stripe webhook processing updates succeeded, expired, failed, and cancelled contribution intent states for supported events.
+- Stripe webhook processing updates succeeded, expired, failed, cancelled, refunded, and disputed contribution intent states for supported events.
+- Full-refund and dispute (created/closed) webhook handling, matched via `stripe_payment_intent_id`.
 
 Not implemented yet:
 
 - Stripe subscriptions/recurring donations.
 - Receipt PDF generation.
 - Email receipt sending from app code.
-- Refund management.
+- Partial refund amounts (a partial refund does not change status; only a full refund does).
 - Payout reconciliation beyond dashboard placeholder/status display.
 
 ## Environment Variables

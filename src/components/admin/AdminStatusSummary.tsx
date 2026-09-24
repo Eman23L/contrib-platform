@@ -13,6 +13,10 @@ function getStatusAccent(status: string) {
       return "bg-red-50 border-red-200 text-red-700";
     case "checkout_created":
       return "bg-amber-50 border-amber-200 text-amber-800";
+    case "refunded":
+      return "bg-purple-50 border-purple-200 text-purple-800";
+    case "disputed":
+      return "bg-orange-50 border-orange-200 text-orange-800";
     default:
       return "bg-slate-50 border-slate-200 text-slate-700";
   }

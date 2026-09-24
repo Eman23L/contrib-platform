@@ -39,6 +39,22 @@ function seedIntent(overrides: Record<string, unknown> = {}) {
   ]);
 }
 
+function seedSucceededPayment(overrides: Record<string, unknown> = {}) {
+  fakeSupabase.seed("payments", [
+    {
+      id: "payment-1",
+      organisation_id: ORG_ID,
+      contribution_intent_id: INTENT_ID,
+      status: "succeeded",
+      amount_minor: 1000,
+      currency_code: "GBP",
+      stripe_checkout_session_id: "cs_test_1",
+      stripe_payment_intent_id: "pi_test_1",
+      ...overrides,
+    },
+  ]);
+}
+
 function checkoutCompletedEvent(overrides: Partial<Stripe.Checkout.Session> = {}): Stripe.Event {
   return {
     id: "evt_1",
@@ -186,6 +202,127 @@ describe("processStripeWebhook", () => {
 
     const [intent] = fakeSupabase.rows("contribution_intents");
     expect(intent.status).toBe("succeeded");
+  });
+
+  it("marks the payment and contribution intent refunded on a full charge.refunded event", async () => {
+    seedIntent({ status: "succeeded", stripe_checkout_session_id: "cs_test_1" });
+    seedSucceededPayment();
+    const event: Stripe.Event = {
+      id: "evt_refund_1",
+      type: "charge.refunded",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          id: "ch_test_1",
+          payment_intent: "pi_test_1",
+          refunded: true,
+        },
+      },
+    } as unknown as Stripe.Event;
+    constructEvent.mockReturnValue(event);
+
+    const result = await processStripeWebhook("{}", "sig_ok");
+
+    expect(result.status).toBe(200);
+    const [intent] = fakeSupabase.rows("contribution_intents");
+    expect(intent.status).toBe("refunded");
+    const [payment] = fakeSupabase.rows("payments");
+    expect(payment.status).toBe("refunded");
+  });
+
+  it("leaves a succeeded gift untouched on a partial charge.refunded event", async () => {
+    seedIntent({ status: "succeeded", stripe_checkout_session_id: "cs_test_1" });
+    seedSucceededPayment();
+    const event: Stripe.Event = {
+      id: "evt_refund_2",
+      type: "charge.refunded",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          id: "ch_test_1",
+          payment_intent: "pi_test_1",
+          refunded: false,
+          amount_refunded: 200,
+        },
+      },
+    } as unknown as Stripe.Event;
+    constructEvent.mockReturnValue(event);
+
+    await processStripeWebhook("{}", "sig_ok");
+
+    const [intent] = fakeSupabase.rows("contribution_intents");
+    expect(intent.status).toBe("succeeded");
+    const [payment] = fakeSupabase.rows("payments");
+    expect(payment.status).toBe("succeeded");
+  });
+
+  it("marks a gift disputed on charge.dispute.created", async () => {
+    seedIntent({ status: "succeeded", stripe_checkout_session_id: "cs_test_1" });
+    seedSucceededPayment();
+    const event: Stripe.Event = {
+      id: "evt_dispute_1",
+      type: "charge.dispute.created",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          id: "dp_test_1",
+          payment_intent: "pi_test_1",
+          status: "needs_response",
+        },
+      },
+    } as unknown as Stripe.Event;
+    constructEvent.mockReturnValue(event);
+
+    await processStripeWebhook("{}", "sig_ok");
+
+    const [intent] = fakeSupabase.rows("contribution_intents");
+    expect(intent.status).toBe("disputed");
+  });
+
+  it("restores succeeded status when a dispute is closed as won", async () => {
+    seedIntent({ status: "disputed", stripe_checkout_session_id: "cs_test_1" });
+    seedSucceededPayment({ status: "disputed" });
+    const event: Stripe.Event = {
+      id: "evt_dispute_2",
+      type: "charge.dispute.closed",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          id: "dp_test_1",
+          payment_intent: "pi_test_1",
+          status: "won",
+        },
+      },
+    } as unknown as Stripe.Event;
+    constructEvent.mockReturnValue(event);
+
+    await processStripeWebhook("{}", "sig_ok");
+
+    const [intent] = fakeSupabase.rows("contribution_intents");
+    expect(intent.status).toBe("succeeded");
+  });
+
+  it("marks a gift refunded when a dispute is closed as lost", async () => {
+    seedIntent({ status: "disputed", stripe_checkout_session_id: "cs_test_1" });
+    seedSucceededPayment({ status: "disputed" });
+    const event: Stripe.Event = {
+      id: "evt_dispute_3",
+      type: "charge.dispute.closed",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          id: "dp_test_1",
+          payment_intent: "pi_test_1",
+          status: "lost",
+        },
+      },
+    } as unknown as Stripe.Event;
+    constructEvent.mockReturnValue(event);
+
+    await processStripeWebhook("{}", "sig_ok");
+
+    const [intent] = fakeSupabase.rows("contribution_intents");
+    expect(intent.status).toBe("refunded");
   });
 
   it("ignores event types it does not handle, but still records the webhook event", async () => {

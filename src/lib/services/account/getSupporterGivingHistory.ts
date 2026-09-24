@@ -4,7 +4,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { ContributionIntent } from "@/types/domain";
 
-type PaymentStatus = "pending" | "succeeded" | "failed" | "cancelled";
+type PaymentStatus =
+  | "pending"
+  | "succeeded"
+  | "failed"
+  | "cancelled"
+  | "refunded"
+  | "disputed";
 
 type SupporterContributionRow = {
   id: string;
@@ -56,6 +62,10 @@ function mapPaymentStatus(status: ContributionIntent["status"]): PaymentStatus {
     case "cancelled":
     case "expired":
       return "cancelled";
+    case "refunded":
+      return "refunded";
+    case "disputed":
+      return "disputed";
     default:
       return "pending";
   }

@@ -47,7 +47,9 @@ export type ContributionIntent = {
     | "succeeded"
     | "failed"
     | "cancelled"
-    | "expired";
+    | "expired"
+    | "refunded"
+    | "disputed";
   paymentProvider: "stripe";
   guestEmail: string | null;
   donorName: string | null;

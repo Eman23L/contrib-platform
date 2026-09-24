@@ -144,6 +144,10 @@ function getStatusLabel(status: string) {
       return "Failed";
     case "cancelled":
       return "Cancelled";
+    case "refunded":
+      return "Refunded";
+    case "disputed":
+      return "Disputed";
     default:
       return "Pending";
   }
@@ -157,6 +161,10 @@ function getStatusClass(status: string) {
       return "bg-rose-100 text-rose-700";
     case "cancelled":
       return "bg-slate-100 text-slate-600";
+    case "refunded":
+      return "bg-purple-100 text-purple-700";
+    case "disputed":
+      return "bg-orange-100 text-orange-700";
     default:
       return "bg-amber-100 text-amber-700";
   }

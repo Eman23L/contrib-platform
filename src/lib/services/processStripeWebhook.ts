@@ -221,6 +221,145 @@ async function markIntentTerminal(input: {
   };
 }
 
+async function loadPaymentByPaymentIntentId(
+  paymentIntentId: string,
+): Promise<{ contributionIntentId: string; organisationId: string } | null> {
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("payments")
+    .select("contribution_intent_id, organisation_id")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle<{ contribution_intent_id: string; organisation_id: string }>();
+
+  if (error) {
+    throw new Error(`Failed to load payment by payment intent id: ${error.message}`);
+  }
+
+  return data
+    ? { contributionIntentId: data.contribution_intent_id, organisationId: data.organisation_id }
+    : null;
+}
+
+async function setPaymentAndIntentStatus(input: {
+  contributionIntentId: string;
+  organisationId: string;
+  status: Extract<ContributionIntent["status"], "succeeded" | "refunded" | "disputed">;
+}) {
+  const supabase = createServerSupabaseServiceClient();
+
+  const { error: paymentError } = await supabase
+    .from("payments")
+    .update({ status: input.status })
+    .eq("contribution_intent_id", input.contributionIntentId);
+
+  if (paymentError) {
+    throw new Error(`Failed to update payment status: ${paymentError.message}`);
+  }
+
+  const { error: intentError } = await supabase
+    .from("contribution_intents")
+    .update({ status: input.status })
+    .eq("id", input.contributionIntentId);
+
+  if (intentError) {
+    throw new Error(`Failed to update contribution intent status: ${intentError.message}`);
+  }
+
+  return {
+    organisationId: input.organisationId,
+  };
+}
+
+function getChargePaymentIntentId(charge: Stripe.Charge) {
+  if (!charge.payment_intent) {
+    return null;
+  }
+
+  return typeof charge.payment_intent === "string"
+    ? charge.payment_intent
+    : charge.payment_intent.id;
+}
+
+function getDisputePaymentIntentId(dispute: Stripe.Dispute) {
+  if (!dispute.payment_intent) {
+    return null;
+  }
+
+  return typeof dispute.payment_intent === "string"
+    ? dispute.payment_intent
+    : dispute.payment_intent.id;
+}
+
+async function processChargeRefunded(event: Stripe.Event) {
+  const charge = event.data.object as Stripe.Charge;
+
+  if (!charge.refunded) {
+    // Partial refund: the gift still holds a succeeded balance, and this
+    // schema does not model partial-refund amounts, so leave status as-is.
+    return { organisationId: null };
+  }
+
+  const paymentIntentId = getChargePaymentIntentId(charge);
+
+  if (!paymentIntentId) {
+    return { organisationId: null };
+  }
+
+  const payment = await loadPaymentByPaymentIntentId(paymentIntentId);
+
+  if (!payment) {
+    return { organisationId: null };
+  }
+
+  return setPaymentAndIntentStatus({
+    contributionIntentId: payment.contributionIntentId,
+    organisationId: payment.organisationId,
+    status: "refunded",
+  });
+}
+
+async function processDisputeCreated(event: Stripe.Event) {
+  const dispute = event.data.object as Stripe.Dispute;
+  const paymentIntentId = getDisputePaymentIntentId(dispute);
+
+  if (!paymentIntentId) {
+    return { organisationId: null };
+  }
+
+  const payment = await loadPaymentByPaymentIntentId(paymentIntentId);
+
+  if (!payment) {
+    return { organisationId: null };
+  }
+
+  return setPaymentAndIntentStatus({
+    contributionIntentId: payment.contributionIntentId,
+    organisationId: payment.organisationId,
+    status: "disputed",
+  });
+}
+
+async function processDisputeClosed(event: Stripe.Event) {
+  const dispute = event.data.object as Stripe.Dispute;
+  const paymentIntentId = getDisputePaymentIntentId(dispute);
+
+  if (!paymentIntentId) {
+    return { organisationId: null };
+  }
+
+  const payment = await loadPaymentByPaymentIntentId(paymentIntentId);
+
+  if (!payment) {
+    return { organisationId: null };
+  }
+
+  return setPaymentAndIntentStatus({
+    contributionIntentId: payment.contributionIntentId,
+    organisationId: payment.organisationId,
+    status: dispute.status === "won" ? "succeeded" : "refunded",
+  });
+}
+
 async function insertOrUpdatePayment(input: {
   organisationId: string;
   contributionIntentId: string;
@@ -441,6 +580,15 @@ export async function processStripeWebhook(
         break;
       case "payment_intent.payment_failed":
         result = await processPaymentIntentStatus(event, "failed");
+        break;
+      case "charge.refunded":
+        result = await processChargeRefunded(event);
+        break;
+      case "charge.dispute.created":
+        result = await processDisputeCreated(event);
+        break;
+      case "charge.dispute.closed":
+        result = await processDisputeClosed(event);
         break;
       default:
         await updateWebhookEvent(webhookEvent.id, {

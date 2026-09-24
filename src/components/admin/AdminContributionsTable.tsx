@@ -26,6 +26,10 @@ function getStatusClasses(status: string) {
       return "bg-amber-100 text-amber-800";
     case "created":
       return "bg-slate-100 text-slate-700";
+    case "refunded":
+      return "bg-purple-100 text-purple-800";
+    case "disputed":
+      return "bg-orange-100 text-orange-800";
     default:
       return "bg-slate-100 text-slate-700";
   }
@@ -41,8 +45,16 @@ function getStatusLabel(status: string) {
       return "Pending payment";
     case "created":
       return "Started";
-    default:
+    case "refunded":
+      return "Refunded";
+    case "disputed":
+      return "Disputed";
+    case "cancelled":
       return "Cancelled";
+    case "expired":
+      return "Expired";
+    default:
+      return status;
   }
 }
 
