@@ -95,11 +95,20 @@ export function createServerSupabaseAuthClient(cookieStore: CookieWriter): Supab
 
   logServerEnvPresence(context);
 
+  // Magic links only, deliberately not "pkce": PKCE would require the same
+  // browser/device that requested the link to still hold a matching code
+  // verifier cookie when the link is opened. That fails whenever a
+  // supporter opens the email on a different device than they signed in
+  // from, or when their email provider pre-fetches the link to scan it for
+  // safety before the person clicks it (very common, e.g. Outlook Safe
+  // Links). "implicit" issues a token_hash-style link instead, which
+  // /auth/callback already verifies via verifyOtp and works from any
+  // device.
   return createClient(getSupabaseUrl(context), getSupabaseAnonKey(context), {
     auth: {
       autoRefreshToken: false,
       detectSessionInUrl: false,
-      flowType: "pkce",
+      flowType: "implicit",
       persistSession: true,
       storage: createCookieStorage(cookieStore),
       storageKey: AUTH_FLOW_STORAGE_KEY,
