@@ -30,6 +30,57 @@ function mapMembership(row: MembershipRow): OrganisationMembership {
   };
 }
 
+export async function countActiveOwners(
+  supabase: SupabaseClient,
+  organisationId: string,
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("organisation_memberships")
+    .select("id", { count: "exact", head: true })
+    .eq("organisation_id", organisationId)
+    .eq("role", "owner")
+    .eq("is_active", true);
+
+  if (error) {
+    throw new Error(`Failed to count organisation owners: ${error.message}`);
+  }
+
+  return count ?? 0;
+}
+
+export async function getMembershipById(
+  supabase: SupabaseClient,
+  organisationId: string,
+  membershipId: string,
+): Promise<OrganisationMembership | null> {
+  const { data, error } = await supabase
+    .from("organisation_memberships")
+    .select(
+      `
+        id,
+        organisation_id,
+        user_id,
+        role,
+        is_active,
+        created_at,
+        updated_at,
+        organisations:organisations!inner (
+          name,
+          slug
+        )
+      `,
+    )
+    .eq("id", membershipId)
+    .eq("organisation_id", organisationId)
+    .maybeSingle<MembershipRow>();
+
+  if (error) {
+    throw new Error(`Failed to load team member: ${error.message}`);
+  }
+
+  return data ? mapMembership(data) : null;
+}
+
 export async function listAdminMembershipsForUser(
   supabase: SupabaseClient,
   userId: string,

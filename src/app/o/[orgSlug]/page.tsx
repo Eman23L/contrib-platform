@@ -31,6 +31,7 @@ export default async function OrganisationLandingPage({
           guestHref={`/o/${organisation.slug}/give`}
           intro={publicSettings.publicPageIntro}
           kicker={organisation.name}
+          logoUrl={publicSettings.logoUrl}
           publicNextPath={`/account?org=${encodeURIComponent(organisation.slug)}`}
           title={publicSettings.publicPageHeading}
         />

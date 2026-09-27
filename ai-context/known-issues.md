@@ -5,7 +5,8 @@
 - Supabase built-in email sender can hit strict magic-link rate limits. Custom SMTP should be configured in Supabase for real usage.
 - Supporter receipts link to existing success pages, but downloadable receipt PDFs and email receipt sending are not implemented.
 - Recurring gifts are implemented as monthly-only Stripe Subscriptions and require sign-in (no guest recurring gifts). Supporters manage/cancel them from `/account?section=recurring`. No other interval (weekly/quarterly/annual) exists.
-- Admin sections for supporters, funds, reports, and team are now section-specific real-data read-only MVPs, not full CRUD workflows; Campaigns has a create/edit MVP.
+- Admin sections for supporters and reports are section-specific real-data read-only MVPs. Campaigns, Funds, and Team now have create/edit workflows (Funds and Team via `/admin/funds` and `/admin/team`).
+- Adding a team member only works for an email that already has a Supabase Auth account (checked via `findUserByEmail`) — there is still no invite-a-brand-new-person flow, because there is no password-setup page or `/auth/callback` handling for `type=invite`/`type=recovery` yet. `supabase.auth.admin.inviteUserByEmail` must not be wired in until that flow exists, or invited users would have an account with no way to ever set a password and sign in.
 - Admin Settings has a safe editable MVP for owner/admin organisation identity and public wording, but it does not yet cover brand colour rendering, editable currency, fund/campaign visibility controls, audit logs, or payment setup health checks.
 - Search boxes in admin/supporter/guest dashboard shells are visual only.
 - `/admin/donations`, `/me`, and `/me/giving` still exist as legacy redirect routes for compatibility.
@@ -17,7 +18,7 @@
 - Guest checkout API and UI validation both return receipt/history-focused email errors.
 - Admin email detection still depends on Supabase Auth admin user lookup because the current app schema does not store member email addresses in `organisation_memberships` or a profile table.
 - Admin Team rows now show the best available Supabase Auth email/name metadata with user ID as fallback, but the app still does not have an app-owned profile/member identity table.
-- Admin fund, team, and richer report write/detail workflows still need product/security decisions before CRUD/invite/edit/detail actions are added; Campaigns still needs public campaign pages, deletion/archive policy, and contribution attribution from public giving.
+- Richer report write/detail workflows still need product/security decisions; Campaigns/Funds still need public campaign pages, deletion/archive policy, and contribution attribution from public giving (deactivate is supported, hard delete is not).
 - Settings writes are implemented for safe text/profile fields only; broader settings such as payment configuration, multi-currency checkout, and publication controls need separate decisions.
 - Generic sign-in and supporter account no longer send users to a hard-coded Grace Community giving page when no organisation context exists.
 - Supporter account still needs an explicit organisation selector or invite/context route for supporters with no giving history.
