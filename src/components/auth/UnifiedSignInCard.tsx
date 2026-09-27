@@ -186,16 +186,18 @@ export function UnifiedSignInCard({
         ) : null}
 
         <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="gf-label">First name</span>
-              <input autoComplete="given-name" className="gf-input" onChange={(event) => setFirstName(event.target.value)} placeholder="Sarah" required type="text" value={firstName} />
-            </label>
-            <label className="block">
-              <span className="gf-label">Last name</span>
-              <input autoComplete="family-name" className="gf-input" onChange={(event) => setLastName(event.target.value)} placeholder="Smith" required type="text" value={lastName} />
-            </label>
-          </div>
+          {showCreateAccountPrompt ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="gf-label">First name</span>
+                <input autoComplete="given-name" className="gf-input" onChange={(event) => setFirstName(event.target.value)} placeholder="Sarah" required type="text" value={firstName} />
+              </label>
+              <label className="block">
+                <span className="gf-label">Last name</span>
+                <input autoComplete="family-name" className="gf-input" onChange={(event) => setLastName(event.target.value)} placeholder="Smith" required type="text" value={lastName} />
+              </label>
+            </div>
+          ) : null}
           <label className="block">
             <span className="gf-label">Email address</span>
             <input

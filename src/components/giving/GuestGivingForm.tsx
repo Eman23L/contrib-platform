@@ -56,7 +56,6 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [intentId, setIntentId] = useState<string | null>(null);
 
   const amount = useMemo(() => {
     if (customAmount.trim()) {
@@ -105,7 +104,6 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
 
     setErrorMessage(null);
     setSuccessMessage(null);
-    setIntentId(null);
 
     if (!selectedFundId) {
       setErrorMessage("Choose a fund to continue.");
@@ -155,7 +153,6 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
         return;
       }
 
-      setIntentId(data.intentId ?? null);
       setSuccessMessage(
         isSignedIn && frequency === "monthly"
           ? "Taking you to secure checkout for your monthly gift..."
@@ -314,8 +311,7 @@ export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingForm
 
       {successMessage ? (
         <div className="gf-notice border-emerald-200 bg-emerald-50 text-emerald-700">
-          <div>{successMessage}</div>
-          {intentId ? <div className="mt-1 font-mono text-xs">{intentId}</div> : null}
+          {successMessage}
         </div>
       ) : null}
 

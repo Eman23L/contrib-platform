@@ -16,14 +16,14 @@ export default async function FailedPage({ params }: FailedPageProps) {
               !
             </div>
             <p className="mt-6 text-sm font-medium text-red-700">
-              Payment not completed
+              Checkout not completed
             </p>
             <h1 className="gf-title mt-3">
-              Your gift did not go through
+              Your gift wasn&apos;t finished
             </h1>
             <p className="gf-copy mt-3">
-              No charge was confirmed. You can return to the giving page and try
-              again when you are ready.
+              No payment was taken. Whether you changed your mind or something
+              went wrong, you&apos;re welcome to try again whenever you&apos;re ready.
             </p>
 
             <Link

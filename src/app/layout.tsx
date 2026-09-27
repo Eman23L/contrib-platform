@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +17,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "GetFlow",
   description: "Simple, secure giving for modern communities.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
 };
 
 type RootLayoutProps = Readonly<{
@@ -28,6 +39,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-surface text-ink antialiased`}
       >
         {children}
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
