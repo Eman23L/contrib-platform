@@ -732,18 +732,34 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     authenticatedUser.user.user_metadata,
   );
   const yearGiftCount = periodPaidHistory.length;
-  const accountHomeHref = organisationSlug ? `/account?org=${encodeURIComponent(organisationSlug)}` : "/account";
-  const accountGivingHref = organisationSlug
-    ? `/account?org=${encodeURIComponent(organisationSlug)}&section=giving`
-    : "/account?section=giving";
+  function buildAccountHref(section: AccountSection) {
+    const params = new URLSearchParams();
+
+    if (organisationSlug) {
+      params.set("org", organisationSlug);
+    }
+
+    if (section !== "home") {
+      params.set("section", section);
+    }
+
+    const query = params.toString();
+
+    return query ? `/account?${query}` : "/account";
+  }
+
   const accountNavItems: Array<{
     href: string;
     icon: IconName;
     id: AccountSection;
     label: string;
   }> = [
-    { href: accountHomeHref, icon: "home", id: "home", label: "Home" },
-    { href: accountGivingHref, icon: "heart", id: "giving", label: "My Giving" },
+    { href: buildAccountHref("home"), icon: "home", id: "home", label: "Home" },
+    { href: buildAccountHref("giving"), icon: "heart", id: "giving", label: "My Giving" },
+    { href: buildAccountHref("receipts"), icon: "receipt", id: "receipts", label: "Receipts" },
+    { href: buildAccountHref("recurring"), icon: "refresh", id: "recurring", label: "Recurring Gifts" },
+    { href: buildAccountHref("profile"), icon: "profile", id: "profile", label: "Profile" },
+    { href: buildAccountHref("support"), icon: "support", id: "support", label: "Support" },
   ];
 
   return (
