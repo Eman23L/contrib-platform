@@ -9,6 +9,7 @@ type UnifiedSignInCardProps = {
   initialError?: string | null;
   intro?: string;
   kicker?: string;
+  logoUrl?: string;
   publicNextPath: string;
   startNextPath?: string;
   title?: string;
@@ -56,6 +57,7 @@ export function UnifiedSignInCard({
   initialError = null,
   intro,
   kicker = "Welcome to GetFlow",
+  logoUrl,
   publicNextPath,
   startNextPath = publicNextPath,
   title = "Sign in to your account",
@@ -177,9 +179,13 @@ export function UnifiedSignInCard({
       <div className="mx-auto max-w-md">
         <img
           alt=""
-          className="h-11 w-11 rounded-xl"
+          className="h-11 w-11 rounded-xl object-cover"
           height={44}
-          src="/logo/logo-light.svg"
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = "/logo/logo-light.svg";
+          }}
+          src={logoUrl || "/logo/logo-light.svg"}
           width={44}
         />
         <p className="gf-kicker mt-4">{kicker}</p>

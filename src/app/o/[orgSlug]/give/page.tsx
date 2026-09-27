@@ -167,9 +167,19 @@ export default async function GivePage({ params }: GivePageProps) {
           <div className="min-w-0 bg-[#f9faf7]">
             <header className="flex min-h-20 flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between xl:px-9">
               <div className="flex min-w-0 items-center gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">
-                  {organisation.name.slice(0, 1)}
-                </span>
+                {publicSettings.logoUrl ? (
+                  <img
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                    height={40}
+                    src={publicSettings.logoUrl}
+                    width={40}
+                  />
+                ) : (
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">
+                    {organisation.name.slice(0, 1)}
+                  </span>
+                )}
                 <span className="truncate text-sm font-semibold text-slate-700">
                   {organisation.name}
                 </span>

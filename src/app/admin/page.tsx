@@ -23,9 +23,13 @@ type AdminPageProps = {
     org?: string;
     campaignError?: string;
     campaignSaved?: string;
+    fundError?: string;
+    fundSaved?: string;
     section?: string;
     settingsError?: string;
     settingsSaved?: string;
+    teamError?: string;
+    teamSaved?: string;
   }>;
 };
 
@@ -45,6 +49,16 @@ type SettingsStatus = {
 };
 
 type CampaignStatus = {
+  error: string | null;
+  saved: boolean;
+};
+
+type FundStatus = {
+  error: string | null;
+  saved: boolean;
+};
+
+type TeamStatus = {
   error: string | null;
   saved: boolean;
 };
@@ -536,14 +550,18 @@ function SectionContent({
   activeSupporters,
   campaignStatus,
   dashboard,
+  fundStatus,
   settingsStatus,
+  teamStatus,
   userRole,
 }: {
   activeSection: AdminSection;
   activeSupporters: number;
   campaignStatus: CampaignStatus;
   dashboard: AdminDashboardData;
+  fundStatus: FundStatus;
   settingsStatus: SettingsStatus;
+  teamStatus: TeamStatus;
   userRole: string;
 }) {
   if (activeSection === "supporters") {
@@ -556,7 +574,13 @@ function SectionContent({
   }
 
   if (activeSection === "funds") {
-    return <FundsSection dashboard={dashboard} />;
+    return (
+      <FundsSection
+        canManageFunds={userRole === "owner" || userRole === "admin" || userRole === "finance"}
+        dashboard={dashboard}
+        fundStatus={fundStatus}
+      />
+    );
   }
 
   if (activeSection === "giving") {
@@ -583,7 +607,13 @@ function SectionContent({
   }
 
   if (activeSection === "team") {
-    return <TeamSection dashboard={dashboard} />;
+    return (
+      <TeamSection
+        canManageTeam={userRole === "owner" || userRole === "admin"}
+        dashboard={dashboard}
+        teamStatus={teamStatus}
+      />
+    );
   }
 
   if (activeSection === "settings") {
@@ -788,7 +818,81 @@ function SupportersSection({
   );
 }
 
-function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
+function FundForm({
+  dashboard,
+  fund,
+  mode,
+}: {
+  dashboard: AdminDashboardData;
+  fund?: AdminFundBreakdownItem;
+  mode: "create" | "edit";
+}) {
+  return (
+    <form action="/admin/funds" className="mt-4 grid gap-4 md:grid-cols-2" method="post">
+      <input name="currentOrgSlug" type="hidden" value={dashboard.organisationSlug} />
+      {fund?.fundId ? <input name="fundId" type="hidden" value={fund.fundId} /> : null}
+
+      <label className="block">
+        <span className="gf-label">Fund name</span>
+        <input
+          className="gf-input"
+          defaultValue={fund?.fundName ?? ""}
+          maxLength={120}
+          name="name"
+          placeholder="General fund"
+          required
+        />
+      </label>
+
+      <label className="block md:col-span-2">
+        <span className="gf-label">Description</span>
+        <textarea
+          className="gf-input min-h-24"
+          defaultValue={fund?.description ?? ""}
+          maxLength={500}
+          name="description"
+          placeholder="Describe what this fund supports."
+        />
+      </label>
+
+      <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+        <input
+          className="h-4 w-4 rounded border-slate-300 text-blue-600"
+          defaultChecked={fund?.isActive ?? true}
+          name="isActive"
+          type="checkbox"
+        />
+        Show on public giving page
+      </label>
+
+      <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+        <input
+          className="h-4 w-4 rounded border-slate-300 text-blue-600"
+          defaultChecked={fund?.isDefault ?? false}
+          name="isDefault"
+          type="checkbox"
+        />
+        Default fund
+      </label>
+
+      <div className="md:col-span-2">
+        <button className="gf-button-primary" type="submit">
+          {mode === "create" ? "Add fund" : "Save fund"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function FundsSection({
+  canManageFunds,
+  dashboard,
+  fundStatus,
+}: {
+  canManageFunds: boolean;
+  dashboard: AdminDashboardData;
+  fundStatus: FundStatus;
+}) {
   const activeFunds = dashboard.fundBreakdown.filter((fund) => fund.isActive);
   const fundsWithGifts = dashboard.fundBreakdown.filter((fund) => fund.contributionsCount > 0);
 
@@ -797,6 +901,28 @@ function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
       <SectionIntro title="Funds">
         The funds people can give to, whether each is public, and how much it has raised.
       </SectionIntro>
+
+      {fundStatus.error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">
+          {fundStatus.error}
+        </div>
+      ) : null}
+
+      {fundStatus.saved ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+          Fund saved.
+        </div>
+      ) : null}
+
+      {canManageFunds ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Add Fund</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Create a fund givers can choose on the public giving page.
+          </p>
+          <FundForm dashboard={dashboard} mode="create" />
+        </section>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-3">
         <DashboardStatCard
@@ -855,6 +981,14 @@ function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
                     </span>
                   ) : null}
                 </div>
+                {canManageFunds && fund.fundId ? (
+                  <details className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-blue-600">
+                      Edit fund
+                    </summary>
+                    <FundForm dashboard={dashboard} fund={fund} mode="edit" />
+                  </details>
+                ) : null}
               </div>
             )) : (
               <EmptyState>
@@ -1229,12 +1363,66 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   );
 }
 
-function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
+function TeamSection({
+  canManageTeam,
+  dashboard,
+  teamStatus,
+}: {
+  canManageTeam: boolean;
+  dashboard: AdminDashboardData;
+  teamStatus: TeamStatus;
+}) {
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Team">
         People with admin, finance, or owner access to this organisation&apos;s dashboard.
       </SectionIntro>
+
+      {teamStatus.error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">
+          {teamStatus.error}
+        </div>
+      ) : null}
+
+      {teamStatus.saved ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+          Team updated.
+        </div>
+      ) : null}
+
+      {canManageTeam ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <h2 className="text-base font-semibold text-slate-950">Add Team Member</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            The person must already have an account (they need to have signed in at least once, even as a guest). This gives them dashboard access — it doesn&apos;t send them an invite email.
+          </p>
+          <form action="/admin/team" className="mt-4 grid gap-4 md:grid-cols-[1fr_180px_auto]" method="post">
+            <input name="currentOrgSlug" type="hidden" value={dashboard.organisationSlug} />
+            <label className="block">
+              <span className="gf-label">Email address</span>
+              <input
+                className="gf-input"
+                name="email"
+                placeholder="teammate@example.org"
+                required
+                type="email"
+              />
+            </label>
+            <label className="block">
+              <span className="gf-label">Role</span>
+              <select className="gf-input" defaultValue="admin" name="role">
+                <option value="admin">Admin</option>
+                <option value="finance">Finance</option>
+              </select>
+            </label>
+            <div className="flex items-end">
+              <button className="gf-button-primary w-full md:w-auto" type="submit">
+                Add
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <h2 className="text-base font-semibold text-slate-950">Team Members</h2>
@@ -1243,10 +1431,11 @@ function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
             <table className="min-w-full table-fixed text-left">
               <thead>
                 <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500">
-                  <th className="w-[44%] py-3 pr-4">Member</th>
-                  <th className="w-[18%] py-3 pr-4">Role</th>
-                  <th className="w-[18%] py-3 pr-4">Status</th>
-                  <th className="w-[20%] py-3">Joined</th>
+                  <th className="w-[38%] py-3 pr-4">Member</th>
+                  <th className="w-[16%] py-3 pr-4">Role</th>
+                  <th className="w-[14%] py-3 pr-4">Status</th>
+                  <th className="w-[16%] py-3 pr-4">Joined</th>
+                  {canManageTeam ? <th className="w-[16%] py-3">Actions</th> : null}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1270,7 +1459,30 @@ function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
                         {member.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="py-3 text-sm text-slate-600">{formatShortDate(member.joinedAt)}</td>
+                    <td className="py-3 pr-4 text-sm text-slate-600">{formatShortDate(member.joinedAt)}</td>
+                    {canManageTeam ? (
+                      <td className="py-3">
+                        {member.role === "owner" ? (
+                          <span className="text-xs text-slate-400">-</span>
+                        ) : (
+                          <form action="/admin/team" method="post">
+                            <input name="currentOrgSlug" type="hidden" value={dashboard.organisationSlug} />
+                            <input name="membershipId" type="hidden" value={member.id} />
+                            <input
+                              name="intent"
+                              type="hidden"
+                              value={member.isActive ? "deactivate" : "reactivate"}
+                            />
+                            <button
+                              className={`rounded-lg border px-3 py-2 text-xs font-semibold ${member.isActive ? "border-red-200 text-red-600 hover:bg-red-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"}`}
+                              type="submit"
+                            >
+                              {member.isActive ? "Remove access" : "Restore access"}
+                            </button>
+                          </form>
+                        )}
+                      </td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>
@@ -1582,7 +1794,7 @@ function SettingsSection({
               />
             </SettingsField>
 
-            <SettingsField label="Logo URL" helper="A link to your logo image. It's saved with your organisation, though it isn't shown on public pages yet.">
+            <SettingsField label="Logo URL" helper="A link to your logo image. Shown on your organisation's public and giving pages in place of the default mark.">
               <SettingsInput
                 defaultValue={customPublicSettings.logoUrl}
                 disabled={!canEditSettings}
@@ -1613,14 +1825,18 @@ function AdminDashboardShell({
   activeSection,
   campaignStatus,
   dashboard,
+  fundStatus,
   settingsStatus,
+  teamStatus,
   userEmail,
   userRole,
 }: {
   activeSection: AdminSection;
   campaignStatus: CampaignStatus;
   dashboard: AdminDashboardData;
+  fundStatus: FundStatus;
   settingsStatus: SettingsStatus;
+  teamStatus: TeamStatus;
   userEmail: string | null;
   userRole: string;
 }) {
@@ -1794,7 +2010,9 @@ function AdminDashboardShell({
           activeSupporters={activeSupporters}
           campaignStatus={campaignStatus}
           dashboard={dashboard}
+          fundStatus={fundStatus}
           settingsStatus={settingsStatus}
+          teamStatus={teamStatus}
           userRole={userRole}
         />
       )}
@@ -1945,15 +2163,34 @@ function UnauthorizedState({
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { campaignError, campaignSaved, org, section, settingsError, settingsSaved } = await searchParams;
+  const {
+    campaignError,
+    campaignSaved,
+    fundError,
+    fundSaved,
+    org,
+    section,
+    settingsError,
+    settingsSaved,
+    teamError,
+    teamSaved,
+  } = await searchParams;
   const activeSection = getAdminSection(section);
   const campaignStatus: CampaignStatus = {
     error: campaignError ?? null,
     saved: campaignSaved === "1",
   };
+  const fundStatus: FundStatus = {
+    error: fundError ?? null,
+    saved: fundSaved === "1",
+  };
   const settingsStatus: SettingsStatus = {
     error: settingsError ?? null,
     saved: settingsSaved === "1",
+  };
+  const teamStatus: TeamStatus = {
+    error: teamError ?? null,
+    saved: teamSaved === "1",
   };
   const access = await requireAdminRole(org);
 
@@ -2014,7 +2251,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       activeSection={activeSection}
       campaignStatus={campaignStatus}
       dashboard={dashboard}
+      fundStatus={fundStatus}
       settingsStatus={settingsStatus}
+      teamStatus={teamStatus}
       userEmail={access.value.user.email ?? null}
       userRole={access.value.membership.role}
     />
