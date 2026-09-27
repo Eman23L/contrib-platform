@@ -330,7 +330,7 @@ function RecentContributionsTable({
     <section className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between px-5 py-4">
         <h2 className="text-base font-semibold text-slate-950">Recent Contributions</h2>
-        <Link className="text-sm font-semibold text-blue-600" href="/account?section=giving">
+        <Link className="text-sm font-semibold text-emerald-700" href="/account?section=giving">
           View all
         </Link>
       </div>
@@ -515,7 +515,7 @@ function SectionContent({
                     </p>
                   </div>
                   {receiptHref ? (
-                    <Link className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-600" href={receiptHref}>
+                    <Link className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-700" href={receiptHref}>
                       <Icon className="h-4 w-4" name="receipt" />
                       View receipt
                     </Link>
@@ -608,7 +608,7 @@ function SectionContent({
       {section === "profile" ? (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
           <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
               <Icon className="h-6 w-6" name="profile" />
             </span>
             <div className="min-w-0">
@@ -633,12 +633,12 @@ function SectionContent({
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {supportEmail ? (
-              <a className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={`mailto:${supportEmail}`}>
+              <a className="inline-flex rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={`mailto:${supportEmail}`}>
                 Email {supportEmail}
               </a>
             ) : null}
             {giveAgainHref ? (
-              <Link className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={giveAgainHref}>
+              <Link className="inline-flex rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={giveAgainHref}>
                 Go to giving page
               </Link>
             ) : null}
@@ -740,13 +740,13 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f6f9fd] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
-      <div className="mx-auto min-h-[calc(100vh-2.5rem)] max-w-[1440px] overflow-hidden border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
+    <main className="min-h-screen bg-[#f8faf6] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
+      <div className="mx-auto min-h-[calc(100vh-2.5rem)] max-w-[1440px] overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
         <div className="grid min-h-[calc(100vh-2.5rem)] lg:grid-cols-[230px_1fr]">
           <aside className="hidden border-r border-slate-200 bg-white lg:flex lg:flex-col">
             <div className="flex h-20 items-center gap-3 px-7">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-blue-500 text-sm font-bold text-blue-600">G</span>
-              <span className="text-xl font-semibold tracking-tight text-blue-600">GetFlow</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700">G</span>
+              <span className="text-sm font-semibold tracking-tight text-slate-500">Powered by GetFlow</span>
             </div>
             <nav className="flex-1 space-y-3 px-5 py-6">
               {accountNavItems.map((item) => {
@@ -754,7 +754,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
 
                 return (
                   <Link
-                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-emerald-50 text-emerald-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                     href={item.href}
                     key={item.id}
                   >
@@ -766,7 +766,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             </nav>
             <div className="p-7">
               <div className="rounded-2xl bg-slate-50 p-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                   <Icon className="h-5 w-5" name="heart" />
                 </span>
                 <p className="mt-4 text-sm font-semibold text-slate-950">Giving with purpose.</p>
@@ -777,7 +777,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             </div>
           </aside>
 
-          <div className="min-w-0 bg-[#f8fbff]">
+          <div className="min-w-0 bg-[#f9faf7]">
             <header className="flex min-h-20 flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between xl:px-9">
               <div className="flex min-w-0 items-center gap-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">
@@ -805,7 +805,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
 
                 return (
                   <Link
-                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${isActive ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${isActive ? "bg-emerald-50 text-emerald-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                     href={item.href}
                     key={item.id}
                   >
