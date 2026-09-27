@@ -44,9 +44,18 @@ Known external dependency:
 
 - Supabase built-in email has strict rate limits. If custom SMTP is not configured in Supabase, magic links can fail with `email rate limit exceeded`.
 
-Auth flow type:
+Auth flow type and a known operator setup step:
 
-- `createServerSupabaseAuthClient` (used only for the magic-link flow: `/auth/start`, `/auth/magic-link`, `/auth/callback`) is deliberately configured with `flowType: "implicit"`, not `"pkce"`. PKCE magic links require the same browser/device that requested the link to still hold a matching code-verifier cookie when the link is opened, which reliably breaks when a supporter opens the email on a different device, or when their email provider pre-fetches/scans the link before the person clicks it (e.g. Outlook Safe Links) — both very common in practice, and both previously surfaced as "We could not complete sign-in. Please try again." with no clear cause. `/auth/callback` already supports both `code` (PKCE) and `token_hash` (implicit) callback formats; only the request-side client's flow type controls which one Supabase issues.
+- Clicking a Supabase magic link does not go straight to this app. It goes to Supabase's own hosted `/auth/v1/verify` endpoint first (using the stock email template's `{{ .ConfirmationURL }}`), which verifies the token server-side and *then* redirects to `emailRedirectTo` (this app's `/auth/callback`). That hosted redirect carries the session back in one of two forms depending on the requesting client's `flowType`:
+  - `"pkce"`: a `?code=...` query param — visible to a server-side route, exchangeable via `exchangeCodeForSession`.
+  - `"implicit"`: a `#access_token=...` URL **fragment** — browsers never send fragments to a server, so a fragment-based session can never reach a route handler like `/auth/callback`, on any device, under any circumstance. (This was tried and reverted; it surfaced as `Missing auth callback credentials` on every single attempt.)
+  - `createServerSupabaseAuthClient` must therefore stay `flowType: "pkce"`.
+- PKCE still has a real limitation: it requires the same browser/device that requested the link to still hold a matching code-verifier cookie when the link is opened. That breaks when a supporter opens the email on a different device, or when their email provider pre-fetches/scans the link before they click it (e.g. Outlook Safe Links) — both common, and both previously surfaced as an opaque "We could not complete sign-in."
+- **The robust fix, not yet applied, is an operator-side Supabase Dashboard change**: edit the "Magic Link" email template (Authentication → Email Templates) so its link points directly at this app instead of Supabase's hosted verify-and-redirect, e.g.:
+  ```
+  {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email
+  ```
+  `/auth/callback` already supports this (`exchangeCallbackForSession` checks for `token_hash` and calls `verifyOtp`) — no app code change needed once the template is updated. This verifies server-side directly, has no code-verifier cookie to lose across devices, and is not defeated by link pre-fetching the same way a single-use `code`/fragment can be. Trade-off: the template link above omits the dynamic `next` redirect target, so a verified supporter lands on the default `/account` rather than back on the specific page they started from; `/auth/callback` already defaults `next` to `/account` when absent, so this degrades gracefully rather than breaking.
 
 ## Admin Sign-In
 
