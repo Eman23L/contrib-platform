@@ -15,7 +15,6 @@ body {
   margin: 0;
   cursor: default;
   font-family: var(--font-geist-sans), sans-serif;
-  user-select: none;
 }
 
 * {
@@ -40,7 +39,6 @@ textarea,
 code,
 pre {
   cursor: text;
-  user-select: text;
 }
 
 @layer components {

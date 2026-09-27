@@ -131,18 +131,18 @@ export default async function GivePage({ params }: GivePageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f6f9fd] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
-      <div className="mx-auto min-h-[calc(100vh-2.5rem)] max-w-[1440px] overflow-hidden border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
+    <main className="min-h-screen bg-[#f8faf6] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
+      <div className="mx-auto min-h-[calc(100vh-2.5rem)] max-w-[1440px] overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
         <div className="grid min-h-[calc(100vh-2.5rem)] lg:grid-cols-[230px_1fr]">
           <aside className="hidden border-r border-slate-200 bg-white lg:flex lg:flex-col">
             <div className="flex h-20 items-center gap-3 px-7">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-blue-500 text-sm font-bold text-blue-600">G</span>
-              <span className="text-xl font-semibold tracking-tight text-blue-600">GetFlow</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700">G</span>
+              <span className="text-sm font-semibold tracking-tight text-slate-500">Powered by GetFlow</span>
             </div>
             <nav className="flex-1 space-y-3 px-5 py-6">
               {givingNavItems.map((item, index) => (
                 <Link
-                  className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${index === 0 ? "bg-emerald-50 text-emerald-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                   href={item.href}
                   key={item.label}
                 >
@@ -164,7 +164,7 @@ export default async function GivePage({ params }: GivePageProps) {
             </div>
           </aside>
 
-          <div className="min-w-0 bg-[#f8fbff]">
+          <div className="min-w-0 bg-[#f9faf7]">
             <header className="flex min-h-20 flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between xl:px-9">
               <div className="flex min-w-0 items-center gap-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">
@@ -179,7 +179,7 @@ export default async function GivePage({ params }: GivePageProps) {
                   <Icon className="h-4 w-4" name="receipt" />
                   My receipts
                 </Link>
-                <Link className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={accountHref}>
+                <Link className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={accountHref}>
                   {signedInEmail ? "My account" : "Sign in"}
                 </Link>
               </div>
@@ -188,7 +188,7 @@ export default async function GivePage({ params }: GivePageProps) {
             <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-5 py-3 lg:hidden">
               {givingNavItems.map((item, index) => (
                 <Link
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${index === 0 ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${index === 0 ? "bg-emerald-50 text-emerald-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}
                   href={item.href}
                   key={item.label}
                 >
@@ -284,7 +284,7 @@ export default async function GivePage({ params }: GivePageProps) {
                         ? "Your verified account keeps your contributions and receipts together."
                         : "You can give as a guest below. Sign in to keep your contributions and receipts together for next time."}
                     </p>
-                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={accountHref}>
+                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" href={accountHref}>
                       {signedInEmail ? "View my account" : "Sign in"}
                     </Link>
                   </section>
