@@ -57,6 +57,8 @@ function getErrorMessage(error?: string) {
   switch (error) {
     case "auth_callback_failed":
       return "We could not complete sign-in. Please try again.";
+    case "link_expired":
+      return "That sign-in link has expired or was already used. Request a new one below and click it as soon as it arrives.";
     case "invalid_credentials":
       return "Invalid email or password.";
     case "missing_code":

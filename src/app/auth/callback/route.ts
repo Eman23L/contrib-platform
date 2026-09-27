@@ -97,6 +97,16 @@ async function exchangeCallbackForSession(
   };
 }
 
+function getErrorReasonCode(errorCode: string | null) {
+  // Surface the specific, common cases with their own copy; anything else
+  // falls back to the generic message rather than leaking internals.
+  if (errorCode === "otp_expired") {
+    return "link_expired";
+  }
+
+  return "auth_callback_failed";
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const nextPath = getSafeNextPath(url.searchParams.get("next"));
@@ -104,12 +114,21 @@ export async function GET(request: Request) {
   const callbackError = url.searchParams.get("error");
 
   if (callbackError) {
+    const errorCode = url.searchParams.get("error_code");
+    const errorDescription = url.searchParams.get("error_description");
+
+    console.error("[auth/callback] Supabase returned an error before verification", {
+      callbackError,
+      errorCode,
+      errorDescription,
+    });
+
     clearAuthFlowCookies(cookieStore);
 
     return NextResponse.redirect(
       buildRequestUrl(
         request,
-        `/sign-in?error=auth_callback_failed&next=${encodeURIComponent(nextPath)}`,
+        `/sign-in?error=${getErrorReasonCode(errorCode)}&next=${encodeURIComponent(nextPath)}`,
       ),
     );
   }
@@ -118,6 +137,10 @@ export async function GET(request: Request) {
   const { error, session } = await exchangeCallbackForSession(supabase, url);
 
   if (error || !session) {
+    console.error("[auth/callback] Failed to verify sign-in link", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+
     clearAuthFlowCookies(cookieStore);
 
     return NextResponse.redirect(
