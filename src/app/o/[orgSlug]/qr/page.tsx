@@ -26,7 +26,7 @@ export default async function OrganisationQrPage({
     notFound();
   }
 
-  const givingUrl = `${getAppOrigin()}/o/${organisation.slug}`;
+  const givingUrl = `${getAppOrigin()}/o/${organisation.slug}/give`;
   const qrSvg = await QRCode.toString(givingUrl, {
     color: {
       dark: "#0f172a",
