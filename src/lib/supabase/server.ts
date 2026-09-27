@@ -95,20 +95,25 @@ export function createServerSupabaseAuthClient(cookieStore: CookieWriter): Supab
 
   logServerEnvPresence(context);
 
-  // Magic links only, deliberately not "pkce": PKCE would require the same
-  // browser/device that requested the link to still hold a matching code
-  // verifier cookie when the link is opened. That fails whenever a
-  // supporter opens the email on a different device than they signed in
-  // from, or when their email provider pre-fetches the link to scan it for
-  // safety before the person clicks it (very common, e.g. Outlook Safe
-  // Links). "implicit" issues a token_hash-style link instead, which
-  // /auth/callback already verifies via verifyOtp and works from any
-  // device.
+  // Magic links only. Supabase's hosted /auth/v1/verify redirect only ever
+  // sends the session back to a server-side route in one of two forms:
+  // "pkce" as a ?code= query param (server-visible, exchangeable here), or
+  // "implicit" as a #access_token=... URL fragment, which browsers never
+  // transmit to any server at all — a fragment-based session can
+  // structurally never reach a route handler like /auth/callback, on any
+  // device, ever. So this must stay "pkce", even though PKCE has its own
+  // real limitation (it requires the same browser/device that requested
+  // the link to still hold a matching code-verifier cookie when the link
+  // is opened, which fails across devices or when an email provider
+  // pre-fetches the link to scan it). The robust fix for that is to bypass
+  // Supabase's hosted redirect entirely by pointing the Magic Link email
+  // template straight at this route with a token_hash — see
+  // ai-context/auth-flow.md.
   return createClient(getSupabaseUrl(context), getSupabaseAnonKey(context), {
     auth: {
       autoRefreshToken: false,
       detectSessionInUrl: false,
-      flowType: "implicit",
+      flowType: "pkce",
       persistSession: true,
       storage: createCookieStorage(cookieStore),
       storageKey: AUTH_FLOW_STORAGE_KEY,
