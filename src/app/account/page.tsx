@@ -12,7 +12,10 @@ import {
   type SupporterRecurringPlan,
 } from "@/lib/services/account/getSupporterRecurringPlans";
 import { getOrganisationPublicSettings } from "@/lib/organisationSettings";
-import { getOrganisationBySlug } from "@/lib/db/queries/organisations";
+import {
+  getOrganisationBySlug,
+  getSoleActiveOrganisation,
+} from "@/lib/db/queries/organisations";
 import { listPublicFunds } from "@/lib/services/public/listPublicFunds";
 import type { PublicGivingPageData } from "@/types/api";
 import {
@@ -684,7 +687,11 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   const organisationSlug = requestedOrganisationSlug ?? inferredOrganisationSlug ?? defaultOrganisationSlug;
   const inferredOrganisation = organisationSlug
     ? await getOrganisationBySlug(supabase, organisationSlug)
-    : null;
+    // No explicit org context and nothing in the giving history yet (a
+    // brand-new supporter account): fall back to the one organisation in
+    // this deployment, if there's exactly one, rather than showing an
+    // empty giving page.
+    : await getSoleActiveOrganisation(supabase);
   const inferredPublicSettings = inferredOrganisation
     ? getOrganisationPublicSettings(
         inferredOrganisation.settings,
@@ -693,7 +700,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     : null;
 
   const giveAgainHref = inferredOrganisationSlug ? `/o/${inferredOrganisationSlug}/give` : null;
-  const organisationGiveHref = organisationSlug ? `/o/${organisationSlug}/give` : null;
+  const organisationGiveHref = inferredOrganisation ? `/o/${inferredOrganisation.slug}/give` : null;
   const funds = inferredOrganisation ? await listPublicFunds(inferredOrganisation.id) : [];
   const givingPageData: PublicGivingPageData | null = inferredOrganisation && inferredPublicSettings
     ? {
