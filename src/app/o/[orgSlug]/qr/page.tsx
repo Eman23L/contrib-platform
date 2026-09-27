@@ -42,7 +42,14 @@ export default async function OrganisationQrPage({
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-center rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950/70 p-8 shadow-2xl sm:p-12">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_420px] lg:items-center">
           <section>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">
+            <img
+              alt=""
+              className="h-10 w-10"
+              height={40}
+              src="/logo/logo-dark.svg"
+              width={40}
+            />
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">
               Scan to give
             </p>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">

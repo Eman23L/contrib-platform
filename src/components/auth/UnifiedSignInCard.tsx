@@ -175,7 +175,14 @@ export function UnifiedSignInCard({
   return (
     <section className="gf-card w-full p-6 sm:p-8">
       <div className="mx-auto max-w-md">
-        <p className="gf-kicker">{kicker}</p>
+        <img
+          alt=""
+          className="h-11 w-11 rounded-xl"
+          height={44}
+          src="/logo/logo-light.svg"
+          width={44}
+        />
+        <p className="gf-kicker mt-4">{kicker}</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
           {title}
         </h1>
