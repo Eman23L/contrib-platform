@@ -73,6 +73,10 @@ function getStatusLabel(status: string) {
       return "Pending";
     case "failed":
       return "Failed";
+    case "refunded":
+      return "Refunded";
+    case "disputed":
+      return "Disputed";
     default:
       return status.replaceAll("_", " ");
   }
@@ -87,6 +91,10 @@ function getStatusClasses(status: string) {
     case "checkout_created":
     case "pending_payment":
       return "bg-amber-50 text-amber-700";
+    case "refunded":
+      return "bg-purple-50 text-purple-700";
+    case "disputed":
+      return "bg-orange-50 text-orange-700";
     default:
       return "bg-slate-100 text-slate-600";
   }
@@ -94,10 +102,6 @@ function getStatusClasses(status: string) {
 
 function getRoleLabel(role: string) {
   return role.charAt(0).toUpperCase() + role.slice(1);
-}
-
-function getShortId(value: string) {
-  return value.slice(0, 8);
 }
 
 function formatOptionalDate(value: string | null) {
@@ -607,7 +611,7 @@ function GivingSection({
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Giving">
-        Contribution records and payment status for {dashboard.organisationName}.
+        Every gift to {dashboard.organisationName}, and its payment status.
       </SectionIntro>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -710,7 +714,7 @@ function SupportersSection({
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Supporters">
-        People linked to contribution records for {dashboard.organisationName}.
+        Everyone who has given to {dashboard.organisationName}.
       </SectionIntro>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -791,7 +795,7 @@ function FundsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Funds">
-        Donation categories, public visibility, and real giving performance.
+        The funds people can give to, whether each is public, and how much it has raised.
       </SectionIntro>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -998,7 +1002,7 @@ function CampaignsSection({
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Campaigns">
-        Goal-based fundraising from campaign records linked to real contributions.
+        Track fundraising campaigns and how close each is to its goal.
       </SectionIntro>
 
       {campaignStatus.error ? (
@@ -1102,7 +1106,7 @@ function CampaignsSection({
 
 function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
   const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
-  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
+  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired", "disputed"]);
   const exportHref = `/admin/reports/contributions?org=${dashboard.organisationSlug}`;
   const ledgerHref = `/admin/contributions?org=${dashboard.organisationSlug}`;
   const paidGiftCount = getStatusCount(dashboard.statusSummary, ["succeeded"]);
@@ -1111,7 +1115,7 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
     <div className="space-y-5 p-5 xl:p-7">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <SectionIntro title="Reports">
-          Giving and payment reporting from current contribution records.
+          Giving trends, fund performance, and payment status at a glance.
         </SectionIntro>
         <Link
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
@@ -1127,11 +1131,11 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
           <div>
             <h2 className="text-base font-semibold text-slate-950">Report Filters</h2>
             <p className="mt-1 text-sm text-slate-500">
-              The detailed giving ledger supports date, fund, and status filters. CSV export respects those filters.
+              Filter every gift by date, fund, or status, and download a CSV that matches your filters.
             </p>
           </div>
           <Link className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700" href={ledgerHref}>
-            Open filtered ledger
+            View all gifts
           </Link>
         </div>
       </section>
@@ -1229,7 +1233,7 @@ function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Team">
-        Current members with admin, finance, owner, or member records for this organisation.
+        People with admin, finance, or owner access to this organisation&apos;s dashboard.
       </SectionIntro>
 
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
@@ -1258,9 +1262,6 @@ function TeamSection({ dashboard }: { dashboard: AdminDashboardData }) {
                             {member.email}
                           </p>
                         ) : null}
-                        <p className="mt-1 font-mono text-xs text-slate-400">
-                          ID {getShortId(member.userId)}...
-                        </p>
                       </div>
                     </td>
                     <td className="py-3 pr-4 text-sm font-semibold text-slate-700">{getRoleLabel(member.role)}</td>
@@ -1434,7 +1435,7 @@ function SettingsSection({
   return (
     <div className="space-y-5 p-5 xl:p-7">
       <SectionIntro title="Settings">
-        Current organisation configuration used by public giving and admin scoping.
+        Manage how {settings.name} appears to givers and admins across the app.
       </SectionIntro>
 
       {settingsStatus.saved ? (
@@ -1455,7 +1456,7 @@ function SettingsSection({
             <div>
               <h2 className="text-base font-semibold text-slate-950">Organisation Settings</h2>
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                Safe public identity and wording fields for this organisation.
+                Update your organisation&apos;s name, URL, and the wording shown to givers.
               </p>
             </div>
             <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${canEditSettings ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
@@ -1550,7 +1551,7 @@ function SettingsSection({
             </SettingsField>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <SettingsField label="Giving action wording">
+              <SettingsField label="Giving button text" helper="Shown on the button givers tap to give, e.g. &ldquo;Give&rdquo; or &ldquo;Donate now&rdquo;.">
                 <SettingsInput
                   defaultValue={customPublicSettings.givingActionLabel}
                   disabled={!canEditSettings}
@@ -1581,7 +1582,7 @@ function SettingsSection({
               />
             </SettingsField>
 
-            <SettingsField label="Logo URL" helper="Stored for public branding; image rendering can be expanded later without changing this data model.">
+            <SettingsField label="Logo URL" helper="A link to your logo image. It's saved with your organisation, though it isn't shown on public pages yet.">
               <SettingsInput
                 defaultValue={customPublicSettings.logoUrl}
                 disabled={!canEditSettings}
@@ -1625,7 +1626,7 @@ function AdminDashboardShell({
 }) {
   const activeSupporters = dashboard.activeSupportersCount;
   const pendingCount = getStatusCount(dashboard.statusSummary, ["created", "checkout_created", "pending_payment"]);
-  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired"]);
+  const failedCount = getStatusCount(dashboard.statusSummary, ["failed", "cancelled", "expired", "disputed"]);
   const orgParam = `?org=${dashboard.organisationSlug}`;
   const activityItems = dashboard.recentContributions.slice(0, 5);
 

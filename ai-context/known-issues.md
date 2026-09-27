@@ -4,7 +4,7 @@
 
 - Supabase built-in email sender can hit strict magic-link rate limits. Custom SMTP should be configured in Supabase for real usage.
 - Supporter receipts link to existing success pages, but downloadable receipt PDFs and email receipt sending are not implemented.
-- Recurring gifts are not implemented; visible supporter recurring navigation/actions are hidden, and the direct recurring URL shows an honest no-recurring-records state.
+- Recurring gifts are implemented as monthly-only Stripe Subscriptions and require sign-in (no guest recurring gifts). Supporters manage/cancel them from `/account?section=recurring`. No other interval (weekly/quarterly/annual) exists.
 - Admin sections for supporters, funds, reports, and team are now section-specific real-data read-only MVPs, not full CRUD workflows; Campaigns has a create/edit MVP.
 - Admin Settings has a safe editable MVP for owner/admin organisation identity and public wording, but it does not yet cover brand colour rendering, editable currency, fund/campaign visibility controls, audit logs, or payment setup health checks.
 - Search boxes in admin/supporter/guest dashboard shells are visual only.

@@ -12,7 +12,7 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
-async function findUserByEmail(email: string): Promise<User | null> {
+export async function findUserByEmail(email: string): Promise<User | null> {
   const normalizedEmail = normalizeEmail(email);
   const supabase = createServerSupabaseServiceClient();
 

@@ -20,6 +20,10 @@ function getStatusClasses(status: string) {
       return "bg-red-100 text-red-700";
     case "checkout_created":
       return "bg-amber-100 text-amber-800";
+    case "refunded":
+      return "bg-purple-100 text-purple-800";
+    case "disputed":
+      return "bg-orange-100 text-orange-800";
     default:
       return "bg-slate-100 text-slate-700";
   }

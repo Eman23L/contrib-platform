@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-import { hasAdminSignInAccess } from "@/lib/auth/adminAccess";
+import { findUserByEmail, hasAdminSignInAccess } from "@/lib/auth/adminAccess";
 import { buildRequestUrl, getSafeInternalPath } from "@/lib/auth/urls";
 import { listAdminMembershipsForUser } from "@/lib/db/queries/memberships";
 import { createServerSupabaseAuthClient } from "@/lib/supabase/server";
@@ -82,19 +82,29 @@ async function sendMagicLink(
 
   redirectTo.searchParams.set("next", nextPath);
 
+  // Only pass a name when we actually collected one (a brand-new account).
+  // For a returning supporter this is empty, and omitting `data` here keeps
+  // their existing stored name untouched instead of blanking it out.
+  const metadata: Record<string, string> = {};
+
+  if (firstName) {
+    metadata.first_name = firstName;
+  }
+
+  if (lastName) {
+    metadata.last_name = lastName;
+  }
+
   const result = await supabase.auth.signInWithOtp({
     email,
     options: {
       emailRedirectTo: redirectTo.toString(),
       shouldCreateUser: true,
-      data: {
-        first_name: firstName,
-        last_name: lastName,
-      },
+      data: Object.keys(metadata).length > 0 ? metadata : undefined,
     },
   });
 
-  if (!result.error) {
+  if (!result.error && firstName && lastName) {
     const cookieOptions = {
       httpOnly: true,
       maxAge: 15 * 60,
@@ -140,6 +150,36 @@ export async function POST(request: Request) {
             mode: "password",
             ok: true,
           });
+        }
+
+        if (!adminPath) {
+          // A returning supporter already has an account, so we don't need
+          // to collect their name again — send the link straight away.
+          const existingUser = await findUserByEmail(email);
+
+          if (existingUser) {
+            const { error } = await sendMagicLink(request, email, "", "", accountNextPath);
+
+            if (error) {
+              console.error("[auth/start] Magic-link sign-in failed", {
+                message: error.message,
+                nextPath: accountNextPath,
+              });
+
+              return NextResponse.json(
+                {
+                  error: getMagicLinkErrorMessage(error.message),
+                  ok: false,
+                },
+                { status: 400 },
+              );
+            }
+
+            return NextResponse.json({
+              mode: "magic_link_sent",
+              ok: true,
+            });
+          }
         }
 
         return NextResponse.json({

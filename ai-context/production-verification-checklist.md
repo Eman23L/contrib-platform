@@ -228,6 +228,12 @@ Steps:
    - `checkout.session.async_payment_failed`
    - `payment_intent.payment_failed`
    - `payment_intent.canceled`
+   - `charge.refunded`
+   - `charge.dispute.created`
+   - `charge.dispute.closed`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+   - `customer.subscription.deleted`
 
 Expected result:
 

@@ -12,7 +12,10 @@ import type {
 
 type GuestGivingFormProps = {
   organisation: PublicGivingPageData;
+  signedInEmail?: string | null;
 };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const QUICK_AMOUNTS = [10, 20, 50, 100];
 
@@ -33,7 +36,8 @@ function getCheckoutErrorMessage(error?: string) {
   return error;
 }
 
-export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
+export function GuestGivingForm({ organisation, signedInEmail }: GuestGivingFormProps) {
+  const isSignedIn = Boolean(signedInEmail);
   const defaultFundId =
     organisation.funds.find((fund) => fund.isDefault)?.id ??
     organisation.funds[0]?.id ??
@@ -46,11 +50,12 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
     QUICK_AMOUNTS[1] ?? null,
   );
   const [customAmount, setCustomAmount] = useState("");
+  const [frequency, setFrequency] = useState<"one_time" | "monthly">("one_time");
+  const [guestEmail, setGuestEmail] = useState("");
   const [fundSearch, setFundSearch] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [intentId, setIntentId] = useState<string | null>(null);
 
   const amount = useMemo(() => {
     if (customAmount.trim()) {
@@ -99,11 +104,24 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
 
     setErrorMessage(null);
     setSuccessMessage(null);
-    setIntentId(null);
 
     if (!selectedFundId) {
       setErrorMessage("Choose a fund to continue.");
       return;
+    }
+
+    const trimmedEmail = guestEmail.trim();
+
+    if (!isSignedIn) {
+      if (!trimmedEmail) {
+        setErrorMessage("Enter your email to continue.");
+        return;
+      }
+
+      if (!EMAIL_PATTERN.test(trimmedEmail)) {
+        setErrorMessage("Enter a valid email address.");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -118,6 +136,8 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
           organisationSlug: organisation.organisationSlug,
           fundId: selectedFundId,
           amount,
+          frequency: isSignedIn ? frequency : "one_time",
+          ...(isSignedIn ? {} : { guestEmail: trimmedEmail }),
         }),
       });
 
@@ -133,8 +153,11 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         return;
       }
 
-      setIntentId(data.intentId);
-      setSuccessMessage("Taking you to secure checkout...");
+      setSuccessMessage(
+        isSignedIn && frequency === "monthly"
+          ? "Taking you to secure checkout for your monthly gift..."
+          : "Taking you to secure checkout...",
+      );
       window.location.assign(data.checkoutUrl);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
@@ -190,6 +213,28 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
             Choose a quick amount or enter another amount that feels right.
           </p>
         </div>
+        {isSignedIn ? (
+          <div className="mb-5 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <button
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${frequency === "one_time" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}
+              onClick={() => setFrequency("one_time")}
+              type="button"
+            >
+              One-time
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${frequency === "monthly" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}
+              onClick={() => setFrequency("monthly")}
+              type="button"
+            >
+              Monthly
+            </button>
+          </div>
+        ) : (
+          <p className="mb-5 text-xs text-slate-500">
+            Sign in to set up a monthly gift instead of a one-time gift.
+          </p>
+        )}
         <AmountPicker
           currencyCode={organisation.currencyCode}
           customAmount={customAmount}
@@ -206,6 +251,32 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
         />
       </section>
 
+      {isSignedIn ? null : (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">Step 3</p>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+              Your email
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              We use this to send your receipt and match this gift to your giving history.
+            </p>
+          </div>
+          <label className="block">
+            <span className="gf-label">Email address</span>
+            <input
+              autoComplete="email"
+              className="gf-input"
+              onChange={(event) => setGuestEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+              type="email"
+              value={guestEmail}
+            />
+          </label>
+        </section>
+      )}
+
       <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -219,7 +290,9 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
             </p>
           </div>
           <div className="text-left sm:text-right">
-            <p className="text-sm text-slate-500">Amount</p>
+            <p className="text-sm text-slate-500">
+              {isSignedIn && frequency === "monthly" ? "Amount / month" : "Amount"}
+            </p>
             <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
               {formattedAmount ?? "Not set"}
             </p>
@@ -238,12 +311,18 @@ export function GuestGivingForm({ organisation }: GuestGivingFormProps) {
 
       {successMessage ? (
         <div className="gf-notice border-emerald-200 bg-emerald-50 text-emerald-700">
-          <div>{successMessage}</div>
-          {intentId ? <div className="mt-1 font-mono text-xs">{intentId}</div> : null}
+          {successMessage}
         </div>
       ) : null}
 
-      <CheckoutRedirectButton disabled={!selectedFundId || amount <= 0} isLoading={isSubmitting} />
+      <CheckoutRedirectButton
+        disabled={
+          !selectedFundId ||
+          amount <= 0 ||
+          (!isSignedIn && !EMAIL_PATTERN.test(guestEmail.trim()))
+        }
+        isLoading={isSubmitting}
+      />
     </form>
   );
 }

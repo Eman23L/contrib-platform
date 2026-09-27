@@ -221,13 +221,438 @@ async function markIntentTerminal(input: {
   };
 }
 
+async function loadPaymentByPaymentIntentId(
+  paymentIntentId: string,
+): Promise<{ contributionIntentId: string; organisationId: string } | null> {
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("payments")
+    .select("contribution_intent_id, organisation_id")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle<{ contribution_intent_id: string; organisation_id: string }>();
+
+  if (error) {
+    throw new Error(`Failed to load payment by payment intent id: ${error.message}`);
+  }
+
+  return data
+    ? { contributionIntentId: data.contribution_intent_id, organisationId: data.organisation_id }
+    : null;
+}
+
+async function setPaymentAndIntentStatus(input: {
+  contributionIntentId: string;
+  organisationId: string;
+  status: Extract<ContributionIntent["status"], "succeeded" | "refunded" | "disputed">;
+}) {
+  const supabase = createServerSupabaseServiceClient();
+
+  const { error: paymentError } = await supabase
+    .from("payments")
+    .update({ status: input.status })
+    .eq("contribution_intent_id", input.contributionIntentId);
+
+  if (paymentError) {
+    throw new Error(`Failed to update payment status: ${paymentError.message}`);
+  }
+
+  const { error: intentError } = await supabase
+    .from("contribution_intents")
+    .update({ status: input.status })
+    .eq("id", input.contributionIntentId);
+
+  if (intentError) {
+    throw new Error(`Failed to update contribution intent status: ${intentError.message}`);
+  }
+
+  return {
+    organisationId: input.organisationId,
+  };
+}
+
+function getChargePaymentIntentId(charge: Stripe.Charge) {
+  if (!charge.payment_intent) {
+    return null;
+  }
+
+  return typeof charge.payment_intent === "string"
+    ? charge.payment_intent
+    : charge.payment_intent.id;
+}
+
+function getDisputePaymentIntentId(dispute: Stripe.Dispute) {
+  if (!dispute.payment_intent) {
+    return null;
+  }
+
+  return typeof dispute.payment_intent === "string"
+    ? dispute.payment_intent
+    : dispute.payment_intent.id;
+}
+
+async function processChargeRefunded(event: Stripe.Event) {
+  const charge = event.data.object as Stripe.Charge;
+
+  if (!charge.refunded) {
+    // Partial refund: the gift still holds a succeeded balance, and this
+    // schema does not model partial-refund amounts, so leave status as-is.
+    return { organisationId: null };
+  }
+
+  const paymentIntentId = getChargePaymentIntentId(charge);
+
+  if (!paymentIntentId) {
+    return { organisationId: null };
+  }
+
+  const payment = await loadPaymentByPaymentIntentId(paymentIntentId);
+
+  if (!payment) {
+    return { organisationId: null };
+  }
+
+  return setPaymentAndIntentStatus({
+    contributionIntentId: payment.contributionIntentId,
+    organisationId: payment.organisationId,
+    status: "refunded",
+  });
+}
+
+async function processDisputeCreated(event: Stripe.Event) {
+  const dispute = event.data.object as Stripe.Dispute;
+  const paymentIntentId = getDisputePaymentIntentId(dispute);
+
+  if (!paymentIntentId) {
+    return { organisationId: null };
+  }
+
+  const payment = await loadPaymentByPaymentIntentId(paymentIntentId);
+
+  if (!payment) {
+    return { organisationId: null };
+  }
+
+  return setPaymentAndIntentStatus({
+    contributionIntentId: payment.contributionIntentId,
+    organisationId: payment.organisationId,
+    status: "disputed",
+  });
+}
+
+async function processDisputeClosed(event: Stripe.Event) {
+  const dispute = event.data.object as Stripe.Dispute;
+  const paymentIntentId = getDisputePaymentIntentId(dispute);
+
+  if (!paymentIntentId) {
+    return { organisationId: null };
+  }
+
+  const payment = await loadPaymentByPaymentIntentId(paymentIntentId);
+
+  if (!payment) {
+    return { organisationId: null };
+  }
+
+  return setPaymentAndIntentStatus({
+    contributionIntentId: payment.contributionIntentId,
+    organisationId: payment.organisationId,
+    status: dispute.status === "won" ? "succeeded" : "refunded",
+  });
+}
+
+type RecurringPlanRow = {
+  id: string;
+  organisation_id: string;
+  fund_id: string | null;
+  user_id: string;
+  donor_name: string | null;
+};
+
+async function loadRecurringPlanBySubscriptionId(
+  subscriptionId: string,
+): Promise<RecurringPlanRow | null> {
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("recurring_plans")
+    .select("id, organisation_id, fund_id, user_id, donor_name")
+    .eq("stripe_subscription_id", subscriptionId)
+    .maybeSingle<RecurringPlanRow>();
+
+  if (error) {
+    throw new Error(`Failed to load recurring plan: ${error.message}`);
+  }
+
+  return data;
+}
+
+async function upsertRecurringPlan(input: {
+  organisationId: string;
+  fundId: string | null;
+  userId: string;
+  amountMinor: number;
+  currencyCode: string;
+  donorName: string | null;
+  stripeSubscriptionId: string;
+  stripeCustomerId: string | null;
+  stripeCheckoutSessionId: string;
+}) {
+  const supabase = createServerSupabaseServiceClient();
+  const { error } = await supabase.from("recurring_plans").upsert(
+    {
+      organisation_id: input.organisationId,
+      fund_id: input.fundId,
+      user_id: input.userId,
+      amount_minor: input.amountMinor,
+      currency_code: input.currencyCode,
+      donor_name: input.donorName,
+      status: "active",
+      stripe_subscription_id: input.stripeSubscriptionId,
+      stripe_customer_id: input.stripeCustomerId,
+      stripe_checkout_session_id: input.stripeCheckoutSessionId,
+    },
+    {
+      onConflict: "stripe_subscription_id",
+    },
+  );
+
+  if (error) {
+    throw new Error(`Failed to upsert recurring plan: ${error.message}`);
+  }
+}
+
+async function markRecurringPlanStatus(
+  planId: string,
+  status: "active" | "past_due" | "canceled",
+) {
+  const supabase = createServerSupabaseServiceClient();
+  const { error } = await supabase
+    .from("recurring_plans")
+    .update({
+      status,
+      canceled_at: status === "canceled" ? new Date().toISOString() : null,
+    })
+    .eq("id", planId);
+
+  if (error) {
+    throw new Error(`Failed to update recurring plan status: ${error.message}`);
+  }
+}
+
+async function insertRecurringContribution(input: {
+  organisationId: string;
+  fundId: string | null;
+  userId: string;
+  donorName: string | null;
+  recurringPlanId: string;
+  amountMinor: number;
+  currencyCode: string;
+  paidAt: string;
+}): Promise<string> {
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("contribution_intents")
+    .insert({
+      organisation_id: input.organisationId,
+      fund_id: input.fundId,
+      user_id: input.userId,
+      amount_minor: input.amountMinor,
+      currency_code: input.currencyCode,
+      donor_name: input.donorName,
+      payment_provider: "stripe",
+      status: "succeeded",
+      source: "recurring",
+      recurring_plan_id: input.recurringPlanId,
+      paid_at: input.paidAt,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (error) {
+    throw new Error(`Failed to record recurring contribution: ${error.message}`);
+  }
+
+  return data.id;
+}
+
+function getSessionCustomerId(session: Stripe.Checkout.Session) {
+  if (!session.customer) {
+    return null;
+  }
+
+  return typeof session.customer === "string" ? session.customer : session.customer.id;
+}
+
+function getSessionSubscriptionId(session: Stripe.Checkout.Session) {
+  if (!session.subscription) {
+    return null;
+  }
+
+  return typeof session.subscription === "string"
+    ? session.subscription
+    : session.subscription.id;
+}
+
+async function processSubscriptionCheckoutCompleted(event: Stripe.Event) {
+  const session = event.data.object as Stripe.Checkout.Session;
+  const organisationId = session.metadata?.organisation_id;
+  const userId = session.metadata?.user_id;
+  const subscriptionId = getSessionSubscriptionId(session);
+
+  if (!organisationId || !userId || !subscriptionId) {
+    throw new Error("Subscription checkout session is missing required metadata.");
+  }
+
+  await upsertRecurringPlan({
+    organisationId,
+    fundId: session.metadata?.fund_id || null,
+    userId,
+    amountMinor: session.amount_total ?? 0,
+    currencyCode: (session.currency ?? "gbp").toUpperCase(),
+    donorName: session.metadata?.donor_name || null,
+    stripeSubscriptionId: subscriptionId,
+    stripeCustomerId: getSessionCustomerId(session),
+    stripeCheckoutSessionId: session.id,
+  });
+
+  return {
+    organisationId,
+  };
+}
+
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice) {
+  const subscription = invoice.parent?.subscription_details?.subscription;
+
+  if (!subscription) {
+    return null;
+  }
+
+  return typeof subscription === "string" ? subscription : subscription.id;
+}
+
+async function getInvoicePaymentDetails(
+  invoiceId: string,
+): Promise<{ paymentIntentId: string | null; chargeId: string | null }> {
+  const stripe = getStripeServerClient();
+  const invoicePayments = await stripe.invoicePayments.list({
+    invoice: invoiceId,
+    limit: 1,
+  });
+
+  const payment = invoicePayments.data[0]?.payment;
+
+  if (!payment) {
+    return { paymentIntentId: null, chargeId: null };
+  }
+
+  const paymentIntentId = payment.payment_intent
+    ? typeof payment.payment_intent === "string"
+      ? payment.payment_intent
+      : payment.payment_intent.id
+    : null;
+
+  const chargeId = payment.charge
+    ? typeof payment.charge === "string"
+      ? payment.charge
+      : payment.charge.id
+    : null;
+
+  return { paymentIntentId, chargeId };
+}
+
+async function processInvoicePaymentSucceeded(event: Stripe.Event) {
+  const invoice = event.data.object as Stripe.Invoice;
+  const subscriptionId = getInvoiceSubscriptionId(invoice);
+
+  if (!subscriptionId) {
+    return { organisationId: null };
+  }
+
+  const plan = await loadRecurringPlanBySubscriptionId(subscriptionId);
+
+  if (!plan) {
+    // The subscription's first invoice can in rare cases be delivered before
+    // checkout.session.completed finishes creating the plan row. Throwing
+    // marks this webhook delivery failed so Stripe retries it, by which
+    // point the plan row should exist.
+    throw new Error(`No recurring plan found for subscription ${subscriptionId}.`);
+  }
+
+  const paidAt = new Date(
+    (invoice.status_transitions?.paid_at ?? event.created) * 1000,
+  ).toISOString();
+
+  const { paymentIntentId, chargeId } = invoice.id
+    ? await getInvoicePaymentDetails(invoice.id)
+    : { paymentIntentId: null, chargeId: null };
+
+  const contributionIntentId = await insertRecurringContribution({
+    organisationId: plan.organisation_id,
+    fundId: plan.fund_id,
+    userId: plan.user_id,
+    donorName: plan.donor_name,
+    recurringPlanId: plan.id,
+    amountMinor: invoice.amount_paid,
+    currencyCode: invoice.currency.toUpperCase(),
+    paidAt,
+  });
+
+  await insertOrUpdatePayment({
+    organisationId: plan.organisation_id,
+    contributionIntentId,
+    amountMinor: invoice.amount_paid,
+    currencyCode: invoice.currency.toUpperCase(),
+    sessionId: null,
+    paymentIntentId,
+    chargeId,
+    paidAt,
+    eventId: event.id,
+  });
+
+  await markRecurringPlanStatus(plan.id, "active");
+
+  return { organisationId: plan.organisation_id };
+}
+
+async function processInvoicePaymentFailed(event: Stripe.Event) {
+  const invoice = event.data.object as Stripe.Invoice;
+  const subscriptionId = getInvoiceSubscriptionId(invoice);
+
+  if (!subscriptionId) {
+    return { organisationId: null };
+  }
+
+  const plan = await loadRecurringPlanBySubscriptionId(subscriptionId);
+
+  if (!plan) {
+    return { organisationId: null };
+  }
+
+  await markRecurringPlanStatus(plan.id, "past_due");
+
+  return { organisationId: plan.organisation_id };
+}
+
+async function processSubscriptionDeleted(event: Stripe.Event) {
+  const subscription = event.data.object as Stripe.Subscription;
+  const plan = await loadRecurringPlanBySubscriptionId(subscription.id);
+
+  if (!plan) {
+    return { organisationId: null };
+  }
+
+  await markRecurringPlanStatus(plan.id, "canceled");
+
+  return { organisationId: plan.organisation_id };
+}
+
 async function insertOrUpdatePayment(input: {
   organisationId: string;
   contributionIntentId: string;
   amountMinor: number;
   currencyCode: string;
-  sessionId: string;
+  sessionId: string | null;
   paymentIntentId: string | null;
+  chargeId: string | null;
   paidAt: string;
   eventId: string;
 }) {
@@ -242,6 +667,7 @@ async function insertOrUpdatePayment(input: {
       currency_code: input.currencyCode,
       stripe_checkout_session_id: input.sessionId,
       stripe_payment_intent_id: input.paymentIntentId,
+      stripe_charge_id: input.chargeId,
       paid_at: input.paidAt,
       metadata: {
         stripe_event_id: input.eventId,
@@ -255,6 +681,19 @@ async function insertOrUpdatePayment(input: {
   if (error) {
     throw new Error(`Failed to upsert payment: ${error.message}`);
   }
+}
+
+async function getPaymentIntentChargeId(paymentIntentId: string): Promise<string | null> {
+  const stripe = getStripeServerClient();
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+  if (!paymentIntent.latest_charge) {
+    return null;
+  }
+
+  return typeof paymentIntent.latest_charge === "string"
+    ? paymentIntent.latest_charge
+    : paymentIntent.latest_charge.id;
 }
 
 async function loadContributionIntent(
@@ -309,6 +748,8 @@ async function processCompletedCheckout(event: Stripe.Event) {
   }
 
   const paidAt = new Date(event.created * 1000).toISOString();
+  const paymentIntentId = getSessionPaymentIntentId(session);
+  const chargeId = paymentIntentId ? await getPaymentIntentChargeId(paymentIntentId) : null;
 
   await markIntentSucceeded({
     intentId: contributionIntent.id,
@@ -322,7 +763,8 @@ async function processCompletedCheckout(event: Stripe.Event) {
     amountMinor: contributionIntent.amount_minor,
     currencyCode: contributionIntent.currency_code,
     sessionId: session.id,
-    paymentIntentId: getSessionPaymentIntentId(session),
+    paymentIntentId,
+    chargeId,
     paidAt,
     eventId: event.id,
   });
@@ -337,6 +779,14 @@ async function processCheckoutSessionStatus(
   status: Extract<ContributionIntent["status"], "expired" | "failed">,
 ) {
   const session = event.data.object as Stripe.Checkout.Session;
+
+  if (session.mode === "subscription") {
+    // No contribution intent is pre-created for a recurring checkout, so
+    // there is nothing to mark expired/failed here; the recurring plan is
+    // only created once checkout actually completes.
+    return { organisationId: null };
+  }
+
   const intentId = session.metadata?.intent_id;
   const organisationId = session.metadata?.organisation_id;
 
@@ -427,8 +877,22 @@ export async function processStripeWebhook(
 
     switch (event.type) {
       case "checkout.session.completed":
-      case "checkout.session.async_payment_succeeded":
-        result = await processCompletedCheckout(event);
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        result =
+          session.mode === "subscription"
+            ? await processSubscriptionCheckoutCompleted(event)
+            : await processCompletedCheckout(event);
+        break;
+      }
+      case "invoice.payment_succeeded":
+        result = await processInvoicePaymentSucceeded(event);
+        break;
+      case "invoice.payment_failed":
+        result = await processInvoicePaymentFailed(event);
+        break;
+      case "customer.subscription.deleted":
+        result = await processSubscriptionDeleted(event);
         break;
       case "checkout.session.expired":
         result = await processCheckoutSessionStatus(event, "expired");
@@ -441,6 +905,15 @@ export async function processStripeWebhook(
         break;
       case "payment_intent.payment_failed":
         result = await processPaymentIntentStatus(event, "failed");
+        break;
+      case "charge.refunded":
+        result = await processChargeRefunded(event);
+        break;
+      case "charge.dispute.created":
+        result = await processDisputeCreated(event);
+        break;
+      case "charge.dispute.closed":
+        result = await processDisputeClosed(event);
         break;
       default:
         await updateWebhookEvent(webhookEvent.id, {

@@ -47,17 +47,35 @@ export type ContributionIntent = {
     | "succeeded"
     | "failed"
     | "cancelled"
-    | "expired";
+    | "expired"
+    | "refunded"
+    | "disputed";
   paymentProvider: "stripe";
   guestEmail: string | null;
   donorName: string | null;
   donorNote: string | null;
   isAnonymous: boolean;
-  source: "qr" | "web" | "admin";
+  source: "qr" | "web" | "admin" | "recurring";
   stripeCheckoutSessionId: string | null;
   checkoutUrl: string | null;
   expiresAt: string | null;
   paidAt: string | null;
+  recurringPlanId: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type RecurringPlan = {
+  id: string;
+  organisationId: string;
+  fundId: string | null;
+  userId: string;
+  amountMinor: number;
+  currencyCode: string;
+  interval: "month";
+  status: "active" | "past_due" | "canceled";
+  donorName: string | null;
+  stripeSubscriptionId: string;
+  createdAt: string;
+  canceledAt: string | null;
 };

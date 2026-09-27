@@ -63,8 +63,12 @@ function getStatusSortOrder(status: string) {
       return 5;
     case "expired":
       return 6;
-    default:
+    case "disputed":
       return 7;
+    case "refunded":
+      return 8;
+    default:
+      return 9;
   }
 }
 

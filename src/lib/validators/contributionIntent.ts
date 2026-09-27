@@ -9,6 +9,7 @@ export type ValidatedContributionIntentInput = {
   guestFirstName?: string;
   guestLastName?: string;
   donorName?: string;
+  frequency: "one_time" | "monthly";
 };
 
 function normalizeGuestEmail(value: unknown): string {
@@ -99,6 +100,8 @@ export function validateContributionIntentPayload(
   const guestLastName = normalizeName(candidate.guestLastName, "Last name");
   const donorName = [guestFirstName, guestLastName].filter(Boolean).join(" ") || undefined;
 
+  const frequency = candidate.frequency === "monthly" ? "monthly" : "one_time";
+
   return {
     organisationSlug,
     fundId,
@@ -108,5 +111,6 @@ export function validateContributionIntentPayload(
     guestFirstName,
     guestLastName,
     donorName,
+    frequency,
   };
 }

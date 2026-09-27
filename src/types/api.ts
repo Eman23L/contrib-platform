@@ -7,11 +7,12 @@ export type CreateContributionIntentRequest = {
   guestEmail?: string;
   guestFirstName?: string;
   guestLastName?: string;
+  frequency?: "one_time" | "monthly";
 };
 
 export type CreateContributionIntentSuccessResponse = {
   ok: true;
-  intentId: string;
+  intentId?: string;
   checkoutUrl: string;
   message: string;
 };

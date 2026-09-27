@@ -12,6 +12,8 @@ const STATUS_OPTIONS = [
   { label: "Failed", value: "failed" },
   { label: "Cancelled", value: "cancelled" },
   { label: "Expired", value: "expired" },
+  { label: "Refunded", value: "refunded" },
+  { label: "Disputed", value: "disputed" },
 ];
 
 function buildExportHref(filters: AdminContributionFiltersData) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { GuestGivingForm } from "@/components/giving/GuestGivingForm";
@@ -108,9 +108,11 @@ export default async function GivePage({ params }: GivePageProps) {
     notFound();
   }
 
-  if (!(await getAuthenticatedServerUser())) {
-    redirect(`/sign-in?next=${encodeURIComponent(`/o/${organisation.slug}/give`)}`);
-  }
+  const authenticatedUser = await getAuthenticatedServerUser();
+  const signedInEmail = authenticatedUser?.user.email ?? null;
+  const accountHref = signedInEmail
+    ? "/account"
+    : `/sign-in?next=${encodeURIComponent("/account")}`;
 
   const funds = await listPublicFunds(organisation.id);
   const defaultFund = funds.find((fund) => fund.isDefault) ?? funds[0] ?? null;
@@ -173,12 +175,12 @@ export default async function GivePage({ params }: GivePageProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm" href="/account">
+                <Link className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm" href={accountHref}>
                   <Icon className="h-4 w-4" name="receipt" />
                   My receipts
                 </Link>
-                <Link className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account">
-                  My account
+                <Link className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={accountHref}>
+                  {signedInEmail ? "My account" : "Sign in"}
                 </Link>
               </div>
             </header>
@@ -255,6 +257,7 @@ export default async function GivePage({ params }: GivePageProps) {
                         funds,
                         publicSettings,
                       }}
+                      signedInEmail={signedInEmail}
                     />
                   )}
                 </div>
@@ -277,10 +280,12 @@ export default async function GivePage({ params }: GivePageProps) {
                   <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
                     <h2 className="text-sm font-semibold text-slate-950">Your account</h2>
                     <p className="mt-2 text-sm leading-6 text-slate-500">
-                      Your verified account keeps your contributions and receipts together.
+                      {signedInEmail
+                        ? "Your verified account keeps your contributions and receipts together."
+                        : "You can give as a guest below. Sign in to keep your contributions and receipts together for next time."}
                     </p>
-                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href="/account">
-                      View my account
+                    <Link className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600" href={accountHref}>
+                      {signedInEmail ? "View my account" : "Sign in"}
                     </Link>
                   </section>
 

@@ -27,21 +27,26 @@ This separation is important. Admin pages must not accept a supporter magic-link
 
 Current flow:
 
-1. User enters email in `UnifiedSignInCard`.
+1. User enters email in `UnifiedSignInCard` (name fields are hidden at this point).
 2. Client calls `POST /auth/start`.
 3. On the first email submission, `/auth/start` checks whether the email belongs to an active admin/member account. If it does, the client shows the password field.
-4. If the email is not an admin account, `/auth/start` can return `create_account_prompt`.
-5. User confirms by pressing the button again.
-6. `/auth/start` calls Supabase `signInWithOtp` with `shouldCreateUser: true`.
-7. User clicks the email link.
-8. `/auth/callback` exchanges the code/token for a Supabase session.
-9. `setSupporterSessionCookies` stores supporter cookies.
-10. User is redirected to `/account`.
-11. `/account` loads giving history by authenticated user ID and email.
+4. If not an admin account, `/auth/start` checks (via `findUserByEmail`) whether the email already has any Supabase Auth account:
+   - If yes (returning supporter), the magic link is sent immediately with no name required, and the existing account's stored name is left untouched.
+   - If no (brand new supporter), `/auth/start` returns `create_account_prompt`; the client reveals first/last name fields, and the user confirms by pressing the button again, which sends `createAccount: true`.
+5. `/auth/start` calls Supabase `signInWithOtp` with `shouldCreateUser: true`.
+6. User clicks the email link.
+7. `/auth/callback` verifies it via `verifyOtp`/`token_hash` and creates a Supabase session.
+8. `setSupporterSessionCookies` stores supporter cookies.
+9. User is redirected to `/account`.
+10. `/account` loads giving history by authenticated user ID and email.
 
 Known external dependency:
 
 - Supabase built-in email has strict rate limits. If custom SMTP is not configured in Supabase, magic links can fail with `email rate limit exceeded`.
+
+Auth flow type:
+
+- `createServerSupabaseAuthClient` (used only for the magic-link flow: `/auth/start`, `/auth/magic-link`, `/auth/callback`) is deliberately configured with `flowType: "implicit"`, not `"pkce"`. PKCE magic links require the same browser/device that requested the link to still hold a matching code-verifier cookie when the link is opened, which reliably breaks when a supporter opens the email on a different device, or when their email provider pre-fetches/scans the link before the person clicks it (e.g. Outlook Safe Links) — both very common in practice, and both previously surfaced as "We could not complete sign-in. Please try again." with no clear cause. `/auth/callback` already supports both `code` (PKCE) and `token_hash` (implicit) callback formats; only the request-side client's flow type controls which one Supabase issues.
 
 ## Admin Sign-In
 

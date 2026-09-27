@@ -1,17 +1,40 @@
 import { NextResponse } from "next/server";
 
 import { getRequestOrigin } from "@/lib/auth/urls";
+import { checkCheckoutRateLimit, getClientIp } from "@/lib/rateLimit/checkoutRateLimit";
 import { startContributionCheckout } from "@/lib/services/public/startContributionCheckout";
+import { startRecurringCheckout } from "@/lib/services/public/startRecurringCheckout";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    const result = await startContributionCheckout(
-      payload,
-      getRequestOrigin(request),
-    );
+
+    const rateLimit = await checkCheckoutRateLimit({
+      ip: getClientIp(request),
+      guestEmail:
+        payload && typeof payload === "object" && typeof payload.guestEmail === "string"
+          ? payload.guestEmail
+          : null,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Too many checkout attempts. Please wait a few minutes and try again.",
+        },
+        { status: 429 },
+      );
+    }
+
+    const isRecurring =
+      payload && typeof payload === "object" && payload.frequency === "monthly";
+
+    const result = isRecurring
+      ? await startRecurringCheckout(payload, getRequestOrigin(request))
+      : await startContributionCheckout(payload, getRequestOrigin(request));
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
@@ -40,8 +63,8 @@ function getPublicCheckoutErrorMessage(message: string) {
     "Minimum contribution amount is 1.00.",
     "Organisation not found.",
     "Organisation slug is required.",
-    "Please sign in before starting checkout.",
     "Selected fund was not found.",
+    "Sign in to set up a monthly gift.",
     "Stripe Checkout is currently configured only for GBP.",
   ]);
 
