@@ -1131,11 +1131,11 @@ function ReportsSection({ dashboard }: { dashboard: AdminDashboardData }) {
           <div>
             <h2 className="text-base font-semibold text-slate-950">Report Filters</h2>
             <p className="mt-1 text-sm text-slate-500">
-              The detailed giving ledger supports date, fund, and status filters. CSV export respects those filters.
+              Filter every gift by date, fund, or status, and download a CSV that matches your filters.
             </p>
           </div>
           <Link className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700" href={ledgerHref}>
-            Open filtered ledger
+            View all gifts
           </Link>
         </div>
       </section>
