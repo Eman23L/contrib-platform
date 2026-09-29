@@ -297,6 +297,12 @@ export function UnifiedSignInCard({
             </Link>
           </div>
         ) : null}
+
+        <p className="mt-6 text-center text-xs text-slate-400">
+          <Link className="hover:text-slate-600" href="/privacy">
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </section>
   );
