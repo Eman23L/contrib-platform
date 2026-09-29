@@ -316,6 +316,12 @@ export default async function GivePage({ params }: GivePageProps) {
                   </section>
                 </aside>
               </div>
+
+              <p className="pb-2 text-center text-xs text-slate-400">
+                <Link className="hover:text-slate-600" href="/privacy">
+                  Privacy Policy
+                </Link>
+              </p>
             </div>
           </div>
         </div>
